@@ -1,5 +1,7 @@
 from synchrodt import SynchroDict
 import rejson
+import datetime
+import time
 
 redisclient = rejson.Client()
 
@@ -42,7 +44,10 @@ def test_simple_string_put():
         'key0': str,
     }
     synchros_built = SynchroDict.build_from_schema(schema, 'test_simple_schema')
-    synchros_built['key0'] = "Trishul2"
-    assert redisclient.get('key0') == b"Trishul2"
+    input_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    synchros_built['key0'] = input_string
+    synchros_built["key1"]
+    time.sleep(0.1)
+    assert redisclient.get('test_simple_schema::key0@@@class<"str">) == bytes(input_string,'utf-8')
     print(synchros_built)
 

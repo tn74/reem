@@ -96,6 +96,12 @@ class SynchroDict(MutableMapping):
         except Exception as e:
             raise KeyError("Key {} not found in schema or value does not match schema type".format(item))
 
+    def get_required_key_type(self, user_key):
+        if user_key in self.user_key_to_redis_key_map.keys():
+            type_string = self.user_key_to_redis_key_map[user_key].split(self.separator)[1]
+            return self.type_string_to_key_type[type_string]
+        return None
+
     def handle_set_string(self, item, value):
         self.local_copy_dictionary[item] = value
         DB_WRITE_QUEUE.put((REDIS_CLIENT.set, (item, value), {}))
@@ -107,7 +113,7 @@ class SynchroDict(MutableMapping):
         self.local_copy_dictionary[item] = synchro_equivalent
 
     def handle_set_type(self, item, value):
-        # Cannot set it to the class 'type' produces or one we don't know how to handle
+        # Cannot set it to the class that the type function produces or one we don't know how to handle
         if value == type(dict) or value not in self.set_handlers.keys():
             raise ValueError("Type: {} cannot be incorporated in the schema".format(value))
         self.user_key_to_redis_key_map[item] = "{}{}{}".format(item, self.separator, value)
@@ -122,3 +128,11 @@ class SynchroDict(MutableMapping):
 
 redis_thread = ClientThread(DB_WRITE_QUEUE)
 redis_thread.start()
+
+
+"""
+Ideas To Possibly Change:
+
+1. User Sets Type at start and we check that they cannot change the type
+2. They can set whatever type and if we can accept it, we will set it in the local dictionary and set the appropriate redis key
+"""
