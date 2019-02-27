@@ -2,11 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85917ed2-e512-4763-a0ac-920650bd8dec" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/TurboDT.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TurboHandlers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Synchro/TurboTesting.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TurboTesting.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/datatype_tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/datatype_tester.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/synchrodt.py" beforeDir="false" afterPath="$PROJECT_DIR$/synchrodt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestingNotebook.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Synchro/TestingNotebook.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TurboDT.py" beforeDir="false" afterPath="$PROJECT_DIR$/TurboDT.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TurboHandlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/TurboHandlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/datatype_tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/Synchro/datatype_tester.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sampledevices.py" beforeDir="false" afterPath="$PROJECT_DIR$/Synchro/sampledevices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/synchrodt.py" beforeDir="false" afterPath="$PROJECT_DIR$/Synchro/synchrodt.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -17,25 +21,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="datatype_tester.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/datatype_tester.py">
+      <file leaf-file-name="TurboTesting.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/TurboTesting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" column="31" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="31" />
+            <state relative-caret-position="462">
+              <caret line="45" selection-start-line="45" selection-end-line="45" />
               <folding>
-                <element signature="e#0#33#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="synchrodt.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/synchrodt.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="16" selection-start-line="7" selection-end-line="8" />
-              <folding>
-                <element signature="e#0#42#0" expanded="true" />
+                <element signature="e#0#29#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -44,8 +36,8 @@
       <file leaf-file-name="TurboDT.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/TurboDT.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="550">
-              <caret line="79" column="38" lean-forward="true" selection-start-line="79" selection-start-column="38" selection-end-line="79" selection-end-column="38" />
+            <state relative-caret-position="444">
+              <caret line="162" lean-forward="true" selection-start-line="162" selection-end-line="162" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -56,8 +48,11 @@
       <file leaf-file-name="TurboHandlers.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/TurboHandlers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="570">
-              <caret line="38" column="8" selection-start-line="38" selection-start-column="8" selection-end-line="38" selection-end-column="22" />
+            <state relative-caret-position="327">
+              <caret line="52" column="41" selection-start-line="52" selection-start-column="41" selection-end-line="52" selection-end-column="41" />
+              <folding>
+                <element signature="e#0#35#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -71,6 +66,11 @@
       </list>
     </option>
   </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>pipeline</find>
+    </findStrings>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -79,6 +79,8 @@
       <list>
         <option value="$PROJECT_DIR$/synchrodt.py" />
         <option value="$PROJECT_DIR$/datatype_tester.py" />
+        <option value="$PROJECT_DIR$/Synchro/TurboTesting.py" />
+        <option value="$PROJECT_DIR$/TurboTesting.py" />
         <option value="$PROJECT_DIR$/TurboHandlers.py" />
         <option value="$PROJECT_DIR$/TurboDT.py" />
       </list>
@@ -93,7 +95,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -101,15 +102,29 @@
               <item name="repo" type="b2602c69:ProjectViewProjectNode" />
               <item name="repo" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="repo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="repo" type="462c0819:PsiDirectoryNode" />
+              <item name="Synchro" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Synchro" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -123,8 +138,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.py.test for datatype_tester.test_simple_string_put">
-    <configuration name="py.test for datatype_tester.test_nested_schema" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.py.test for TurboTesting.test_deeper_set">
+    <configuration name="py.test for Synchro.datatype_tester.test_simple_string_put" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="repo" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -135,10 +150,38 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;datatype_tester.test_nested_schema&quot;" />
+      <option name="_new_target" value="&quot;Synchro.datatype_tester.test_simple_string_put&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
     </configuration>
-    <configuration name="py.test for datatype_tester.test_simple_schema" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="py.test for TurboTesting.test_deeper_set" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="repo" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;TurboTesting.test_deeper_set&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+    </configuration>
+    <configuration name="py.test for TurboTesting.test_nested_np" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="repo" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;TurboTesting.test_nested_np&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+    </configuration>
+    <configuration name="py.test for TurboTesting.test_nested_set" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="repo" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -149,10 +192,10 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;datatype_tester.test_simple_schema&quot;" />
+      <option name="_new_target" value="&quot;TurboTesting.test_nested_set&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
     </configuration>
-    <configuration name="py.test for datatype_tester.test_simple_string_put" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="py.test for TurboTesting.test_root_set" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="repo" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -163,35 +206,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;datatype_tester.test_simple_string_put&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-    </configuration>
-    <configuration name="py.test for datatype_tester.test_wrong_type_set" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="repo" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;datatype_tester.test_wrong_type_set&quot;" />
+      <option name="_new_target" value="&quot;TurboTesting.test_root_set&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
     </configuration>
     <list>
-      <item itemvalue="Python tests.py.test for datatype_tester.test_simple_schema" />
-      <item itemvalue="Python tests.py.test for datatype_tester.test_nested_schema" />
-      <item itemvalue="Python tests.py.test for datatype_tester.test_simple_string_put" />
-      <item itemvalue="Python tests.py.test for datatype_tester.test_wrong_type_set" />
+      <item itemvalue="Python tests.py.test for Synchro.datatype_tester.test_simple_string_put" />
+      <item itemvalue="Python tests.py.test for TurboTesting.test_nested_set" />
+      <item itemvalue="Python tests.py.test for TurboTesting.test_root_set" />
+      <item itemvalue="Python tests.py.test for TurboTesting.test_deeper_set" />
+      <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.py.test for datatype_tester.test_simple_string_put" />
-        <item itemvalue="Python tests.py.test for datatype_tester.test_wrong_type_set" />
-        <item itemvalue="Python tests.py.test for datatype_tester.test_nested_schema" />
-        <item itemvalue="Python tests.py.test for datatype_tester.test_simple_schema" />
+        <item itemvalue="Python tests.py.test for TurboTesting.test_deeper_set" />
+        <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np" />
+        <item itemvalue="Python tests.py.test for TurboTesting.test_nested_set" />
+        <item itemvalue="Python tests.py.test for TurboTesting.test_root_set" />
+        <item itemvalue="Python tests.py.test for Synchro.datatype_tester.test_simple_string_put" />
       </list>
     </recent_temporary>
   </component>
@@ -209,50 +240,50 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 43m 27s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 25m 43s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 43m 35s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 25m 57s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 43m 41s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 31m 46s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 44m 05s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 32m 30s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 44m 12s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 33m 05s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 44m 19s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 33m 33s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 44m 35s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 34m 52s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 44m 41s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 35m 16s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 44m 49s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.25 at 14h 35m 41s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_datatype_tester_test_simple_string_put - 2019.02.13 at 09h 44m 56s.xml">
-      <configuration name="py.test for datatype_tester.test_simple_string_put" configurationId="tests" />
+    <history-entry file="py_test_for_TurboTesting_test_deeper_set - 2019.02.26 at 18h 03m 54s.xml">
+      <configuration name="py.test for TurboTesting.test_deeper_set" configurationId="tests" />
     </history-entry>
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12638889" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12638889" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32900944" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32900944" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39976415" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -268,27 +299,51 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="3" />
+      <option name="time" value="9" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/datatype_tester.py">
+    <entry file="file://$PROJECT_DIR$/TurboTesting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="31" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="31" />
+        <state relative-caret-position="615">
+          <caret line="42" column="32" lean-forward="true" selection-start-line="42" selection-start-column="32" selection-end-line="42" selection-end-column="32" />
           <folding>
-            <element signature="e#0#33#0" expanded="true" />
+            <element signature="e#0#29#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/synchrodt.py">
+    <entry file="file://$PROJECT_DIR$/TurboDT.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="675">
+          <caret line="46" column="47" lean-forward="true" selection-start-line="46" selection-start-column="47" selection-end-line="46" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/TurboHandlers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="690">
+          <caret line="48" selection-start-line="48" selection-end-line="48" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Synchro/datatype_tester.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="31" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Synchro/synchrodt.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="7" column="16" selection-start-line="7" selection-end-line="8" />
-          <folding>
-            <element signature="e#0#42#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -306,87 +361,102 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="465">
           <caret line="31" column="44" lean-forward="true" selection-start-line="31" selection-start-column="44" selection-end-line="31" selection-end-column="44" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/datatype_tester.py">
+    <entry file="file://$PROJECT_DIR$/Synchro/datatype_tester.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
           <caret line="19" column="31" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="31" />
-          <folding>
-            <element signature="e#0#33#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/synchrodt.py">
+    <entry file="file://$PROJECT_DIR$/Synchro/synchrodt.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1995">
           <caret line="136" column="127" selection-start-line="136" selection-start-column="127" selection-end-line="136" selection-end-column="127" />
-          <folding>
-            <element signature="e#0#42#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/datatype_tester.py">
+    <entry file="file://$PROJECT_DIR$/Synchro/datatype_tester.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
           <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
-          <folding>
-            <element signature="e#0#33#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/synchrodt.py">
+    <entry file="file://$PROJECT_DIR$/Synchro/synchrodt.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15">
           <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
-          <folding>
-            <element signature="e#0#42#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/datatype_tester.py">
+    <entry file="file://$PROJECT_DIR$/Synchro/datatype_tester.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
           <caret line="3" column="16" lean-forward="true" selection-start-line="3" selection-start-column="16" selection-end-line="3" selection-end-column="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/synchrodt.py">
+    <entry file="file://$PROJECT_DIR$/testing.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../indepstudyenv/lib/python3.6/site-packages/rejson/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="16" selection-start-line="7" selection-end-line="8" />
-          <folding>
-            <element signature="e#0#42#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="181">
+          <caret line="131" selection-start-line="131" selection-end-line="131" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/datatype_tester.py">
+    <entry file="file://$PROJECT_DIR$/Synchro/synchrodt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
+        <state relative-caret-position="-1">
+          <caret line="2" column="28" lean-forward="true" selection-start-line="2" selection-start-column="28" selection-end-line="2" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Synchro/datatype_tester.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
           <caret line="19" column="31" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../indepstudyenv/lib/python3.6/site-packages/redis/client.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="588">
+          <caret line="3391" selection-start-line="3391" selection-end-line="3391" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/TurboTesting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="45" selection-start-line="45" selection-end-line="45" />
           <folding>
-            <element signature="e#0#33#0" expanded="true" />
+            <element signature="e#0#29#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/TurboHandlers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="570">
-          <caret line="38" column="8" selection-start-line="38" selection-start-column="8" selection-end-line="38" selection-end-column="22" />
+        <state relative-caret-position="327">
+          <caret line="52" column="41" selection-start-line="52" selection-start-column="41" selection-end-line="52" selection-end-column="41" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/TurboDT.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="550">
-          <caret line="79" column="38" lean-forward="true" selection-start-line="79" selection-start-column="38" selection-end-line="79" selection-end-column="38" />
+        <state relative-caret-position="444">
+          <caret line="162" lean-forward="true" selection-start-line="162" selection-end-line="162" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>

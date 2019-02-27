@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-
+import numpy as np
+from io import BytesIO
 
 class SpecialCaseHandler(ABC):
     def __init__(self):
@@ -40,4 +41,19 @@ class SpecialCaseHandler(ABC):
         """
         Return a string that will be used in key names to indicate this class should be used to decode data
         """
+        pass
+
+
+class NumpyHandler(SpecialCaseHandler):
+    def check_fit(self, value):
+        return type(value) in [np.array, np.ndarray]
+
+    def write(self, key, value, client):
+        print("Setting Key: {}".format(key))
+        client.set(key, value.tostring())
+
+    def get_identifier(self):
+        return "default_numpy_handler"
+
+    def read(self, key, value, client):
         pass

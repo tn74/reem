@@ -1,4 +1,4 @@
-from synchrodt import SynchroDict
+from Synchro.synchrodt import SynchroDict
 import rejson
 import datetime
 import time
