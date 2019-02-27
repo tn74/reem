@@ -27,12 +27,22 @@ class SpecialCaseHandler(ABC):
         pass
 
     @abstractmethod
-    def read(self, key, value, client):
+    def read(self, key, client):
         """
-        Given a top level key name and a value, write to the redis database however you choose
+        Issue ONE ACTION you need to retrieve information from redis
         :param key: Top Key under which the encoded value is stored
         :param client: Client to use
-        :return: Decoded redis db entry
+        :return: None
+        """
+        pass
+
+    @abstractmethod
+    def interpret_read(self, responses):
+        """
+        Your client actions in the read method returned a series of responses from redis.
+        This method interprets them and gives the result
+        :param responses: responses from Redis Client
+        :return: Value of object when read
         """
         pass
 
@@ -50,10 +60,15 @@ class NumpyHandler(SpecialCaseHandler):
 
     def write(self, key, value, client):
         print("Setting Key: {}".format(key))
-        client.set(key, value.tostring())
+        print(value.dtype)
+        client.hset(key, "arr", value.tostring())
+        client.hset(key, "dtype", str(value.dtype))
 
     def get_identifier(self):
         return "default_numpy_handler"
 
-    def read(self, key, value, client):
-        pass
+    def read(self, key,  client):
+        client.hgetall(key)
+
+    def interpret_read(self, responses):
+        return np.fromstring(responses[0]["arr"], eval("np.{}".format(responses[0]["dtype"])))

@@ -35,3 +35,5 @@ def multitrial_time_test(func, kwargs, iterations=3):
     for i in range(iterations):
         times.append(time_code_segment(func, kwargs))
     return times
+
+
