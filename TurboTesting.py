@@ -87,8 +87,8 @@ def test_sequence_1():
     print("3. NpArr: {}".format(reader.read_from_redis(".nparr")))
     print("3. Stats: {}".format(reader.read_from_redis(".stats")))
 
-    writer.send_to_redis(".nparr", {"arr": nparr})
-    time.sleep(0.5)
-    print(reader.read_from_redis("."))
-    print(reader.read_from_redis(".nparr"))
+    # writer.send_to_redis(".nparr", {"arr": nparr})
+    # time.sleep(0.5)
+    # print(reader.read_from_redis("."))
+    # print(reader.read_from_redis(".nparr"))
 

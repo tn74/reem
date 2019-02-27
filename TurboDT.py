@@ -42,7 +42,7 @@ class TWriter:
             channel = "__keyspace@0__:{}".format(metadata_key_name)
             message = "set"
             self.pipeline.publish(channel, message)
-            print("Posted Metadata Update")
+            # print("Posted Metadata Update")
         if path == "":
             path = "."
 
@@ -59,7 +59,7 @@ class TWriter:
         # Step 4, 5: Excise special keys from dict and store
         if type(value) is dict:
             excised_copy = self.make_excised_copy(list(map(lambda path: path.split(".")[1:], paths_to_update)), value)
-            print("Excised Copy: {}".format(excised_copy))
+            # print("Excised Copy: {}".format(excised_copy))
             self.pipeline.jsonset(self.top_key_name, path, excised_copy)
 
         # Step 6: Execute all db commands
@@ -220,7 +220,7 @@ class TReader:
             containing_dict[key_trail[-1]] = obj
 
     def handle_non_json_path(self, path):
-        print(self.metadata)
+        # print(self.metadata)
         handler = self.identifier_to_handler[self.metadata["special_paths"][path]]
         special_name = "{}{}".format(self.top_key_name, path)
         handler.read(special_name, self.pipeline)

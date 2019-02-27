@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85917ed2-e512-4763-a0ac-920650bd8dec" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/TurboScratchTesting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TurboDT.py" beforeDir="false" afterPath="$PROJECT_DIR$/TurboDT.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TurboHandlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/TurboHandlers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TurboTesting.py" beforeDir="false" afterPath="$PROJECT_DIR$/TurboTesting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -18,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="TurboTesting.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="TurboTesting.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/TurboTesting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="471">
-              <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
+            <state relative-caret-position="132">
+              <caret line="74" lean-forward="true" selection-start-line="74" selection-end-line="74" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
@@ -34,16 +30,16 @@
         <entry file="file://$PROJECT_DIR$/TurboScratchTesting.py">
           <provider selected="true" editor-type-id="text-editor">
             <state>
-              <caret column="29" lean-forward="true" selection-start-column="29" selection-end-column="29" />
+              <caret column="29" selection-start-column="29" selection-end-column="29" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TurboDT.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="TurboDT.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/TurboDT.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="308">
-              <caret line="90" lean-forward="true" selection-start-line="90" selection-end-line="90" />
+            <state relative-caret-position="241">
+              <caret line="223" column="30" lean-forward="true" selection-start-line="223" selection-start-column="30" selection-end-line="223" selection-end-column="30" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -86,6 +82,7 @@
       <find>pipeline</find>
       <find>__keyspace@0__:</find>
       <find>print</find>
+      <find>Poster</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -120,11 +117,6 @@
             <path>
               <item name="repo" type="b2602c69:ProjectViewProjectNode" />
               <item name="repo" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="repo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="repo" type="462c0819:PsiDirectoryNode" />
-              <item name="Synchro" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -231,15 +223,15 @@
     <list>
       <item itemvalue="Python tests.py.test for TurboTesting.test_nested_root_read" />
       <item itemvalue="Python tests.py.test for TurboTesting.test_deeper_read" />
-      <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np_read" />
       <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np" />
+      <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np_read" />
       <item itemvalue="Python tests.py.test for TurboTesting.test_sequence_1" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python tests.py.test for TurboTesting.test_sequence_1" />
-        <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np_read" />
         <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np" />
+        <item itemvalue="Python tests.py.test for TurboTesting.test_nested_np_read" />
         <item itemvalue="Python tests.py.test for TurboTesting.test_deeper_read" />
         <item itemvalue="Python tests.py.test for TurboTesting.test_nested_root_read" />
       </list>
@@ -259,34 +251,34 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 05m 18s.xml">
+    <history-entry file="py_test_for_TurboTesting_test_flat_root_read - 2019.02.27 at 09h 26m 13s.xml">
+      <configuration name="py.test for TurboTesting.test_flat_root_read" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_TurboTesting_test_nested_root_read - 2019.02.27 at 09h 26m 18s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_root_read" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_TurboTesting_test_deeper_read - 2019.02.27 at 09h 26m 21s.xml">
+      <configuration name="py.test for TurboTesting.test_deeper_read" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.27 at 09h 26m 24s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_TurboTesting_test_nested_np_read - 2019.02.27 at 09h 26m 28s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np_read" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_TurboTesting_test_nested_np_read - 2019.02.27 at 09h 38m 31s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np_read" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 09h 43m 20s.xml">
       <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 10m 29s.xml">
+    <history-entry file="py_test_for_TurboTesting_test_nested_np - 2019.02.27 at 09h 43m 30s.xml">
+      <configuration name="py.test for TurboTesting.test_nested_np" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 09h 46m 32s.xml">
       <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
     </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 11m 06s.xml">
-      <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 11m 22s.xml">
-      <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 12m 01s.xml">
-      <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 12m 56s.xml">
-      <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 13m 21s.xml">
-      <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 00h 14m 46s.xml">
-      <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 09h 22m 57s.xml">
-      <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 09h 25m 04s.xml">
+    <history-entry file="py_test_for_TurboTesting_test_sequence_1 - 2019.02.27 at 09h 46m 50s.xml">
       <configuration name="py.test for TurboTesting.test_sequence_1" configurationId="tests" />
     </history-entry>
   </component>
@@ -318,7 +310,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="10" />
+      <option name="time" value="11" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -466,6 +458,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/TurboScratchTesting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="29" selection-start-column="29" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/TurboHandlers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="267">
@@ -476,29 +475,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/TurboTesting.py">
+    <entry file="file://$PROJECT_DIR$/TurboDT.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="471">
-          <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
+        <state relative-caret-position="241">
+          <caret line="223" column="30" lean-forward="true" selection-start-line="223" selection-start-column="30" selection-end-line="223" selection-end-column="30" />
           <folding>
-            <element signature="e#0#29#0" expanded="true" />
+            <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/TurboScratchTesting.py">
+    <entry file="file://$PROJECT_DIR$/TurboTesting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="29" lean-forward="true" selection-start-column="29" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/TurboDT.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="90" lean-forward="true" selection-start-line="90" selection-end-line="90" />
+        <state relative-caret-position="132">
+          <caret line="74" lean-forward="true" selection-start-line="74" selection-end-line="74" />
           <folding>
-            <element signature="e#0#13#0" expanded="true" />
+            <element signature="e#0#29#0" expanded="true" />
           </folding>
         </state>
       </provider>
