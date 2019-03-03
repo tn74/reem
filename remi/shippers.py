@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from io import BytesIO
+
 
 class SpecialCaseHandler(ABC):
     def __init__(self):

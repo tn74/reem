@@ -1,4 +1,4 @@
-import TurboDT, TurboHandlers
+from remi import datatypes, shippers
 import numpy as np
 import time
 
@@ -18,36 +18,36 @@ nested_data = {
 
 def test_flat_root_set():
     path = "."
-    writer = TurboDT.TWriter("test_set")
+    writer = datatypes.TWriter("test_set")
     writer.send_to_redis(path, flat_data)
 
 
 def test_nested_root_set():
     path = "."
-    writer = TurboDT.TWriter("nested_set")
+    writer = datatypes.TWriter("nested_set")
     writer.send_to_redis(path, nested_data)
 
 
 def test_deeper_set():
-    writer = TurboDT.TWriter("nested_set")
+    writer = datatypes.TWriter("nested_set")
     writer.send_to_redis(".", nested_data)
     writer.send_to_redis(".second_set", nested_data)
 
 
 def test_flat_root_read():
-    reader = TurboDT.TReader("test_set")
+    reader = datatypes.TReader("test_set")
     ret = reader.read_from_redis(".")
     print("Ret: {}".format(ret))
 
 
 def test_nested_root_read():
-    reader = TurboDT.TReader("nested_set")
+    reader = datatypes.TReader("nested_set")
     ret = reader.read_from_redis(".")
     print("Ret: {}".format(ret))
 
 
 def test_deeper_read():
-    reader = TurboDT.TReader("nested_set")
+    reader = datatypes.TReader("nested_set")
     ret = reader.read_from_redis(".second_set")
     print("Ret: {}".format(ret))
 
@@ -56,22 +56,23 @@ def test_deeper_read():
 
 nparr = np.arange(10)
 
+
 def test_nested_np():
-    writer = TurboDT.TWriter("np_set", special_case_handlers=[TurboHandlers.NumpyHandler()])
+    writer = datatypes.TWriter("np_set", special_case_handlers=[shippers.NumpyHandler()])
     nested_data['nparr'] = nparr
     writer.send_to_redis(".", nested_data)
 
 
 def test_nested_np_read():
-    reader = TurboDT.TReader("np_set", special_case_handlers=[TurboHandlers.NumpyHandler()])
+    reader = datatypes.TReader("np_set", special_case_handlers=[shippers.NumpyHandler()])
     print("Read in: {}".format(reader.read_from_redis(".")))
 
 
 # Write and Read Sequences
 
 def test_sequence_1():
-    writer = TurboDT.TWriter("Sequence1", special_case_handlers=[TurboHandlers.NumpyHandler()])
-    reader = TurboDT.TReader("Sequence1", special_case_handlers=[TurboHandlers.NumpyHandler()])
+    writer = datatypes.TWriter("Sequence1", special_case_handlers=[shippers.NumpyHandler()])
+    reader = datatypes.TReader("Sequence1", special_case_handlers=[shippers.NumpyHandler()])
 
     writer.send_to_redis(".", flat_data)
     time.sleep(0.5)
