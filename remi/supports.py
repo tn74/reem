@@ -11,7 +11,7 @@ class RedisInterface():
         """
         self.hostname = host
         self.shippers = shippers
-        self.client = rejson.Client(host=host)
+        self.client = rejson.Client(host=host, decode_responses=True)
         self.metadata_listener = MetadataListener(self)
 
         self.label_to_shipper = {}

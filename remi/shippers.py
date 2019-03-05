@@ -47,7 +47,7 @@ class SpecialCaseHandler(ABC):
         pass
 
     @abstractmethod
-    def get_identifier(self):
+    def get_label(self):
         """
         Return a string that will be used in key names to indicate this class should be used to decode data
         """
@@ -64,7 +64,7 @@ class NumpyHandler(SpecialCaseHandler):
         client.hset(key, "arr", value.tostring())
         client.hset(key, "dtype", str(value.dtype))
 
-    def get_identifier(self):
+    def get_label(self):
         return "default_numpy_handler"
 
     def read(self, key,  client):
