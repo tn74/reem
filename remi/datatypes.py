@@ -86,8 +86,10 @@ class Reader:
         :return:
         """
         logger.info("GET {} {}".format(self.top_key_name, path))
+
         self.update_metadata()
         logger.debug("GET metadata: {}".format(self.metadata))
+
         if path in self.sp_to_label.keys():
             return self.pull_special_path(path)
         self.queue_reads(path)
@@ -102,7 +104,6 @@ class Reader:
         self.pull_metadata = False
 
     def queue_reads(self, path):
-        # print("Queueing Reads for : {}".format(path))
         self.pipeline.jsonget(self.top_key_name, path)
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
         for path in special_paths:

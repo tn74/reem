@@ -75,13 +75,11 @@ class NumpyHandler(SpecialCaseHandler):
         hash = responses[0]
         dtype = eval("np.{}".format(hash[b'dtype'].decode('utf-8')))
         shape = hash[b'shape'].decode("utf-8")[1:-1]
-        if "," in shape:
-            shape = tuple([int(s) for s in shape.split(",")])
-        else:
-            shape = [shape,]
+        print(shape)
+        shape = tuple([int(s) for s in shape.split(",") if len(s) > 0])
         # print(hash[b'arr'])
         # print(dtype)
-        # print(shape)
+        print(shape)
         arr = np.frombuffer(hash[b'arr'], dtype)
         arr = np.reshape(arr, shape)
         return arr
