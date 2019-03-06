@@ -140,5 +140,7 @@ def test_np_read_write():
     random_array = np.random.rand(3, 4)
     # random_array = nparr
     server["seq1"] = {"nparr": random_array}
+    print(server["seq1"].read())
+    print({"nparr": random_array})
     assert compare_equality(server["seq1"].read(), {"nparr": random_array})
     assert compare_equality(server["seq1"]["nparr"].read(), random_array)

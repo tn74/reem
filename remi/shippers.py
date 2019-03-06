@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
+import io
 
 
 class SpecialCaseHandler(ABC):
@@ -59,10 +60,10 @@ class NumpyHandler(SpecialCaseHandler):
         return type(value) in [np.array, np.ndarray]
 
     def write(self, key, value, client):
-        print("Setting Key: {}".format(key))
-        print(value.dtype)
-        client.hset(key, "arr", value.tobytes())
+        client.hset(key, "arr", bytes(memoryview(value.data)))
         client.hset(key, "dtype", str(value.dtype))
+        client.hset(key, "shape", str(value.shape))
+        client.hset(key, "strides", str(value.strides))
 
     def get_label(self):
         return "default_numpy_handler"
@@ -71,4 +72,16 @@ class NumpyHandler(SpecialCaseHandler):
         client.hgetall(key)
 
     def interpret_read(self, responses):
-        return np.fromstring(responses[0]["arr"], eval("np.{}".format(responses[0]["dtype"])))
+        hash = responses[0]
+        dtype = eval("np.{}".format(hash[b'dtype'].decode('utf-8')))
+        shape = hash[b'shape'].decode("utf-8")[1:-1]
+        if "," in shape:
+            shape = tuple([int(s) for s in shape.split(",")])
+        else:
+            shape = [shape,]
+        # print(hash[b'arr'])
+        # print(dtype)
+        # print(shape)
+        arr = np.frombuffer(hash[b'arr'], dtype)
+        arr = np.reshape(arr, shape)
+        return arr

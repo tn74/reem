@@ -73,6 +73,7 @@ class Reader:
         self.sp_to_label = self.metadata["special_paths"]
         self.update_metadata_flag = False
         self.pipeline = self.interface.client.pipeline()
+        self.pipeline_no_decode = self.interface.client_no_decode.pipeline()
 
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.interface.metadata_listener.add_listener(self.metadata_key_name, self)
@@ -106,16 +107,16 @@ class Reader:
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
         for path in special_paths:
             special_name = "{}{}".format(self.top_key_name, path)
-            self.interface.label_to_shipper[self.sp_to_label[path]].read(special_name, self.pipeline)
+            self.interface.label_to_shipper[self.sp_to_label[path]].read(special_name, self.pipeline_no_decode)
 
     def build_dictionary(self, path):
         if path == Path.rootPath():
             path = ""
-        responses = self.pipeline.execute()
-        return_val = responses[0]
+        return_val = self.pipeline.execute()[0]
+        responses = self.pipeline_no_decode.execute()
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
         for i, sp in enumerate(special_paths):
-            value = self.interface.label_to_shipper[self.sp_to_label[sp]].interpret_read(responses[i + 1: i + 2])
+            value = self.interface.label_to_shipper[self.sp_to_label[sp]].interpret_read(responses[i: i + 1])
             insertion_path = sp[len(path):]
             insert_into_dictionary(return_val, insertion_path, value)
         return return_val
@@ -123,8 +124,8 @@ class Reader:
     def pull_special_path(self, path):
         shipper = self.interface.label_to_shipper[self.sp_to_label[path]]
         special_name = "{}{}".format(self.top_key_name, path)
-        shipper.read(special_name, self.pipeline)
-        responses = self.pipeline.execute()
+        shipper.read(special_name, self.pipeline_no_decode)
+        responses = self.pipeline_no_decode.execute()
         return shipper.interpret_read(responses)
 
 

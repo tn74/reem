@@ -1,7 +1,6 @@
 from threading import Thread
 import rejson
 from .helper_functions import append_to_path
-from logging import Logger
 
 
 class RedisInterface:
