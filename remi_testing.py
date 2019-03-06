@@ -144,3 +144,25 @@ def test_np_read_write():
     print({"nparr": random_array})
     assert compare_equality(server["seq1"].read(), {"nparr": random_array})
     assert compare_equality(server["seq1"]["nparr"].read(), random_array)
+
+
+def test_sequence1():
+    current_time = str(datetime.datetime.now())
+    random_array = np.random.rand(3, 4)
+    test = {}
+    for i in range(20):
+        test["time_{}".format(i)] = current_time
+        test["numpy_{}".format(i)] = random_array
+    subdict = {}
+    test["subpath"] = subdict
+    for k in range(10):
+        subdict["sub_{}".format(k)] = {}
+        subdict = subdict["sub_{}".format(k)]
+    subdict["nparr"] = random_array
+    subdict["time"] = current_time
+    server["test_sequence_1"] = test
+
+    get = server["test_sequence_1"].read()
+    print(get)
+    print(test)
+    # assert compare_equality(test, server["test_sequence_1"].read())
