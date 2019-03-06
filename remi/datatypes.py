@@ -19,9 +19,12 @@ class Writer:
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.interface.client.jsonset(self.metadata_key_name, Path.rootPath(), self.metadata)
 
+        self.skip_metadata_update = False
+
     def send_to_redis(self, path, value):
         logger.info("SET {} {} = {}".format(self.top_key_name, path, value))
-        self.update_metadata(path, value)
+        if not self.skip_metadata_update:
+            self.update_metadata(path, value)
         logger.debug("Metadata: {}".format(self.metadata))
         self.publish_non_serializables(path, value)
         self.publish_serializables(path, value)
@@ -154,6 +157,10 @@ class KeyValueStore:
     def ensure_key_existence(self, key):
         if key not in self.entries.keys():
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
+
+    def set_metadata_write(self, keys, set_value):
+        for k in keys:
+            self.entries[k][0].skip_metadata_update = set_value
 
 
 class Publisher:

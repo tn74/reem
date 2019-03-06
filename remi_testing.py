@@ -166,3 +166,23 @@ def test_sequence1():
     print(get)
     print(test)
     # assert compare_equality(test, server["test_sequence_1"].read())
+
+
+def test_skip_metadata():
+    current_time = str(datetime.datetime.now())
+    random_array = np.random.rand(3, 4)
+    test = {}
+    for i in range(20):
+        test["time_{}".format(i)] = current_time
+        test["numpy_{}".format(i)] = random_array
+    subdict = {}
+    test["subpath"] = subdict
+    for k in range(10):
+        subdict["sub_{}".format(k)] = {}
+        subdict = subdict["sub_{}".format(k)]
+    subdict["nparr"] = random_array
+    subdict["time"] = current_time
+
+    server["test_skip_metadata"] = test
+    server.set_metadata_write(["test_skip_metadata"], True)
+    server["test_skip_metadata"] = test

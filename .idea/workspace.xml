@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85917ed2-e512-4763-a0ac-920650bd8dec" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/NotebookTesting-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/NotebookTesting-checkpoint.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NotebookTesting.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/NotebookTesting.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/remi/datatypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/remi/datatypes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/remi/shippers.py" beforeDir="false" afterPath="$PROJECT_DIR$/remi/shippers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/remi_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/remi_testing.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="remi_testing.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="remi_testing.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/remi_testing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="14" column="83" lean-forward="true" selection-start-line="14" selection-start-column="49" selection-end-line="14" selection-end-column="83" />
+            <state relative-caret-position="477">
+              <caret line="186" column="52" selection-start-line="186" selection-start-column="52" selection-end-line="186" selection-end-column="52" />
               <folding>
                 <element signature="e#0#46#0" expanded="true" />
               </folding>
@@ -41,14 +39,15 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="datatypes.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="datatypes.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/remi/datatypes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="246">
-              <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
+            <state relative-caret-position="361">
+              <caret line="164" lean-forward="true" selection-start-line="164" selection-end-line="164" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
-                <element signature="e#5638#6189#0" />
+                <element signature="e#171#3012#0" />
+                <element signature="e#3033#5725#0" />
                 <element signature="e#7632#7636#0" />
                 <element signature="e#7662#7666#0" />
               </folding>
@@ -116,7 +115,6 @@
     <findStrings>
       <find>pipeline</find>
       <find>__keyspace@0__:</find>
-      <find>print</find>
       <find>Poster</find>
       <find>self.client</find>
       <find>extract_object</find>
@@ -125,6 +123,7 @@
       <find>self.special_paths</find>
       <find>Set</find>
       <find>print(</find>
+      <find>print</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -146,8 +145,8 @@
         <option value="$PROJECT_DIR$/remi/helper_functions.py" />
         <option value="$PROJECT_DIR$/remi/supports.py" />
         <option value="$PROJECT_DIR$/remi/shippers.py" />
-        <option value="$PROJECT_DIR$/remi_testing.py" />
         <option value="$PROJECT_DIR$/remi/datatypes.py" />
+        <option value="$PROJECT_DIR$/remi_testing.py" />
       </list>
     </option>
   </component>
@@ -204,20 +203,24 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.py.test for remi_testing.test_sequence1">
-    <configuration name="py.test for remi_testing.test_kvs_nested_deep_set" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.py.test for remi_testing.test_skip_metadata">
+    <configuration name="helper_functions" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="repo" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/remi" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;remi_testing.test_kvs_nested_deep_set&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/remi/helper_functions.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
     </configuration>
     <configuration name="py.test for remi_testing.test_nested_np_read" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="repo" />
@@ -233,20 +236,6 @@
       <option name="_new_target" value="&quot;remi_testing.test_nested_np_read&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
     </configuration>
-    <configuration name="py.test for remi_testing.test_np_read_write" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="repo" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;remi_testing.test_np_read_write&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-    </configuration>
     <configuration name="py.test for remi_testing.test_sequence1" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="repo" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -259,6 +248,20 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;remi_testing.test_sequence1&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+    </configuration>
+    <configuration name="py.test for remi_testing.test_skip_metadata" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="repo" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;remi_testing.test_skip_metadata&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
     </configuration>
     <configuration name="py.test in remi_testing.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
@@ -276,19 +279,19 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
     <list>
-      <item itemvalue="Python tests.py.test for remi_testing.test_np_read_write" />
-      <item itemvalue="Python tests.py.test for remi_testing.test_kvs_nested_deep_set" />
       <item itemvalue="Python tests.py.test in remi_testing.py" />
       <item itemvalue="Python tests.py.test for remi_testing.test_nested_np_read" />
       <item itemvalue="Python tests.py.test for remi_testing.test_sequence1" />
+      <item itemvalue="Python.helper_functions" />
+      <item itemvalue="Python tests.py.test for remi_testing.test_skip_metadata" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.py.test for remi_testing.test_sequence1" />
+        <item itemvalue="Python tests.py.test for remi_testing.test_skip_metadata" />
         <item itemvalue="Python tests.py.test in remi_testing.py" />
+        <item itemvalue="Python.helper_functions" />
+        <item itemvalue="Python tests.py.test for remi_testing.test_sequence1" />
         <item itemvalue="Python tests.py.test for remi_testing.test_nested_np_read" />
-        <item itemvalue="Python tests.py.test for remi_testing.test_np_read_write" />
-        <item itemvalue="Python tests.py.test for remi_testing.test_kvs_nested_deep_set" />
       </list>
     </recent_temporary>
   </component>
@@ -306,12 +309,6 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="py_test_for_remi_testing_test_nested_np_read - 2019.03.05 at 19h 48m 46s.xml">
-      <configuration name="py.test for remi_testing.test_nested_np_read" configurationId="tests" />
-    </history-entry>
-    <history-entry file="py_test_for_remi_testing_test_nested_np_read - 2019.03.05 at 19h 49m 26s.xml">
-      <configuration name="py.test for remi_testing.test_nested_np_read" configurationId="tests" />
-    </history-entry>
     <history-entry file="py_test_for_remi_testing_test_nested_np_read - 2019.03.05 at 19h 50m 49s.xml">
       <configuration name="py.test for remi_testing.test_nested_np_read" configurationId="tests" />
     </history-entry>
@@ -336,16 +333,22 @@
     <history-entry file="py_test_for_remi_testing_test_sequence1 - 2019.03.06 at 01h 39m 45s.xml">
       <configuration name="py.test for remi_testing.test_sequence1" configurationId="tests" />
     </history-entry>
+    <history-entry file="py_test_in_remi_testing_py - 2019.03.06 at 09h 47m 51s.xml">
+      <configuration name="py.test in remi_testing.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_for_remi_testing_test_skip_metadata - 2019.03.06 at 09h 50m 20s.xml">
+      <configuration name="py.test for remi_testing.test_skip_metadata" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12638889" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12638889" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32900944" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32900944" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32900944" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -408,7 +411,8 @@
           <caret line="52" column="34" lean-forward="true" selection-start-line="52" selection-start-column="34" selection-end-line="52" selection-end-column="34" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#5638#6189#0" />
+            <element signature="e#171#3012#0" />
+            <element signature="e#3033#5725#0" />
             <element signature="e#7632#7636#0" />
             <element signature="e#7662#7666#0" />
           </folding>
@@ -438,7 +442,8 @@
           <caret line="195" lean-forward="true" selection-start-line="195" selection-end-line="195" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#5638#6189#0" />
+            <element signature="e#171#3012#0" />
+            <element signature="e#3033#5725#0" />
             <element signature="e#7632#7636#0" />
             <element signature="e#7662#7666#0" />
           </folding>
@@ -478,7 +483,8 @@
           <caret line="46" column="47" lean-forward="true" selection-start-line="46" selection-start-column="47" selection-end-line="46" selection-end-column="47" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#5638#6189#0" />
+            <element signature="e#171#3012#0" />
+            <element signature="e#3033#5725#0" />
             <element signature="e#7632#7636#0" />
             <element signature="e#7662#7666#0" />
           </folding>
@@ -515,7 +521,8 @@
           <caret line="44" column="41" selection-start-line="44" selection-start-column="41" selection-end-line="44" selection-end-column="41" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#5638#6189#0" />
+            <element signature="e#171#3012#0" />
+            <element signature="e#3033#5725#0" />
             <element signature="e#7632#7636#0" />
             <element signature="e#7662#7666#0" />
           </folding>
@@ -609,16 +616,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/remi/shippers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="372">
-          <caret line="77" column="71" selection-start-line="77" selection-start-column="71" selection-end-line="77" selection-end-column="71" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/remi/supports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
@@ -650,12 +647,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/remi_testing.py">
+    <entry file="file://$PROJECT_DIR$/remi/shippers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="14" column="83" lean-forward="true" selection-start-line="14" selection-start-column="49" selection-end-line="14" selection-end-column="83" />
+        <state relative-caret-position="372">
+          <caret line="77" column="71" selection-start-line="77" selection-start-column="71" selection-end-line="77" selection-end-column="71" />
           <folding>
-            <element signature="e#0#46#0" expanded="true" />
+            <element signature="e#0#35#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -672,13 +669,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/remi/datatypes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="246">
-          <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
+        <state relative-caret-position="361">
+          <caret line="164" lean-forward="true" selection-start-line="164" selection-end-line="164" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#5638#6189#0" />
+            <element signature="e#171#3012#0" />
+            <element signature="e#3033#5725#0" />
             <element signature="e#7632#7636#0" />
             <element signature="e#7662#7666#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/remi_testing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="477">
+          <caret line="186" column="52" selection-start-line="186" selection-start-column="52" selection-end-line="186" selection-end-column="52" />
+          <folding>
+            <element signature="e#0#46#0" expanded="true" />
           </folding>
         </state>
       </provider>
