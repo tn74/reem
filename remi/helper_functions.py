@@ -1,6 +1,22 @@
 from rejson import Path
 from functools import reduce
-from typing import List, Set, Dict
+from typing import List, Dict, Iterable
+import json
+import logging
+
+logger = logging.getLogger("remi.helper_functions")
+
+
+def append_to_path(existing, addition):
+    if existing == Path.rootPath():
+        return Path.rootPath() + addition
+    return "{}.{}".format(existing, addition)
+
+
+def bytes_to_dict(by):
+    logger.debug("Received: {}".format(by))
+    return json.loads(by.decode("utf-8"))
+
 
 def path_to_key_sequence(path: str):
     if path == Path.rootPath():
@@ -39,11 +55,11 @@ def extract_object(dictionary: Dict, key_sequence: List[str]):
     return ret
 
 
-def filter_paths_by_prefix(all_paths: set[str], prefix: str):
+def filter_paths_by_prefix(all_paths: Iterable[str], prefix: str):
     return [path for path in all_paths if path[:len(prefix)] == prefix]
 
 
-def insert_into_dictionary(dictionary: dict, path: str, value):
+def insert_into_dictionary(dictionary: Dict, path: str, value):
     key_sequence = path_to_key_sequence(path)
     parent = dictionary
     for key in key_sequence[:-1]:
@@ -53,7 +69,7 @@ def insert_into_dictionary(dictionary: dict, path: str, value):
     parent[key_sequence[-1]] = value
 
 
-def get_updates_for_special_paths(set_path: str, set_value, sp_to_label: Dict, label_to_ship: Dict[]):
+def get_special_path_updates(set_path: str, set_value, sp_to_label: Dict, label_to_ship: Dict):
     """
     Get info on how to update sp_to_label according to the user uploading `set_value` in location `set_path`
     :param set_path: ".key1.key0" kind of string indicating path within parent that set_value is supposed to be set
@@ -79,8 +95,9 @@ def get_updates_for_special_paths(set_path: str, set_value, sp_to_label: Dict, l
             deletions.add ( set_path )
         for k, v in set_value.items():
             child_path = "{}.{}".format(set_path, k)
-            child_add, child_del = get_updates_for_special_path_to_label(child_path, v, sp_to_label, label_to_ship)
+            child_add, child_del = get_special_path_updates(child_path, v, sp_to_label, label_to_ship)
             additions = additions.union(child_add)
             deletions = deletions.union(child_del)
 
     return additions, deletions
+

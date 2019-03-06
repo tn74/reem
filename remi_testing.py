@@ -1,8 +1,17 @@
 from remi import datatypes, shippers, supports
 import numpy as np
 import time
+import logging
+import datetime
+
+# Logging Configuration
+FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger("remi.datatypes")
+logger.setLevel(logging.DEBUG)
 
 
+# Testing Help
 intf = supports.RedisInterface(host='localhost', shippers=[shippers.NumpyHandler()])
 intf.initialize()
 
@@ -16,6 +25,10 @@ nested_data = {
         'rebounds': 20
     }
 }
+
+
+def compare_equality(d1, d2):
+    return "{}".format(d1) == "{}".format(d2)
 
 
 # ---------------------- Simple Set Tests ----------------------
@@ -34,26 +47,31 @@ def test_nested_root_set():
 
 def test_deeper_set():
     writer = datatypes.Writer("nested_set", intf)
-    writer.send_to_redis(".", nested_data)
-    writer.send_to_redis(".second_set", nested_data)
+    nested_data["stats"]["points"] = nested_data["stats"]["points"] + 5
+    writer.send_to_redis(".stats", nested_data["stats"])
 
 
 def test_flat_root_read():
+    test_flat_root_set()
     reader = datatypes.Reader("test_set", intf)
     ret = reader.read_from_redis(".")
-    print("Ret: {}".format(ret))
+    assert compare_equality(ret, flat_data)
 
 
 def test_nested_root_read():
+    test_nested_root_set()
     reader = datatypes.Reader("nested_set", intf)
     ret = reader.read_from_redis(".")
-    print("Ret: {}".format(ret))
+    assert compare_equality(ret, nested_data)
 
 
 def test_deeper_read():
+    test_deeper_set()
     reader = datatypes.Reader("nested_set", intf)
-    ret = reader.read_from_redis(".second_set")
-    print("Ret: {}".format(ret))
+    ret = reader.read_from_redis(".stats")
+    assert compare_equality(ret, nested_data["stats"])  # Pairs with test_deeper_set in which nested_data was set under this key
+
+    # print("Ret: {}".format(ret))
 
 # ---------------------- Nonnative Object Tests ----------------------
 
@@ -97,3 +115,30 @@ def test_sequence_1():
     print(reader.read_from_redis("."))
     print(reader.read_from_redis(".nparr"))
 
+
+# ------------------------ Key Value Store Testing -------------------------
+server = datatypes.KeyValueStore(intf)
+
+
+def test_kvs_flat():
+    server["flat_data"] = flat_data
+    assert compare_equality(server["flat_data"].read(), flat_data)
+
+
+def test_kvs_nested_set():
+    server["nested_data"] = nested_data
+    assert compare_equality(server["nested_data"].read(), nested_data)
+
+
+def test_kvs_nested_deep_set():
+    current_time = str(datetime.datetime.now())
+    server["nested_data"]["deep_set"] = current_time
+    assert compare_equality(server["nested_data"]["deep_set"].read(), current_time)
+
+
+def test_np_read_write():
+    random_array = np.random.rand(3, 4)
+    # random_array = nparr
+    server["seq1"] = {"nparr": random_array}
+    assert compare_equality(server["seq1"].read(), {"nparr": random_array})
+    assert compare_equality(server["seq1"]["nparr"].read(), random_array)

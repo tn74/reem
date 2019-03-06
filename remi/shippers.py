@@ -61,7 +61,7 @@ class NumpyHandler(SpecialCaseHandler):
     def write(self, key, value, client):
         print("Setting Key: {}".format(key))
         print(value.dtype)
-        client.hset(key, "arr", value.tostring())
+        client.hset(key, "arr", value.tobytes())
         client.hset(key, "dtype", str(value.dtype))
 
     def get_label(self):

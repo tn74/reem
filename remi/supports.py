@@ -1,8 +1,10 @@
 from threading import Thread
 import rejson
+from .helper_functions import append_to_path
+from logging import Logger
 
 
-class RedisInterface():
+class RedisInterface:
     def __init__(self, host='localhost', shippers=[]):
         """
         Define a connection to redis with certain translators
@@ -12,6 +14,7 @@ class RedisInterface():
         self.hostname = host
         self.shippers = shippers
         self.client = rejson.Client(host=host, decode_responses=True)
+        self.client_no_decode = rejson.Client(host=host)
         self.metadata_listener = MetadataListener(self)
 
         self.label_to_shipper = {}
@@ -47,8 +50,28 @@ class MetadataListener(Thread):
                 self.listeners[channel].pull_metadata = True
 
 
-### Naming
+class PathHandler:
+    def __init__(self, writer, reader, initial_path):
+        self.writer = writer
+        self.reader = reader
+        self.path = initial_path
+
+    def __getitem__(self, item):
+        assert type(item) == str
+        self.path = append_to_path(self.path, item)
+        return self
+
+    def __setitem__(self, instance, value):
+        assert type(instance) == str
+        self.path = append_to_path(self.path, instance)
+        self.writer.send_to_redis(self.path, value)
+
+    def read(self):
+        return self.reader.read_from_redis(self.path)
+
+
 """
+Naming:
 Rapid Extendable Middleware
 Redis Medium Extendable Middleware
 Redis Robotic Communication

@@ -1,4 +1,9 @@
 from .helper_functions import *
+from .supports import PathHandler
+from rejson import Path
+import logging
+
+logger = logging.getLogger("remi.datatypes")
 
 
 class Writer:
@@ -9,15 +14,15 @@ class Writer:
         self.separator = "&&&&"
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.sp_to_label = self.metadata["special_paths"]
-        self.update_metadata_flag = False
         self.pipeline = self.interface.client.pipeline()
 
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.interface.client.jsonset(self.metadata_key_name, Path.rootPath(), self.metadata)
 
     def send_to_redis(self, path, value):
+        logger.info("SET {} {} = {}".format(self.top_key_name, path, value))
         self.update_metadata(path, value)
-        # print("Metadata: {}".format(self.metadata))
+        logger.debug("Metadata: {}".format(self.metadata))
         self.publish_non_serializables(path, value)
         self.publish_serializables(path, value)
         self.pipeline.execute()
@@ -25,37 +30,17 @@ class Writer:
     def update_metadata(self, path, value):
         if path == Path.rootPath():
             path = ""
-        self.update_metadata_flag = False
-        self.update_special_paths(path, value)  # Update the local dictionary we have of special paths
 
-        if self.update_metadata_flag:
+        adds, dels = get_special_path_updates(path, value, self.sp_to_label, self.interface.label_to_shipper)
+        for path in dels:
+            self.pipeline.delete("{}.{}".format(self.top_key_name, path))
+            self.sp_to_label.pop(path)
+        for path, label in adds:
+            self.sp_to_label[path] = label
+        if len(adds) > 0:
             self.pipeline.jsonset(self.metadata_key_name, ".special_paths", self.sp_to_label)
             channel, message = "__keyspace@0__:{}".format(self.metadata_key_name), "set"
             self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
-
-    def update_special_paths(self, path, value):
-        if type(value) is not dict:  # Not a dictionary so put this thing in redis
-            # If this path is something we have seen, check if the current handler is correct
-            if path in self.sp_to_label.keys():
-                if self.sp_to_label[path].check_fit(value):
-                    return
-
-            # If it is not correctly set, find and set the correct one if it exists
-            self.update_metadata_flag = True
-            for ship in self.interface.shippers:
-                if ship.check_fit(value):
-                    self.sp_to_label[path] = ship.get_label()
-                    return
-
-            # Return if no special case handlers assumed - assumed it works with json normally
-            return
-
-        else:  # Recurse finding if there are special paths to worry about
-            if path in self.sp_to_label.keys():
-                self.sp_to_label.pop(path)
-                self.pipeline.delete("{}{}".format(self.top_key_name, path))
-            for k, v in value.items():
-                self.update_metadata("{}.{}".format(path, k), v)
 
     def publish_non_serializables(self, path, value):
         publish_paths = list(filter(lambda special_path: path == special_path[:len(path)], self.sp_to_label.keys()))
@@ -73,7 +58,6 @@ class Writer:
             intrusive_paths = [p for p in self.sp_to_label.keys() if p[:len(path)] == path]
             intrusive_paths = [path_to_key_sequence(p[len(path) - 1:]) for p in intrusive_paths]
             excised_copy = copy_dictionary_without_paths(value, intrusive_paths)
-            # print("Excised Copy: {}".format(excised_copy))
             self.pipeline.jsonset(self.top_key_name, path, excised_copy)
         elif path not in self.sp_to_label.keys():
             self.pipeline.jsonset(self.top_key_name, path, value)
@@ -100,13 +84,15 @@ class Reader:
         :param path: path inside the json
         :return:
         """
-        self.update_metadata(path)
-        if path in self.sp_to_label:
-            return self.handle_non_json_path(path)
+        logger.info("GET {} {}".format(self.top_key_name, path))
+        self.update_metadata()
+        logger.debug("GET metadata: {}".format(self.metadata))
+        if path in self.sp_to_label.keys():
+            return self.pull_special_path(path)
         self.queue_reads(path)
         return self.build_dictionary(path)
 
-    def update_metadata(self, path):
+    def update_metadata(self):
         if self.pull_metadata:
             self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
             self.sp_to_label = self.metadata["special_paths"]
@@ -115,6 +101,7 @@ class Reader:
         self.pull_metadata = False
 
     def queue_reads(self, path):
+        # print("Queueing Reads for : {}".format(path))
         self.pipeline.jsonget(self.top_key_name, path)
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
         for path in special_paths:
@@ -122,15 +109,18 @@ class Reader:
             self.interface.label_to_shipper[self.sp_to_label[path]].read(special_name, self.pipeline)
 
     def build_dictionary(self, path):
+        if path == Path.rootPath():
+            path = ""
         responses = self.pipeline.execute()
         return_val = responses[0]
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
-        for i, path in enumerate(special_paths):
-            value = self.interface.label_to_shipper[self.sp_to_label[path]].interpret_read(responses[i + 1: i + 2])
-            insert_into_dictionary(return_val, path, value)
+        for i, sp in enumerate(special_paths):
+            value = self.interface.label_to_shipper[self.sp_to_label[sp]].interpret_read(responses[i + 1: i + 2])
+            insertion_path = sp[len(path):]
+            insert_into_dictionary(return_val, insertion_path, value)
         return return_val
 
-    def handle_non_json_path(self, path):
+    def pull_special_path(self, path):
         shipper = self.interface.label_to_shipper[self.sp_to_label[path]]
         special_name = "{}{}".format(self.top_key_name, path)
         shipper.read(special_name, self.pipeline)
@@ -138,9 +128,32 @@ class Reader:
         return shipper.interpret_read(responses)
 
 
-class TPublisher:
+class KeyValueStore:
+    def __init__(self, interface):
+        self.interface = interface
+        self.entries = {}
+
+    def __setitem__(self, key, value):
+        assert type(value) == dict
+        assert type(key) == str
+        self.ensure_key_existence(key)
+        writer, reader = self.entries[key]
+        writer.send_to_redis(Path.rootPath(), value)
+
+    def __getitem__(self, item):
+        assert type(item) == str
+        self.ensure_key_existence(item)
+        writer, reader = self.entries[item]
+        return PathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
+
+    def ensure_key_existence(self, key):
+        if key not in self.entries.keys():
+            self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
+
+
+class Publisher:
     pass
 
 
-class TSubscriber:
+class Subscriber:
     pass
