@@ -58,14 +58,14 @@ class Writer:
 
     def publish_serializables(self, path, value):
         if type(value) is dict:
-            intrusive_paths = [p for p in self.sp_to_label.keys() if p[:len(path)] == path]
+            intrusive_paths = [p for p in self.sp_to_label if p[:len(path)] == path]
             intrusive_paths = [path_to_key_sequence(p[len(path) - 1:]) for p in intrusive_paths]
             # print(self.sp_to_label.keys())
             # print(intrusive_paths)
             excised_copy = copy_dictionary_without_paths(value, intrusive_paths)
             # print("Excised Copy; {}".format(excised_copy))
             self.pipeline.jsonset(self.top_key_name, path, excised_copy)
-        elif path not in self.sp_to_label.keys():
+        elif path not in self.sp_to_label:
             self.pipeline.jsonset(self.top_key_name, path, value)
 
 
