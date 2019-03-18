@@ -163,13 +163,21 @@ class KeyValueStore:
             self.entries[k][0].skip_metadata_update = set_value
 
 
-class Publisher(KeyValueStore):
-    def __setitem__(self, key, value):
-        pass
+class Publisher(Writer):
+    def __init__(self, top_key_name, interface):
+        super().__init__(top_key_name, interface)
+        self.channel_name = "__keyspace@0__:{}".format(top_key_name)
+        self.message = "Publish"
 
-    def __getitem__(self, item):
-        pass
-
+    def send_to_redis(self, path, value):
+        logger.info("SET {} {} = {}".format(self.top_key_name, path, value))
+        if not self.skip_metadata_update:
+            self.update_metadata(path, value)
+        logger.debug("Metadata: {}".format(self.metadata))
+        self.publish_non_serializables(path, value)
+        self.publish_serializables(path, value)
+        self.pipeline.publish(self.channel_name, self.message)  # Only addition from Writer Class
+        self.pipeline.execute()
 
 
 class Subscriber:
