@@ -163,8 +163,13 @@ class KeyValueStore:
             self.entries[k][0].skip_metadata_update = set_value
 
 
-class Publisher:
-    pass
+class Publisher(KeyValueStore):
+    def __setitem__(self, key, value):
+        pass
+
+    def __getitem__(self, item):
+        pass
+
 
 
 class Subscriber:
