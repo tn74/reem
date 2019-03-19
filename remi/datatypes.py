@@ -1,7 +1,9 @@
 from .helper_functions import *
-from .supports import PathHandler
-from rejson import Path
+from .supports import PathHandler, ChannelListener
+from rejson import Path, Client
 import logging
+from threading import Thread
+from queue import Queue
 
 logger = logging.getLogger("remi.datatypes")
 
@@ -166,7 +168,6 @@ class KeyValueStore:
 class Publisher(Writer):
     def __init__(self, top_key_name, interface):
         super().__init__(top_key_name, interface)
-        self.channel_name = "__keyspace@0__:{}".format(top_key_name)
         self.message = "Publish"
 
     def send_to_redis(self, path, value):
@@ -176,9 +177,39 @@ class Publisher(Writer):
         logger.debug("Metadata: {}".format(self.metadata))
         self.publish_non_serializables(path, value)
         self.publish_serializables(path, value)
-        self.pipeline.publish(self.channel_name, self.message)  # Only addition from Writer Class
+
+        # Addition to Writer class
+        if path == Path.rootPath():
+            path = ""
+        channel_name = "__pubspace@0__:{}{}".format(self.top_key_name, path)
+        self.pipeline.publish(channel_name, self.message)
+
+        # Resume Writer Class
         self.pipeline.execute()
 
 
-class Subscriber:
-    pass
+class PassiveSubscriber():
+    def __init__(self, channel_name, interface, callback_function, kwargs):
+        self.listening_channel = '__pubspace@0__:{}'.format(channel_name)
+        self.listener = ChannelListener(interface, self.listening_channel, callback_function, kwargs)
+
+    def listen(self):
+        self.listener.start()
+
+
+class ActiveSubscriber(Reader):
+    def __init__(self, top_key_name, interface):
+        super().__init__(top_key_name, interface)
+        self.local_copy = {}
+        self.passive_subscriber = PassiveSubscriber(top_key_name, interface, self.update_local_copy, {})
+        self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
+
+    def update_local_copy(self, channel, message):
+        if message is not "Publish":
+            return
+        if channel == self.prefix:
+            self.local_copy = self.read_from_redis(Path.rootPath())
+        path = channel[len(self.prefix):]
+        insert_into_dictionary(self.local_copy, path, self.read_from_redis(path))
+
+

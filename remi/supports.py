@@ -45,7 +45,7 @@ class MetadataListener(Thread):
     def run(self):
         for item in self.pubsub.listen():
             channel = item['channel'].decode("utf_8")
-            if channel in self.listeners.keys():
+            if channel in self.listeners:
                 self.listeners[channel].pull_metadata = True
 
 
@@ -69,7 +69,20 @@ class PathHandler:
         return self.reader.read_from_redis(self.path)
 
 
+class ChannelListener(Thread):
+    def __init__(self, interface, channel_name, callback_function, kwargs):
+        self.client = rejson.Client(host=interface.hostname)
+        self.pubsub = self.client.pubsub()
+        self.pubsub.psubscribe([channel_name])
+        self.callback_function = callback_function
+        self.kwargs = kwargs
+        super().__init__()
 
+    def run(self):
+        for item in self.pubsub.listen():
+            channel = item['channel'].decode("utf_8")
+            message = item['message']
+            self.callback_function(channel=channel, message=message, **self.kwargs)
 
 """
 Naming:
