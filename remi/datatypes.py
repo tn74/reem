@@ -212,4 +212,5 @@ class ActiveSubscriber(Reader):
         path = channel[len(self.prefix):]
         insert_into_dictionary(self.local_copy, path, self.read_from_redis(path))
 
-
+    def listen(self):
+        self.passive_subscriber.listen()

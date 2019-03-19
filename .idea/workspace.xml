@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="85917ed2-e512-4763-a0ac-920650bd8dec" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/remi/datatypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/remi/datatypes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/remi/supports.py" beforeDir="false" afterPath="$PROJECT_DIR$/remi/supports.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -28,14 +27,15 @@
       <file leaf-file-name="datatypes.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/remi/datatypes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="598">
-              <caret line="211" column="66" selection-start-line="211" selection-start-column="66" selection-end-line="211" selection-end-column="66" />
+            <state relative-caret-position="570">
+              <caret line="212" column="81" selection-start-line="212" selection-start-column="81" selection-end-line="212" selection-end-column="81" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
                 <element signature="e#171#3230#0" />
                 <element signature="e#3251#6059#0" />
                 <element signature="e#6087#6973#0" />
                 <element signature="e#6997#7327#0" />
+                <element signature="e#7799#8446#0" />
               </folding>
             </state>
           </provider>
@@ -389,6 +389,7 @@
             <element signature="e#3251#6059#0" />
             <element signature="e#6087#6973#0" />
             <element signature="e#6997#7327#0" />
+            <element signature="e#7799#8446#0" />
           </folding>
         </state>
       </provider>
@@ -423,6 +424,7 @@
             <element signature="e#3251#6059#0" />
             <element signature="e#6087#6973#0" />
             <element signature="e#6997#7327#0" />
+            <element signature="e#7799#8446#0" />
           </folding>
         </state>
       </provider>
@@ -503,6 +505,7 @@
             <element signature="e#3251#6059#0" />
             <element signature="e#6087#6973#0" />
             <element signature="e#6997#7327#0" />
+            <element signature="e#7799#8446#0" />
           </folding>
         </state>
       </provider>
@@ -534,6 +537,7 @@
             <element signature="e#3251#6059#0" />
             <element signature="e#6087#6973#0" />
             <element signature="e#6997#7327#0" />
+            <element signature="e#7799#8446#0" />
           </folding>
         </state>
       </provider>
@@ -575,6 +579,7 @@
             <element signature="e#3251#6059#0" />
             <element signature="e#6087#6973#0" />
             <element signature="e#6997#7327#0" />
+            <element signature="e#7799#8446#0" />
           </folding>
         </state>
       </provider>
@@ -613,6 +618,7 @@
             <element signature="e#3251#6059#0" />
             <element signature="e#6087#6973#0" />
             <element signature="e#6997#7327#0" />
+            <element signature="e#7799#8446#0" />
           </folding>
         </state>
       </provider>
@@ -758,14 +764,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/remi/datatypes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="598">
-          <caret line="211" column="66" selection-start-line="211" selection-start-column="66" selection-end-line="211" selection-end-column="66" />
+        <state relative-caret-position="570">
+          <caret line="212" column="81" selection-start-line="212" selection-start-column="81" selection-end-line="212" selection-end-column="81" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
             <element signature="e#171#3230#0" />
             <element signature="e#3251#6059#0" />
             <element signature="e#6087#6973#0" />
             <element signature="e#6997#7327#0" />
+            <element signature="e#7799#8446#0" />
           </folding>
         </state>
       </provider>
