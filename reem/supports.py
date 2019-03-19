@@ -78,10 +78,15 @@ class ChannelListener(Thread):
         self.pubsub.psubscribe([channel_name])
         self.callback_function = callback_function
         self.kwargs = kwargs
+        self.first_item_seen = False
         super().__init__()
 
     def run(self):
         for item in self.pubsub.listen():
+            # First Item is a generic message that we need to get rid of
+            if not self.first_item_seen:
+                self.first_item_seen = True
+                continue
             channel = item['channel'].decode("utf_8")
             message = item['data']
             self.callback_function(channel=channel, message=message, **self.kwargs)

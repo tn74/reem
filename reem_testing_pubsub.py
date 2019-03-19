@@ -24,17 +24,38 @@ interface = RedisInterface(host="localhost", shippers=[shippers.NumpyHandler()])
 interface.initialize()
 
 pspace = PublishSpace(interface)
+active = ActiveSubscriber("channel", interface)
+active.listen()
 
 
-def test_basic():
-    active = ActiveSubscriber("test_basic", interface)
-    active.listen()
+def callback_1(channel, message, store_list):
+    store_list.append( (channel, message) )
 
-    pspace["test_basic"] = flat_data
+
+def test_passive_basic():
+    storage = []
+    passive = PassiveSubscriber(channel_name="channel",
+                                interface=interface,
+                                callback_function=callback_1,
+                                kwargs={"store_list": storage})
+    passive.listen()
+    time.sleep(0.2)
+    print(storage)
+    pspace["channel"] = flat_data
+    time.sleep(.01)
+    print(storage)
+    assert len(storage) > 0
+
+
+def test_active_update_basic():
+    pspace["channel"] = flat_data
     time.sleep(.01)
     assert str(active.read_root()) == str(flat_data)
 
-    pspace["test_basic"]["subkey"] = flat_data
+
+def test_active_update_sequence():
+    test_active_update_basic()
+    pspace["channel"]["subkey"] = flat_data
     time.sleep(.01)
     assert str(active.read_root()) != str(flat_data)
     assert str(active["subkey"]) == str(flat_data)

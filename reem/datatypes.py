@@ -65,6 +65,7 @@ class Writer:
         elif path not in self.sp_to_label:
             self.pipeline.jsonset(self.top_key_name, path, value)
 
+
 class Reader:
     def __init__(self, top_key_name, interface):
         self.interface = interface
