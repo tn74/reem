@@ -65,6 +65,8 @@ class PathHandler:
         self.path = append_to_path(self.path, instance)
         self.writer.send_to_redis(self.path, value)
 
+
+class ReadablePathHandler(PathHandler):
     def read(self):
         return self.reader.read_from_redis(self.path)
 
@@ -93,4 +95,6 @@ Redis Robotic Communication
 Redis Extendable Middleware
 
 Extendable Efficient Redis Middleware
+Redis Extendable Efficient Middleware
+reem
 """

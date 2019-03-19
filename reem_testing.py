@@ -1,4 +1,4 @@
-from remi import datatypes, shippers, supports
+from reem import datatypes, shippers, supports
 import numpy as np
 import time
 import logging
@@ -97,21 +97,17 @@ def test_sequence_1():
     reader = datatypes.Reader("Sequence1", intf)
 
     writer.send_to_redis(".", flat_data)
-    time.sleep(0.5)
     print("1. Full Data: {}".format(reader.read_from_redis(".")))
 
     writer.send_to_redis(".", nested_data)
-    time.sleep(0.5)
     print("2. Full Data: {}".format(reader.read_from_redis(".")))
 
     writer.send_to_redis(".nparr", nparr)
-    time.sleep(0.5)
     print("3. Full Data: {}".format(reader.read_from_redis(".")))
     print("3. NpArr: {}".format(reader.read_from_redis(".nparr")))
     print("3. Stats: {}".format(reader.read_from_redis(".stats")))
 
     writer.send_to_redis(".nparr", {"arr": nparr})
-    time.sleep(0.5)
     print(reader.read_from_redis("."))
     print(reader.read_from_redis(".nparr"))
 
@@ -201,6 +197,7 @@ def test_pubsub():
     active = datatypes.ActiveSubscriber("test_pubsub", intf)
     active.listen()
     p.send_to_redis(".", flat_data)
+    p.send_to_redis(".subkey", nparr)
     time.sleep(1)
     logger.info(active.read_root())
     logger.info(active["points"])

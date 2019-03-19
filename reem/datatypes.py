@@ -1,5 +1,5 @@
 from .helper_functions import *
-from .supports import PathHandler, ChannelListener
+from .supports import ReadablePathHandler, PathHandler, ChannelListener
 from rejson import Path, Client
 import logging
 
@@ -60,10 +60,7 @@ class Writer:
         if type(value) is dict:
             intrusive_paths = [p for p in self.sp_to_label if p[:len(path)] == path]
             intrusive_paths = [path_to_key_sequence(p[len(path) - 1:]) for p in intrusive_paths]
-            # print(self.sp_to_label.keys())
-            # print(intrusive_paths)
             excised_copy = copy_dictionary_without_paths(value, intrusive_paths)
-            # print("Excised Copy; {}".format(excised_copy))
             self.pipeline.jsonset(self.top_key_name, path, excised_copy)
         elif path not in self.sp_to_label:
             self.pipeline.jsonset(self.top_key_name, path, value)
@@ -96,7 +93,7 @@ class Reader:
         self.update_metadata()
         logger.debug("GET metadata: {}".format(self.metadata))
 
-        if path in self.sp_to_label.keys():
+        if path in self.sp_to_label:
             return self.pull_special_path(path)
         self.queue_reads(path)
         return self.build_dictionary(path)
@@ -152,10 +149,10 @@ class KeyValueStore:
         assert type(item) == str
         self.ensure_key_existence(item)
         writer, reader = self.entries[item]
-        return PathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
+        return ReadablePathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
 
     def ensure_key_existence(self, key):
-        if key not in self.entries.keys():
+        if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
 
     def set_metadata_write(self, keys, set_value):
@@ -187,7 +184,19 @@ class Publisher(Writer):
         self.pipeline.execute()
 
 
-class PassiveSubscriber():
+class PublishSpace(KeyValueStore):
+    def __getitem__(self, item):
+        assert type(item) == str
+        self.ensure_key_existence(item)
+        writer, reader = self.entries[item]
+        return PathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
+
+    def ensure_key_existence(self, key):
+        if key not in self.entries:
+            self.entries[key] = (Publisher(key, self.interface), None)
+
+
+class PassiveSubscriber:
     def __init__(self, channel_name, interface, callback_function, kwargs):
         self.listening_channel = '__pubspace@0__:{}'.format(channel_name)
         self.listener = ChannelListener(interface, self.listening_channel, callback_function, kwargs)
@@ -201,7 +210,7 @@ class ActiveSubscriber(Reader):
     def __init__(self, top_key_name, interface):
         super().__init__(top_key_name, interface)
         self.local_copy = {}
-        self.passive_subscriber = PassiveSubscriber(top_key_name, interface, self.update_local_copy, {})
+        self.passive_subscriber = PassiveSubscriber(top_key_name + "*", interface, self.update_local_copy, {})
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
