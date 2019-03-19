@@ -65,7 +65,6 @@ class Writer:
         elif path not in self.sp_to_label:
             self.pipeline.jsonset(self.top_key_name, path, value)
 
-
 class Reader:
     def __init__(self, top_key_name, interface):
         self.interface = interface
@@ -139,8 +138,8 @@ class KeyValueStore:
         self.entries = {}
 
     def __setitem__(self, key, value):
-        assert type(value) == dict
-        assert type(key) == str
+        assert type(value) == dict, "Top level entries must be json"
+        assert type(key) == str, "Key Names must be strings"
         self.ensure_key_existence(key)
         writer, reader = self.entries[key]
         writer.send_to_redis(Path.rootPath(), value)
@@ -238,5 +237,5 @@ class ActiveSubscriber(Reader):
         return self.local_copy
 
     def __getitem__(self, item):
-        assert type(item) == str
+        assert type(item) == str, "Key name must be string"
         return self.local_copy[item]

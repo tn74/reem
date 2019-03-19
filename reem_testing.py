@@ -3,6 +3,7 @@ import numpy as np
 import time
 import logging
 import datetime
+import testing
 
 # Logging Configuration
 FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"
@@ -15,7 +16,7 @@ logger.setLevel(logging.DEBUG)
 intf = supports.RedisInterface(host='localhost', shippers=[shippers.NumpyHandler()])
 intf.initialize()
 
-flat_data = {'points': 30, 'rebounds': 20}
+flat_data = testing.get_flat_data()
 
 nested_data = {
     'name': 'Jack',
@@ -76,7 +77,7 @@ def test_deeper_read():
 # ---------------------- Nonnative Object Tests ----------------------
 
 
-nparr = np.arange(10)
+nparr = np.random.rand(3, 4)
 
 
 def test_nested_np():
@@ -197,8 +198,11 @@ def test_pubsub():
     active = datatypes.ActiveSubscriber("test_pubsub", intf)
     active.listen()
     p.send_to_redis(".", flat_data)
+    time.sleep(1)
+    assert (str(active.read_root()) == str(flat_data))
+    assert flat_data["number"] == active["number"]
+
     p.send_to_redis(".subkey", nparr)
     time.sleep(1)
-    logger.info(active.read_root())
-    logger.info(active["points"])
+    assert np.array_equal(active["subkey"], nparr)
 

@@ -1,7 +1,8 @@
 import datetime
 import rejson
 import numpy as np
-
+import random
+import string
 
 rejson_client = rejson.Client(host='localhost', port=6379, decode_responses=True)
 
@@ -39,7 +40,6 @@ def multitrial_time_test(func, kwargs, iterations=3):
     return times
 
 
-flat_data = {'points': 30, 'rebounds': 20}
 nested_data = {
     'name': 'Jack',
     'age': 26,
@@ -48,6 +48,23 @@ nested_data = {
         'rebounds': 20
     }
 }
+
+
+def get_flat_data():
+    flat_data = {}
+    flat_data["number"] = random.randint(0, 100000)
+    flat_data["string"] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    return flat_data
+
+
+def get_nested_data():
+    data = {
+        "flat": get_flat_data(),
+        "flat_nested": {
+            "nested": get_flat_data()
+        }
+    }
+    return data
 
 
 def sample_data():
