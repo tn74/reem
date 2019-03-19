@@ -7,7 +7,7 @@ import datetime
 # Logging Configuration
 FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT)
-logger = logging.getLogger("remi.datatypes")
+logger = logging.getLogger("reem.datatypes")
 logger.setLevel(logging.DEBUG)
 
 
@@ -186,3 +186,22 @@ def test_skip_metadata():
     server["test_skip_metadata"] = test
     server.set_metadata_write(["test_skip_metadata"], True)
     server["test_skip_metadata"] = test
+
+
+### Publish Subscribe Testing ###
+
+def test_publish():
+    p = datatypes.Publisher("test_publish", intf)
+    p.send_to_redis(".", flat_data)
+    p.send_to_redis(".subkey", nparr)
+
+
+def test_pubsub():
+    p = datatypes.Publisher("test_pubsub", intf)
+    active = datatypes.ActiveSubscriber("test_pubsub", intf)
+    active.listen()
+    p.send_to_redis(".", flat_data)
+    time.sleep(1)
+    logger.info(active.read_root())
+    logger.info(active["points"])
+

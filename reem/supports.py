@@ -81,7 +81,7 @@ class ChannelListener(Thread):
     def run(self):
         for item in self.pubsub.listen():
             channel = item['channel'].decode("utf_8")
-            message = item['message']
+            message = item['data']
             self.callback_function(channel=channel, message=message, **self.kwargs)
 
 """
@@ -91,4 +91,6 @@ Redis Medium Extendable Middleware
 Redis Robotic Communication
 
 Redis Extendable Middleware
+
+Extendable Efficient Redis Middleware
 """

@@ -2,10 +2,8 @@ from .helper_functions import *
 from .supports import PathHandler, ChannelListener
 from rejson import Path, Client
 import logging
-from threading import Thread
-from queue import Queue
 
-logger = logging.getLogger("remi.datatypes")
+logger = logging.getLogger("reem.datatypes")
 
 
 class Writer:
@@ -182,6 +180,7 @@ class Publisher(Writer):
         if path == Path.rootPath():
             path = ""
         channel_name = "__pubspace@0__:{}{}".format(self.top_key_name, path)
+
         self.pipeline.publish(channel_name, self.message)
 
         # Resume Writer Class
@@ -192,6 +191,7 @@ class PassiveSubscriber():
     def __init__(self, channel_name, interface, callback_function, kwargs):
         self.listening_channel = '__pubspace@0__:{}'.format(channel_name)
         self.listener = ChannelListener(interface, self.listening_channel, callback_function, kwargs)
+        self.listener.setDaemon(True)
 
     def listen(self):
         self.listener.start()
@@ -205,12 +205,29 @@ class ActiveSubscriber(Reader):
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
-        if message is not "Publish":
+        logger.debug("Update Local Copy: Channel = {}, Prefix = {}, Message = {}".format(channel, self.prefix, message))
+        try:
+            message = message.decode("utf-8")
+        except Exception as e:
             return
+        if message != "Publish":
+            return
+
         if channel == self.prefix:
             self.local_copy = self.read_from_redis(Path.rootPath())
+            return
         path = channel[len(self.prefix):]
-        insert_into_dictionary(self.local_copy, path, self.read_from_redis(path))
+
+        redis_value = self.read_from_redis(path)
+        logger.debug("Active Subscriber Read from Redis: {}".format(redis_value))
+        insert_into_dictionary(self.local_copy, path, redis_value)
 
     def listen(self):
         self.passive_subscriber.listen()
+
+    def read_root(self):
+        return self.local_copy
+
+    def __getitem__(self, item):
+        assert type(item) == str
+        return self.local_copy[item]

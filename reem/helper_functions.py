@@ -4,7 +4,7 @@ from typing import List, Dict, Iterable
 import json
 import logging
 
-logger = logging.getLogger("remi.helper_functions")
+logger = logging.getLogger("reem.helper_functions")
 
 
 def append_to_path(existing, addition):
