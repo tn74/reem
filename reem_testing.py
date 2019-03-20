@@ -96,7 +96,7 @@ def test_nested_np_read():
 def test_sequence_1():
     writer = datatypes.Writer("Sequence1", intf)
     reader = datatypes.Reader("Sequence1", intf)
-
+    writer.do_metadata_update = True
     writer.send_to_redis(".", flat_data)
     print("1. Full Data: {}".format(reader.read_from_redis(".")))
 
@@ -180,9 +180,15 @@ def test_skip_metadata():
     subdict["nparr"] = random_array
     subdict["time"] = current_time
 
-    server["test_skip_metadata"] = test
-    server.set_metadata_write(["test_skip_metadata"], True)
-    server["test_skip_metadata"] = test
+    server["test_skip_metadata"] = test  # First time posting to key
+    server.set_metadata_write(True)
+    server["test_skip_metadata"]["newkey1"] = test
+    server.set_metadata_write(False)
+    try:
+        server["test_skip_metadata"]["newkey2"] = test
+        assert False
+    except TypeError:
+        pass
 
 
 ### Publish Subscribe Testing ###
@@ -190,6 +196,7 @@ def test_skip_metadata():
 def test_publish():
     p = datatypes.Publisher("test_publish", intf)
     p.send_to_redis(".", flat_data)
+    p.do_metadata_update = True
     p.send_to_redis(".subkey", nparr)
 
 
@@ -199,9 +206,10 @@ def test_pubsub():
     active.listen()
     p.send_to_redis(".", flat_data)
     time.sleep(1)
-    assert (str(active.read_root()) == str(flat_data))
+    assert (str(active.root_value()) == str(flat_data))
     assert flat_data["number"] == active["number"]
 
+    p.do_metadata_update = True
     p.send_to_redis(".subkey", nparr)
     time.sleep(1)
     assert np.array_equal(active["subkey"], nparr)

@@ -7,10 +7,12 @@ import numpy as np
 import redis
 
 # Logging Configuration
-FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"
+log_file_name = "logs/reem_testing_kvs_timed.log"
+FORMAT = "%(asctime)20s %(filename)15s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("reem.datatypes")
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
+
 
 image_array = np.random.rand(640, 480, 3)
 
@@ -93,9 +95,21 @@ def test_kvs_upload_all():
 # Test Updating Elements inside the existing dictionaries
 def test_kvs_update():
     test_kvs_upload_all()
+
     server["layered_dict"]["update"] = flat_data
     assert str(layered_dictionary) != str(server["layered_dict"].read())
     assert str(flat_data) == str(server["layered_dict"]["update"].read())
+
+    server.set_metadata_write(True)
+    server["layered_dict"]["update"] = image_array
+    assert np.array_equal(image_array, server["layered_dict"]["update"].read())
+
+    server.set_metadata_write(False)  # Skipping Metadata Checking means setting a new key should fail
+    try:
+        server["layered_dict"]["update2"] = image_dict
+    except TypeError as e:
+        pass
+
 
 
 

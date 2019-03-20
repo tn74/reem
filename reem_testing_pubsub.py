@@ -7,10 +7,10 @@ import numpy as np
 import time
 
 # Logging Configuration
-FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"
+FORMAT = "%(asctime)20s %(filename)s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("reem.datatypes")
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 image_array = np.random.rand(640, 480, 3)
 
@@ -39,7 +39,6 @@ def test_passive_basic():
                                 callback_function=callback_1,
                                 kwargs={"store_list": storage})
     passive.listen()
-    time.sleep(0.2)
     print(storage)
     pspace["channel"] = flat_data
     time.sleep(.01)
@@ -50,16 +49,32 @@ def test_passive_basic():
 def test_active_update_basic():
     pspace["channel"] = flat_data
     time.sleep(.01)
-    assert str(active.read_root()) == str(flat_data)
+    assert str(active.root_value()) == str(flat_data)
 
 
 def test_active_update_sequence():
     test_active_update_basic()
     pspace["channel"]["subkey"] = flat_data
     time.sleep(.01)
-    assert str(active.read_root()) != str(flat_data)
+    assert str(active.root_value()) != str(flat_data)
     assert str(active["subkey"]) == str(flat_data)
     assert active["number"] == flat_data["number"]
+
+
+def test_update_with_nparrays():
+    test_active_update_sequence()
+    pspace.set_metadata_write(True)
+    pspace["channel"]["nparr1"] = image_dict
+    time.sleep(.05)
+    assert np.array_equal(active["nparr1"]["image"], image_dict["image"])
+    pspace.set_metadata_write(False)
+    time.sleep(.05)
+    try:
+        pspace["channel"]["nparr2"] = image_dict
+        assert False
+    except Exception:
+        pass
+
 
 
 

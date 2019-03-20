@@ -19,16 +19,25 @@ class Writer:
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.interface.client.jsonset(self.metadata_key_name, Path.rootPath(), self.metadata)
 
-        self.skip_metadata_update = False
+        self.do_metadata_update = False
+        self.first_update_not_complete = True
 
     def send_to_redis(self, path, value):
-        logger.info("SET {} {} = {}".format(self.top_key_name, path, value))
-        if not self.skip_metadata_update:
-            self.update_metadata(path, value)
-        logger.debug("Metadata: {}".format(self.metadata))
+        logger.info("SET {} {} = {}".format(self.top_key_name, path, type(value)))
+        # logger.debug("SET {} {} = {}".format(self.top_key_name, path, value))
+        self.process_metadata(path, value)
+        logger.debug("SET {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
         self.publish_non_serializables(path, value)
+        logger.debug("SET {} {} Non-Serializables Pipelined".format(self.top_key_name, path))
         self.publish_serializables(path, value)
+        logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, path))
         self.pipeline.execute()
+        logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, path))
+
+    def process_metadata(self, path, value):
+        if self.do_metadata_update or (self.first_update_not_complete and path == Path.rootPath()):
+            self.update_metadata(path, value)
+            self.first_update_not_complete = True
 
     def update_metadata(self, path, value):
         if path == Path.rootPath():
@@ -91,11 +100,11 @@ class Reader:
         logger.info("GET {} {}".format(self.top_key_name, path))
 
         self.update_metadata()
-        logger.debug("GET metadata: {}".format(self.metadata))
-
+        logger.debug("GET {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
         if path in self.sp_to_label:
             return self.pull_special_path(path)
         self.queue_reads(path)
+        logger.debug("GET {} {} Reads Queued".format(self.top_key_name, path))
         return self.build_dictionary(path)
 
     def update_metadata(self):
@@ -117,12 +126,14 @@ class Reader:
         if path == Path.rootPath():
             path = ""
         return_val = self.pipeline.execute()[0]
+        logger.debug("GET {} {} Pipeline Executed".format(self.top_key_name, path))
         responses = self.pipeline_no_decode.execute()
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
         for i, sp in enumerate(special_paths):
             value = self.interface.label_to_shipper[self.sp_to_label[sp]].interpret_read(responses[i: i + 1])
             insertion_path = sp[len(path):]
             insert_into_dictionary(return_val, insertion_path, value)
+        logger.debug("GET {} {} Dictionary Built".format(self.top_key_name, path))
         return return_val
 
     def pull_special_path(self, path):
@@ -147,6 +158,7 @@ class KeyValueStore:
 
     def __getitem__(self, item):
         assert type(item) == str
+        logger.debug("KVS Get Item Accessed: {}".format(item))
         self.ensure_key_existence(item)
         writer, reader = self.entries[item]
         return ReadablePathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
@@ -155,9 +167,11 @@ class KeyValueStore:
         if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
 
-    def set_metadata_write(self, keys, set_value):
+    def set_metadata_write(self, set_value, keys=None):
+        if keys is None:
+            keys = self.entries.keys()
         for k in keys:
-            self.entries[k][0].skip_metadata_update = set_value
+            self.entries[k][0].do_metadata_update = set_value
 
 
 class Publisher(Writer):
@@ -166,10 +180,8 @@ class Publisher(Writer):
         self.message = "Publish"
 
     def send_to_redis(self, path, value):
-        logger.info("SET {} {} = {}".format(self.top_key_name, path, value))
-        if not self.skip_metadata_update:
-            self.update_metadata(path, value)
-        logger.debug("Metadata: {}".format(self.metadata))
+        logger.info("PUBLISH {} {} = {}".format(self.top_key_name, path, value))
+        self.process_metadata(path, value)
         self.publish_non_serializables(path, value)
         self.publish_serializables(path, value)
 
@@ -177,7 +189,6 @@ class Publisher(Writer):
         if path == Path.rootPath():
             path = ""
         channel_name = "__pubspace@0__:{}{}".format(self.top_key_name, path)
-
         self.pipeline.publish(channel_name, self.message)
 
         # Resume Writer Class
@@ -234,7 +245,7 @@ class ActiveSubscriber(Reader):
     def listen(self):
         self.passive_subscriber.listen()
 
-    def read_root(self):
+    def root_value(self):
         return self.local_copy
 
     def __getitem__(self, item):
