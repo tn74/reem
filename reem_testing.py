@@ -206,7 +206,7 @@ def test_pubsub():
     active.listen()
     p.send_to_redis(".", flat_data)
     time.sleep(1)
-    assert (str(active.root_value()) == str(flat_data))
+    assert (str(active.value()) == str(flat_data))
     assert flat_data["number"] == active["number"]
 
     p.do_metadata_update = True

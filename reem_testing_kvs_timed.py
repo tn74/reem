@@ -43,5 +43,21 @@ def test_write_multilevel_dict():
 def test_read_hundred_key_dict():
     server["hundred_key_dict"] = hundred_key_dict
     for i in range(100):
-        server["hundred_key_dict"].read()
+        # server["hundred_key_dict"].read()
+        # server["hundred_key_dict"]["single_key"] = {"number":5}
+        server["image_dictionary"] = image_dict
         logger.debug("\n")
+
+
+def test_list_set():
+    list_dict = {"list": ["sdfdsfdfsfdsfsdfsd" for i in range(100)]}
+    for i in range(100):
+        server["list_dict"] = list_dict
+        logger.debug("\n")
+
+
+# New Tests
+"""
+Reset Whole Dictionary vs Reset each key
+Come up with workarounds for slow sets and warnings about performance
+"""

@@ -245,7 +245,7 @@ class ActiveSubscriber(Reader):
     def listen(self):
         self.passive_subscriber.listen()
 
-    def root_value(self):
+    def value(self):
         return self.local_copy
 
     def __getitem__(self, item):

@@ -25,6 +25,7 @@ interface.initialize()
 
 pspace = PublishSpace(interface)
 active = ActiveSubscriber("channel", interface)
+active2 = ActiveSubscriber)"Chan"
 active.listen()
 
 
@@ -49,14 +50,14 @@ def test_passive_basic():
 def test_active_update_basic():
     pspace["channel"] = flat_data
     time.sleep(.01)
-    assert str(active.root_value()) == str(flat_data)
+    assert str(active.value()) == str(flat_data)
 
 
 def test_active_update_sequence():
     test_active_update_basic()
     pspace["channel"]["subkey"] = flat_data
     time.sleep(.01)
-    assert str(active.root_value()) != str(flat_data)
+    assert str(active.value()) != str(flat_data)
     assert str(active["subkey"]) == str(flat_data)
     assert active["number"] == flat_data["number"]
 
@@ -76,7 +77,17 @@ def test_update_with_nparrays():
         pass
 
 
+"""
+Subscribing to N Topics:
+What is the overhead?
+Writing to redis on callback
+Quit subscriber by using a timeout to check if flag is set inside
 
+Bigger Distributed System:
+Server needs to distribute work to smaller servers and gather responses back
+A input data B processes it C reads it
+Implement RPC - Make sure responses are given to the right recipients
+"""
 
 
 
