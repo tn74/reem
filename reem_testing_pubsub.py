@@ -25,7 +25,6 @@ interface.initialize()
 
 pspace = PublishSpace(interface)
 active = ActiveSubscriber("channel", interface)
-active2 = ActiveSubscriber)"Chan"
 active.listen()
 
 
