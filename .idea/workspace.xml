@@ -2,11 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85917ed2-e512-4763-a0ac-920650bd8dec" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/reem/shippers.py" beforeDir="false" afterPath="$PROJECT_DIR$/reem/ships.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reem_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/reem_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reem_testing_kvs.py" beforeDir="false" afterPath="$PROJECT_DIR$/reem_testing_kvs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reem_testing_kvs_timed.py" beforeDir="false" afterPath="$PROJECT_DIR$/reem_testing_kvs_timed.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reem_testing_pubsub.py" beforeDir="false" afterPath="$PROJECT_DIR$/reem_testing_pubsub.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dist/reem-0.1.tar.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reem.egg-info/PKG-INFO" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reem.egg-info/SOURCES.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reem.egg-info/dependency_links.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reem.egg-info/top_level.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -32,7 +34,7 @@
       <file leaf-file-name="supports.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/reem/supports.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
+            <state relative-caret-position="246">
               <caret line="73" column="28" selection-start-line="73" selection-start-column="22" selection-end-line="73" selection-end-column="28" />
               <folding>
                 <element signature="e#0#28#0" expanded="true" />
@@ -48,7 +50,7 @@
       <file leaf-file-name="reem_testing_kvs.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/reem_testing_kvs.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="375">
+            <state relative-caret-position="15">
               <caret line="31" selection-start-line="31" selection-end-line="37" selection-end-column="16" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
@@ -82,7 +84,7 @@
         <entry file="file://$PROJECT_DIR$/reem_testing_pubsub.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="290">
-              <caret line="65" column="33" lean-forward="true" selection-start-line="65" selection-start-column="33" selection-end-line="65" selection-end-column="33" />
+              <caret line="65" column="33" selection-start-line="65" selection-start-column="33" selection-end-line="65" selection-end-column="33" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -95,15 +97,19 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file leaf-file-name="setup.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="setup.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/setup.py">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
+            </state>
+          </provider>
         </entry>
       </file>
-      <file leaf-file-name="ships.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ships.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/reem/ships.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="54">
+            <state relative-caret-position="75">
               <caret line="5" column="21" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="21" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
@@ -115,7 +121,7 @@
       <file leaf-file-name="testing.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/testing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="990">
+            <state relative-caret-position="89">
               <caret line="70" column="80" selection-start-line="70" selection-start-column="60" selection-end-line="70" selection-end-column="80" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
@@ -183,6 +189,7 @@
         <option value="$PROJECT_DIR$/reem_testing_pubsub.py" />
         <option value="$PROJECT_DIR$/reem/__init__.py" />
         <option value="$PROJECT_DIR$/reem/ships.py" />
+        <option value="$PROJECT_DIR$/setup.py" />
       </list>
     </option>
   </component>
@@ -771,44 +778,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/testing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="990">
-          <caret line="70" column="80" selection-start-line="70" selection-start-column="60" selection-end-line="70" selection-end-column="80" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/reem_testing_kvs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="31" selection-start-line="31" selection-end-line="37" selection-end-column="16" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/logs/reem_testing_kvs_timed.log">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="735">
           <caret line="49" column="35" selection-start-line="49" selection-start-column="35" selection-end-line="49" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/reem/supports.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="73" column="28" selection-start-line="73" selection-start-column="22" selection-end-line="73" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#28#0" expanded="true" />
-            <element signature="e#116#1043#0" />
-            <element signature="e#1082#1660#0" />
-            <element signature="e#1686#2155#0" />
-            <element signature="e#2202#2271#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -835,7 +808,7 @@
     <entry file="file://$PROJECT_DIR$/reem_testing_pubsub.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="290">
-          <caret line="65" column="33" lean-forward="true" selection-start-line="65" selection-start-column="33" selection-end-line="65" selection-end-column="33" />
+          <caret line="65" column="33" selection-start-line="65" selection-start-column="33" selection-end-line="65" selection-end-column="33" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>
@@ -845,16 +818,54 @@
     <entry file="file://$PROJECT_DIR$/reem/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/reem/ships.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="54">
+        <state relative-caret-position="75">
           <caret line="5" column="21" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="21" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/reem/supports.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="246">
+          <caret line="73" column="28" selection-start-line="73" selection-start-column="22" selection-end-line="73" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+            <element signature="e#116#1043#0" />
+            <element signature="e#1082#1660#0" />
+            <element signature="e#1686#2155#0" />
+            <element signature="e#2202#2271#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/reem_testing_kvs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="31" selection-start-line="31" selection-end-line="37" selection-end-column="16" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="89">
+          <caret line="70" column="80" selection-start-line="70" selection-start-column="60" selection-end-line="70" selection-end-column="80" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
         </state>
       </provider>
     </entry>
