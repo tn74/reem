@@ -1,3 +1,5 @@
+README.md
+setup.cfg
 setup.py
 reem/__init__.py
 reem/datatypes.py
