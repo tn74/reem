@@ -1,7 +1,7 @@
 from testing import *
 from reem.datatypes import KeyValueStore
 from reem.supports import RedisInterface
-from reem import shippers
+from reem import ships
 import logging
 import numpy as np
 import redis
@@ -22,7 +22,7 @@ image_dict = {"image": image_array}
 hundred_key_dict = single_level_dictionary()
 layered_dictionary = nested_level_dictionary(levels=20)
 
-interface = RedisInterface(host="localhost", shippers=[shippers.NumpyHandler()])
+interface = RedisInterface(host="localhost", shippers=[ships.NumpyShip()])
 interface.initialize()
 
 server = KeyValueStore(interface)

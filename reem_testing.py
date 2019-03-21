@@ -1,4 +1,4 @@
-from reem import datatypes, shippers, supports
+from reem import datatypes, ships, supports
 import numpy as np
 import time
 import logging
@@ -13,7 +13,7 @@ logger.setLevel(logging.DEBUG)
 
 
 # Testing Help
-intf = supports.RedisInterface(host='localhost', shippers=[shippers.NumpyHandler()])
+intf = supports.RedisInterface(host='localhost', shippers=[ships.NumpyShip()])
 intf.initialize()
 
 flat_data = testing.get_flat_data()

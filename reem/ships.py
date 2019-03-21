@@ -3,7 +3,7 @@ import numpy as np
 import io
 
 
-class SpecialCaseHandler(ABC):
+class SpecialCaseShip(ABC):
     def __init__(self):
         super().__init__()
 
@@ -55,7 +55,7 @@ class SpecialCaseHandler(ABC):
         pass
 
 
-class NumpyHandler(SpecialCaseHandler):
+class NumpyShip(SpecialCaseShip):
     def check_fit(self, value):
         return type(value) in [np.array, np.ndarray]
 
