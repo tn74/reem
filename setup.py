@@ -5,8 +5,8 @@ setup(
     version='v0.0.1',
     packages=['reem'],
     url='https://www.github.com/tn74/reem',
-    license='MIT',
+    license='Apache 2.0',
     author='Trishul Nagenalli',
-    author_email='tn74@duke.edu',
+    author_email='trishul.nagenalli at duke dot edu',
     description='Redis Extendable Efficient Middleware'
 )
