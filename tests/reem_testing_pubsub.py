@@ -1,4 +1,4 @@
-from testing import *
+from tests.testing import *
 from reem.datatypes import PublishSpace, ActiveSubscriber, PassiveSubscriber
 from reem.supports import RedisInterface
 from reem import ships

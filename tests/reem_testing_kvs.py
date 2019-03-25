@@ -1,4 +1,4 @@
-from testing import *
+from tests.testing import *
 from reem.datatypes import KeyValueStore
 from reem.supports import RedisInterface
 from reem import ships
