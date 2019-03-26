@@ -167,7 +167,7 @@ class KeyValueStore:
         if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
 
-    def set_metadata_write(self, set_value, keys=None):
+    def track_schema_changes(self, set_value, keys=None):
         if keys is None:
             keys = self.entries.keys()
         for k in keys:

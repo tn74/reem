@@ -22,7 +22,7 @@ image_dict = {"image": image_array}
 hundred_key_dict = single_level_dictionary()
 layered_dictionary = nested_level_dictionary(levels=20)
 
-interface = RedisInterface(host="localhost", shippers=[ships.NumpyShip()])
+interface = RedisInterface(host="localhost", ships=[ships.NumpyShip()])
 interface.initialize()
 
 server = KeyValueStore(interface)

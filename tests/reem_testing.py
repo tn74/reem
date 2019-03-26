@@ -3,7 +3,7 @@ import numpy as np
 import time
 import logging
 import datetime
-import tests.testing as testing
+from . import testing
 
 # Logging Configuration
 FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"
@@ -13,7 +13,7 @@ logger.setLevel(logging.DEBUG)
 
 
 # Testing Help
-intf = supports.RedisInterface(host='localhost', shippers=[ships.NumpyShip()])
+intf = supports.RedisInterface(host='localhost', ships=[ships.NumpyShip()])
 intf.initialize()
 
 flat_data = testing.get_flat_data()
@@ -181,9 +181,9 @@ def test_skip_metadata():
     subdict["time"] = current_time
 
     server["test_skip_metadata"] = test  # First time posting to key
-    server.set_metadata_write(True)
+    server.track_schema_changes(True)
     server["test_skip_metadata"]["newkey1"] = test
-    server.set_metadata_write(False)
+    server.track_schema_changes(False)
     try:
         server["test_skip_metadata"]["newkey2"] = test
         assert False

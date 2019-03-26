@@ -22,7 +22,7 @@ image_dict = {"image": image_array}
 hundred_key_dict = single_level_dictionary()
 layered_dictionary = nested_level_dictionary(levels=3)
 
-interface = RedisInterface(host="localhost", shippers=[ships.NumpyShip()])
+interface = RedisInterface(host="localhost", ships=[ships.NumpyShip()])
 interface.initialize()
 
 server = KeyValueStore(interface)
@@ -100,11 +100,11 @@ def test_kvs_update():
     assert str(layered_dictionary) != str(server["layered_dict"].read())
     assert str(flat_data) == str(server["layered_dict"]["update"].read())
 
-    server.set_metadata_write(True)
+    server.track_schema_changes(True)
     server["layered_dict"]["update"] = image_array
     assert np.array_equal(image_array, server["layered_dict"]["update"].read())
 
-    server.set_metadata_write(False)  # Skipping Metadata Checking means setting a new key should fail
+    server.track_schema_changes(False)  # Skipping Metadata Checking means setting a new key should fail
     try:
         server["layered_dict"]["update2"] = image_dict
     except TypeError as e:

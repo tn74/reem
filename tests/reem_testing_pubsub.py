@@ -20,7 +20,7 @@ image_dict = {"image": image_array}
 hundred_key_dict = single_level_dictionary()
 layered_dictionary = nested_level_dictionary(levels=3)
 
-interface = RedisInterface(host="localhost", shippers=[ships.NumpyShip()])
+interface = RedisInterface(host="localhost", ships=[ships.NumpyShip()])
 interface.initialize()
 
 pspace = PublishSpace(interface)
@@ -63,11 +63,11 @@ def test_active_update_sequence():
 
 def test_update_with_nparrays():
     test_active_update_sequence()
-    pspace.set_metadata_write(True)
+    pspace.track_schema_changes(True)
     pspace["channel"]["nparr1"] = image_dict
     time.sleep(.05)
     assert np.array_equal(active["nparr1"]["image"], image_dict["image"])
-    pspace.set_metadata_write(False)
+    pspace.track_schema_changes(False)
     time.sleep(.05)
     try:
         pspace["channel"]["nparr2"] = image_dict

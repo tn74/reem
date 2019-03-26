@@ -4,23 +4,23 @@ from .helper_functions import append_to_path
 
 
 class RedisInterface:
-    def __init__(self, host='localhost', shippers=[]):
+    def __init__(self, host='localhost', ships=[]):
         """
         Define a connection to redis with certain translators
         :param host: hostname of redis server connection
         :param translators: list of translators used by connections with this interface
         """
         self.hostname = host
-        self.shippers = shippers
+        self.ships = ships
         self.client = rejson.Client(host=host, decode_responses=True)
         self.client_no_decode = rejson.Client(host=host)
         self.metadata_listener = MetadataListener(self)
 
         self.label_to_shipper = {}
-        for sh in self.shippers:
+        for sh in self.ships:
             self.label_to_shipper[sh.get_label()] = sh
 
-        self.shipper_labels = [sh.get_label() for sh in shippers]
+        self.shipper_labels = [sh.get_label() for sh in ships]
 
     def initialize(self):
         """
