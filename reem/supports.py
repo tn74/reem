@@ -75,12 +75,20 @@ class ActiveSubscriberPathHandler(PathHandler):
     def read(self):
         return_val = self.reader.local_copy
         dissect_path = self.path[1:]
-        if "." in dissect_path:
+        print("dissect_path: {}".format(dissect_path))
+        if len(dissect_path) == 0:
+            pass
+        elif "." in dissect_path:
             for key in dissect_path.split("."):
                 return_val = return_val[key]
+        else:
+            return_val = return_val[dissect_path]
         if type(return_val) == dict:
             return copy_dictionary_without_paths(return_val, [])
         return return_val
+
+    def __setitem__(self, instance, value):
+        raise Exception("Cannot set value for a subscriber")
 
 
 class ChannelListener(Thread):

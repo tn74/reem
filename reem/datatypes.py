@@ -1,5 +1,5 @@
 from .helper_functions import *
-from .supports import ReadablePathHandler, PathHandler, ChannelListener
+from .supports import ReadablePathHandler, PathHandler, ChannelListener, ActiveSubscriberPathHandler
 from rejson import Path, Client
 import logging
 
@@ -246,8 +246,8 @@ class ActiveSubscriber(Reader):
         self.passive_subscriber.listen()
 
     def value(self):
-        return self.local_copy
+        return copy_dictionary_without_paths(self.local_copy, [])
 
     def __getitem__(self, item):
         assert type(item) == str, "Key name must be string"
-        return self.local_copy[item]
+        return ActiveSubscriberPathHandler(None, self, "{}{}".format(Path.rootPath(), item))
