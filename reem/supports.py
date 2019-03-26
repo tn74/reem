@@ -1,6 +1,6 @@
 from threading import Thread
 import rejson
-from .helper_functions import append_to_path
+from .helper_functions import append_to_path, copy_dictionary_without_paths
 
 
 class RedisInterface:
@@ -69,6 +69,18 @@ class PathHandler:
 class ReadablePathHandler(PathHandler):
     def read(self):
         return self.reader.read_from_redis(self.path)
+
+
+class ActiveSubscriberPathHandler(PathHandler):
+    def read(self):
+        return_val = self.reader.local_copy
+        dissect_path = self.path[1:]
+        if "." in dissect_path:
+            for key in dissect_path.split("."):
+                return_val = return_val[key]
+        if type(return_val) == dict:
+            return copy_dictionary_without_paths(return_val, [])
+        return return_val
 
 
 class ChannelListener(Thread):
