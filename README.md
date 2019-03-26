@@ -3,14 +3,14 @@
 REEM is a centralized middleware package for robotic communication that utilizes Redis, a fast in-memory key-value database. It is designed for ease of use and efficiency.
 
 ## Design Philosophy:
-REEM expects you will store your data as a nested data structure - think of communication between computers as passing JSON's between machines. REEM is built to model as much data as it can using Redis's [ReJSON](https://pypi.org/project/rejson/) module. This works great for serializable data, but we often want to work with non-serializable types like numpy arrays. Users can define encoder/decoder objects called Ships that define how non-serializable types should be pushed to and retrieved from Redis.
+REEM expects you will store your data as a nested data structure - think of communication between computers as passing JSON's between machines. REEM is built to model as much data as it can using Redis's [ReJSON](https://pypi.org/project/rejson/) module. This works great for serializable data, but we often want to work with non-serializable types like numpy arrays. Users can define encoder/decoder objects called Ships that define how non-serializable types should be pushed to and retrieved from Redis. REEM provides a default Ship for handling numpy arrays.
 
 ## Installation
 ``pip install reem``
 
 
 ## Getting Started
-Before any machines can communicate using REEM, someone has to run a redis server. Set up a computer to run a redis server. This can be your local machine. These [instructions](https://redis.io/topics/quickstart) are a great help.
+Before any machines can communicate using REEM, someone has to run a redis server. Set up a computer to run a redis server. This can be on your local machine. These [instructions](https://redis.io/topics/quickstart) are a great help.
 
 ### Starting an Interface
 ```python
@@ -107,7 +107,7 @@ then REEM expects that the only paths accessed are ``new_key, new_key.foo, new_k
 If you want to dynamically change the schema under a specific key, you must call this function with the key names in the list ``keys`` before you alter the schema
 
 ```python
- server.track_schema_changes(True keys=["new_key"])
+ server.track_schema_changes(True, keys=["new_key"])
 ```
 
 Once you do this, you can overwrite the top level key or any subkey with anything you like, doing something like below.
@@ -120,4 +120,4 @@ Once you do this, you can overwrite the top level key or any subkey with anythin
 {'number': 1000, 'string': 'REEM'}
 ```
 
-Note that if you fail to call ``track_schema_changes`` and update the schema, there is no guaranteed behavior. It may or may not work.
+**Note that if you fail to call ``track_schema_changes()`` and update the schema, there is no guaranteed behavior. It may or may not work.**
