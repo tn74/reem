@@ -1,10 +1,11 @@
 from tests.testing import *
-from reem.datatypes import PublishSpace, ActiveSubscriber, PassiveSubscriber
+from reem.datatypes import PublishSpace, ActiveSubscriber, PassiveSubscriber, UpdateSubscriber
 from reem.supports import RedisInterface
 from reem import ships
 import logging
 import numpy as np
 import time
+
 
 # Logging Configuration
 FORMAT = "%(asctime)20s %(filename)s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
@@ -24,6 +25,7 @@ interface = RedisInterface(host="localhost", ships=[ships.NumpyShip()])
 interface.initialize()
 
 pspace = PublishSpace(interface)
+pspace.track_schema_changes(True)
 active = ActiveSubscriber("channel", interface)
 active.listen()
 
@@ -39,10 +41,10 @@ def test_passive_basic():
                                 callback_function=callback_1,
                                 kwargs={"store_list": storage})
     passive.listen()
-    print(storage)
+    # print(storage)
     pspace["channel"] = flat_data
     time.sleep(.01)
-    print(storage)
+    # print(storage)
     assert len(storage) > 0
 
 
@@ -56,8 +58,8 @@ def test_active_update_sequence():
     test_active_update_basic()
     pspace["channel"]["subkey"] = flat_data
     time.sleep(.01)
-    print("\n\n\nFlat_Data: {}".format(flat_data))
-    print("Read:      {}\n\n\n".format(str(active["subkey"].read())))
+    # print("\n\n\nFlat_Data: {}".format(flat_data))
+    # print("Read:      {}\n\n\n".format(str(active["subkey"].read())))
     assert str(active.value()) != str(flat_data)
     assert str(active["subkey"].read()) == str(flat_data)
 
@@ -78,6 +80,16 @@ def test_update_with_nparrays():
     except Exception:
         pass
 
+
+def test_update_subscriber():
+    update_subscriber = UpdateSubscriber("chann", interface)
+    test_update_with_nparrays()
+    try:
+        for channel, message in update_subscriber.queue.get(True, 1):
+            update_subscriber.process_update(channel, message)
+    except Queue.empty as e:
+        pass
+    assert str(active.value()) == str(update_subscriber.value())
 
 """
 Subscribing to N Topics:

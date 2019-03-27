@@ -61,6 +61,7 @@ def test_store_under_non_existant_sub_key():
 
 
 def test_bad_key_name():
+    server.track_schema_changes(True)
     server["data"] = {"foo": 5}
     try:
         server["data"] = {"foo*": 5}
@@ -142,10 +143,4 @@ def test_kvs_update():
         server["layered_dict"]["update2"] = image_dict
     except TypeError as e:
         pass
-
-
-
-
-
-
 

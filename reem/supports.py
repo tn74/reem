@@ -40,13 +40,17 @@ class MetadataListener(Thread):
         super().__init__()
 
     def add_listener(self, key_name, reader):
-        self.listeners["__keyspace@0__:{}".format(key_name)] = reader
+        listen_name = "__keyspace@0__:{}".format(key_name)
+        if listen_name not in self.listeners:
+            self.listeners[listen_name] = []
+        self.listeners[listen_name].append(reader)
 
     def run(self):
         for item in self.pubsub.listen():
             channel = item['channel'].decode("utf_8")
             if channel in self.listeners:
-                self.listeners[channel].pull_metadata = True
+                for listener in self.listeners[channel]:
+                    listener.pull_metadata = True
 
 
 class PathHandler:

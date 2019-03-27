@@ -2,6 +2,7 @@ from .helper_functions import *
 from .supports import ReadablePathHandler, PathHandler, ChannelListener, ActiveSubscriberPathHandler
 from rejson import Path, Client
 import logging
+import queue
 
 logger = logging.getLogger("reem.datatypes")
 
@@ -19,7 +20,7 @@ class Writer:
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.interface.client.jsonset(self.metadata_key_name, Path.rootPath(), self.metadata)
 
-        self.do_metadata_update = True
+        self.do_metadata_update = False
         self.first_update_not_complete = True
 
     def send_to_redis(self, path, value):
@@ -148,6 +149,7 @@ class KeyValueStore:
     def __init__(self, interface):
         self.interface = interface
         self.entries = {}
+        self.track_schema = False
 
     def __setitem__(self, key, value):
         assert type(value) == dict, "Top level entries must be json"
@@ -168,12 +170,14 @@ class KeyValueStore:
             raise ValueError("Invalid Key Name: {}".format(key))
         if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
+            self.entries[key][0].do_metadata_update = self.track_schema
 
     def track_schema_changes(self, set_value, keys=None):
         if keys is None:
             keys = self.entries.keys()
         for k in keys:
             self.entries[k][0].do_metadata_update = set_value
+        self.track_schema = set_value
 
 
 class Publisher(Writer):
@@ -253,3 +257,17 @@ class ActiveSubscriber(Reader):
     def __getitem__(self, item):
         assert type(item) == str, "Key name must be string"
         return ActiveSubscriberPathHandler(None, self, "{}{}".format(Path.rootPath(), item))
+
+
+class UpdateSubscriber(ActiveSubscriber):
+    def __init__(self, top_key_name, interface):
+        super().__init__(top_key_name, interface)
+        self.local_copy = {}
+        self.queue = queue.Queue()
+        self.passive_subscriber = PassiveSubscriber(top_key_name + "*", interface, self.post_to_queue, {})
+
+    def post_to_queue(self, channel, message):
+        self.queue.put_nowait((channel, message))
+
+    def process_update(self, channel, message):
+        self.update_local_copy(channel, message)
