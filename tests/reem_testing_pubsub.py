@@ -86,9 +86,7 @@ def test_update_subscriber():
     update_subscriber = UpdateSubscriber("channel", interface)
     update_subscriber.listen()
     test_update_with_nparrays()
-    print("EHLLO")
     while not update_subscriber.queue.empty():
-        print("Queue not empty")
         channel, message = update_subscriber.queue.get()
         update_subscriber.process_update(channel, message)
     assert str(active.value()) == str(update_subscriber.value())
