@@ -267,7 +267,8 @@ class UpdateSubscriber(ActiveSubscriber):
         self.passive_subscriber = PassiveSubscriber(top_key_name + "*", interface, self.post_to_queue, {})
 
     def post_to_queue(self, channel, message):
-        self.queue.put_nowait((channel, message))
+        self.queue.put((channel, message))
+        logger.info("Called")
 
     def process_update(self, channel, message):
         self.update_local_copy(channel, message)

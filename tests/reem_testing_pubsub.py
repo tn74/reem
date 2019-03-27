@@ -5,7 +5,7 @@ from reem import ships
 import logging
 import numpy as np
 import time
-
+from queue import Queue
 
 # Logging Configuration
 FORMAT = "%(asctime)20s %(filename)s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
@@ -82,13 +82,15 @@ def test_update_with_nparrays():
 
 
 def test_update_subscriber():
-    update_subscriber = UpdateSubscriber("chann", interface)
+    pspace.track_schema_changes(True)
+    update_subscriber = UpdateSubscriber("channel", interface)
+    update_subscriber.listen()
     test_update_with_nparrays()
-    try:
-        for channel, message in update_subscriber.queue.get(True, 1):
-            update_subscriber.process_update(channel, message)
-    except Queue.empty as e:
-        pass
+    print("EHLLO")
+    while not update_subscriber.queue.empty():
+        print("Queue not empty")
+        channel, message = update_subscriber.queue.get()
+        update_subscriber.process_update(channel, message)
     assert str(active.value()) == str(update_subscriber.value())
 
 """
