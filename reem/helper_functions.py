@@ -94,6 +94,8 @@ def get_special_path_updates(set_path: str, set_value, sp_to_label: Dict, label_
         if set_path in sp_to_label:
             deletions.add( set_path )
         for k, v in set_value.items():
+            if not check_valid_key_name(k):
+                raise ValueError("Invalid Key Name: {}".format(k))
             child_path = "{}.{}".format(set_path, k)
             child_add, child_del = get_special_path_updates(child_path, v, sp_to_label, label_to_ship)
             additions = additions.union(child_add)
@@ -101,3 +103,10 @@ def get_special_path_updates(set_path: str, set_value, sp_to_label: Dict, label_
 
     return additions, deletions
 
+
+def check_valid_key_name(name: str):
+    bad_chars = ["*", ".", "&&&&"]
+    for k in bad_chars:
+        if k in name:
+            return False
+    return True

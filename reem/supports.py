@@ -1,6 +1,6 @@
 from threading import Thread
 import rejson
-from .helper_functions import append_to_path, copy_dictionary_without_paths
+from .helper_functions import *
 
 
 class RedisInterface:
@@ -57,11 +57,15 @@ class PathHandler:
 
     def __getitem__(self, item):
         assert type(item) == str
+        if not check_valid_key_name(item):
+            raise ValueError("Invalid Key Name: {}".format(item))
         self.path = append_to_path(self.path, item)
         return self
 
     def __setitem__(self, instance, value):
         assert type(instance) == str
+        if not check_valid_key_name(instance):
+            raise ValueError("Invalid Key Name: {}".format(instance))
         self.path = append_to_path(self.path, instance)
         self.writer.send_to_redis(self.path, value)
 

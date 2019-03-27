@@ -11,7 +11,7 @@ class Writer:
         self.interface = interface
         self.top_key_name = top_key_name
 
-        self.separator = "&&&&"
+        self.separator = "&&&&" # If changed, ensure it is changed in helper_functions too
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
@@ -19,7 +19,7 @@ class Writer:
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.interface.client.jsonset(self.metadata_key_name, Path.rootPath(), self.metadata)
 
-        self.do_metadata_update = False
+        self.do_metadata_update = True
         self.first_update_not_complete = True
 
     def send_to_redis(self, path, value):
@@ -164,6 +164,8 @@ class KeyValueStore:
         return ReadablePathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
 
     def ensure_key_existence(self, key):
+        if not check_valid_key_name(key):
+            raise ValueError("Invalid Key Name: {}".format(key))
         if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
 
