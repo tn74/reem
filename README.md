@@ -5,10 +5,88 @@ REEM is a centralized middleware package for robotic communication that utilizes
 ## Design Philosophy:
 REEM expects you will store your data as a nested data structure - think of communication between computers as passing JSON's between machines. REEM is built to model as much data as it can using Redis's [ReJSON](https://pypi.org/project/rejson/) module. This works great for serializable data, but we often want to work with non-serializable types like numpy arrays. Users can define encoder/decoder objects called Ships that define how non-serializable types should be pushed to and retrieved from Redis. REEM provides a default Ship for handling numpy arrays.
 
-## Installation
-``pip install reem``
+## Tutorial
+
+This tutorial will demonstrate how to set up a Redis/ReJSON database on your local computer and connect to it using REEM.
+
+Requirements:
+- Python 3
+- Linux/macOS (ReJSON requirement, though you can run ReJSON with Docker on Windows)
 
 
+Open a new terminal and navigate to the directory you would like to work in.
+
+### Redis
+First we will install Redis. If at any point, you are stuck in this tutorial, take a look at the [Redis Quickstart](https://redis.io/topics/quickstart) page for help.
+
+Run the following commands in your terminal
+```bash
+mkdir database-server
+cd database-server
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+make
+```
+Congratulations! You have installed Redis. Test your installation by running the following in your terminal
+```bash
+redis-server --daemonize yes
+redis-cli
+```
+You just started a redis server and entered the command line interface (cli) to access the server. Your prompt will look a little different now. To test if the connection is working, type in ``ping`` and you shold see that the redis server you began responds ``PONG``. Then shutdown the server by issuing the ``shutdown`` command and exit the redis-cli with ``ctrl-c``. This whole exchange should look like this:
+
+```bash
+MacBook-Pro:redis-stable trishul$ redis-server --daemonize yes
+85795:C 28 Mar 2019 14:26:28.140 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+85795:C 28 Mar 2019 14:26:28.140 # Redis version=5.0.3, bits=64, commit=00000000, modified=0, pid=85795, just started
+85795:C 28 Mar 2019 14:26:28.140 # Configuration loaded
+MacBook-Pro:redis-stable trishul$ redis-cli
+127.0.0.1:6379> ping
+PONG
+127.0.0.1:6379> shutdown
+not connected>
+MacBook-Pro:redis-stable trishul$
+```
+[//]: ![](https://i.imgur.com/OyL42kS.png)
+
+
+[//]: #![](https://i.imgur.com/448WsNT.png)
+
+### ReJSON
+Now we will install ReJSON. Refer to [ReJSON's Instructions](https://oss.redislabs.com/redisjson/) for additional help if necessary.
+```bash
+cd ..
+git clone https://github.com/RedisLabsModules/redisjson.git
+cd rejson
+make
+cd ..
+```
+ReJSON is now installed on your computer as an so file inside ``.rejson/src/rejson.so``. We need to tell Redis to use this module. We will do this with a redis configuration file. Download [this example file](https://github.com/tn74/reem/blob/master/examples/redis.conf) configuration file and put it inside the ``database-server`` directory. Then run the following
+```bash
+redis-server redis.conf --daemonize yes
+redis-cli
+```
+You should see your prompt change again. Enter ``JSON.SET foo . 0`` and verify the output looks as below
+```
+127.0.0.1:6379> JSON.SET foo . 0
+OK
+```
+You now have a server running Redis and ReJSON!
+
+### Running REEM
+Exit the redis-cli by entering ``ctrl-C``. In your terminal, install REEM and all of its dependencies with the following command:
+```bash
+pip3 install reem rejson redis six numpy
+```
+
+Following a successful installation, you should be able to run any of the examples listed in this repository!
+
+Download [ImageProcessing.py](https://github.com/tn74/reem/blob/master/examples/ImageProcessing.py) into your working directory (the one that contains database-server). Execute the following:
+```bash
+cd ..
+python3 ImageProcessing.py
+```
+If the file executes without error, you have successfully installed and ran a program with REEM!
 ## Getting Started
 Before any machines can communicate using REEM, someone has to run a redis server. Set up a computer to run a redis server. This can be on your local machine. These [instructions](https://redis.io/topics/quickstart) are a great help.
 

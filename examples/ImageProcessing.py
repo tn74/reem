@@ -18,7 +18,6 @@ class Camera(Thread):
         while True:
             self.send_image()
             self.images_sent += 1
-            # time.sleep(1.0/60)  # 30 FPS
             print("Image {} Sent".format(self.images_sent))
 
 
@@ -34,7 +33,6 @@ class ImageProcessor(Thread):
             channel, message = self.subscriber.queue.get()
             self.subscriber.process_update(channel, message)
             data = self.subscriber.value()
-            shape = data["image"].shape
             print("Image {} Read".format(data["id"]))
 
     def run(self):
