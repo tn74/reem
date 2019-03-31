@@ -4,7 +4,7 @@ from typing import List, Dict, Iterable
 import json
 import logging
 
-logger = logging.getLogger("reem.helper_functions")
+logger = logging.getLogger("reem.datatypes")
 
 
 def append_to_path(existing, addition):
@@ -78,7 +78,7 @@ def get_special_path_updates(set_path: str, set_value, sp_to_label: Dict, label_
     :param label_to_ship: dictionary giving the ship corresponding to a certain label
     :return: set( tuple(str:paths added, str:labels added) ), set( str:paths removed )
     """
-
+    logger.debug("Set Path: {}, Set Value: {}, ".format(set_path, set_value))
     additions, deletions = set(), set()
     if type(set_value) is not dict:
         if set_path in sp_to_label:

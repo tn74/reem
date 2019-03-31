@@ -1,4 +1,5 @@
-from reem import datatypes, ships, supports
+from reem.datatypes import *
+from reem.connection import *
 from threading import Thread
 import numpy as np
 import time
@@ -6,7 +7,7 @@ import time
 
 class Camera(Thread):
     def __init__(self, interface):
-        self.publisher = datatypes.PublishSpace(interface=interface)
+        self.publisher = PublishSpace(interface=interface)
         self.images_sent = 0
         super().__init__()
 
@@ -23,9 +24,9 @@ class Camera(Thread):
 
 class ImageProcessor(Thread):
     def __init__(self, interface):
-        self.subscriber = datatypes.UpdateSubscriber(top_key_name="raw_image", interface=interface)
+        self.subscriber = UpdateSubscriber(top_key_name="raw_image", interface=interface)
         self.subscriber.listen()
-        self.publisher = datatypes.PublishSpace(interface=interface)
+        self.publisher = PublishSpace(interface=interface)
         super().__init__()
 
     def process_images(self):
@@ -40,7 +41,7 @@ class ImageProcessor(Thread):
 
 
 if __name__ == "__main__":
-    interface = supports.RedisInterface(ships=[ships.NumpyShip()])
+    interface = RedisInterface(host='localhost')
     camera = Camera(interface)
     camera.setDaemon(True)
     processor = ImageProcessor(interface)

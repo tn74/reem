@@ -45,6 +45,7 @@ class Writer:
             path = ""
 
         adds, dels = get_special_path_updates(path, value, self.sp_to_label, self.interface.label_to_shipper)
+        logger.debug("Del Paths: {}".format(dels))
         for path in dels:
             self.pipeline.delete("{}.{}".format(self.top_key_name, path))
             self.sp_to_label.pop(path)
@@ -186,8 +187,10 @@ class Publisher(Writer):
         self.message = "Publish"
 
     def send_to_redis(self, path, value):
-        logger.info("PUBLISH {} {} = {}".format(self.top_key_name, path, value))
+        logger.info("PUBLISH {} {} = {}".format(self.top_key_name, path, type(value)))
+        logger.debug("PUBLISH Metadata Update?: {}".format(self.do_metadata_update))
         self.process_metadata(path, value)
+        logger.debug("PUBLISH {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
         self.publish_non_serializables(path, value)
         self.publish_serializables(path, value)
 

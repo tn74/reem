@@ -1,4 +1,4 @@
-from reem import datatypes, ships, supports
+from reem import datatypes, connection
 import numpy as np
 import time
 import logging
@@ -13,7 +13,7 @@ logger.setLevel(logging.DEBUG)
 
 
 # Testing Help
-intf = supports.RedisInterface(host='localhost', ships=[ships.NumpyShip()])
+intf = connection.RedisInterface(host='localhost')
 intf.initialize()
 
 flat_data = testing.get_flat_data()
@@ -207,10 +207,10 @@ def test_pubsub():
     p.send_to_redis(".", flat_data)
     time.sleep(1)
     assert (str(active.value()) == str(flat_data))
-    assert flat_data["number"] == active["number"]
+    assert flat_data["number"] == active["number"].read()
 
     p.do_metadata_update = True
     p.send_to_redis(".subkey", nparr)
     time.sleep(1)
-    assert np.array_equal(active["subkey"], nparr)
+    assert np.array_equal(active["subkey"].read(), nparr)
 

@@ -1,6 +1,6 @@
 from tests.testing import *
 from reem.datatypes import PublishSpace, ActiveSubscriber, PassiveSubscriber, UpdateSubscriber
-from reem.supports import RedisInterface
+from reem.connection import RedisInterface
 from reem import ships
 import logging
 import numpy as np
