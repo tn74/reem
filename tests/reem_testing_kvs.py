@@ -176,3 +176,4 @@ def test_store_non_dict():
     # Overwrite an existing dictionary with a value
     server["non_dict_test"] = image_array
     assert np.array_equal(image_array, server["non_dict_test"].read())
+
