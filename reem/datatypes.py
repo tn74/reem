@@ -20,8 +20,7 @@ class Writer:
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.interface.client.jsonset(self.metadata_key_name, Path.rootPath(), self.metadata)
 
-        self.do_metadata_update = False
-        self.first_update_not_complete = True
+        self.do_metadata_update = True
 
     def send_to_redis(self, path, value):
         logger.info("SET {} {} = {}".format(self.top_key_name, path, type(value)))
@@ -36,9 +35,8 @@ class Writer:
         logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, path))
 
     def process_metadata(self, path, value):
-        if self.do_metadata_update or (self.first_update_not_complete and path == Path.rootPath()):
+        if self.do_metadata_update:
             self.update_metadata(path, value)
-            self.first_update_not_complete = True
 
     def update_metadata(self, path, value):
         if path == Path.rootPath():
@@ -50,10 +48,10 @@ class Writer:
                 check_paths.add(p)
         for p in check_paths:
             self.sp_to_label.pop(p)
-
         special_paths = get_special_paths(path, value, self.sp_to_label, self.interface.label_to_shipper)
         dels = check_paths - special_paths
         adds = special_paths - check_paths
+
         for path, label in special_paths:
             self.sp_to_label[path] = label
         if len(adds) > 0 or len(dels) > 0:
@@ -155,7 +153,7 @@ class KeyValueStore:
     def __init__(self, interface):
         self.interface = interface
         self.entries = {}
-        self.track_schema = False
+        self.track_schema = True
 
     def __setitem__(self, key, value):
         assert type(value) == dict, "Top level entries must be json"

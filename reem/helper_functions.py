@@ -78,7 +78,6 @@ def get_special_paths(set_path: str, set_value, sp_to_label: Dict, label_to_ship
     :param label_to_ship: dictionary giving the ship corresponding to a certain label
     :return: set( tuple(str:paths added, str:labels added) ), set( str:paths removed )
     """
-    logger.debug("Set Path: {}, Set Value: {}, ".format(set_path, set_value))
     additions = set()
     if type(set_value) is not dict:
         if set_path in sp_to_label:

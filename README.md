@@ -14,7 +14,7 @@ Requirements:
 - Linux/macOS (ReJSON requirement, though you can run ReJSON with Docker on Windows)
 
 
-Open a new terminal and navigate to the directory you would like to work in.
+Open a new terminal and navigate to the directory you would like to work in. **We will refer to this directory as ``.``**
 
 ### Redis
 First we will install Redis. If at any point, you are stuck in this tutorial, take a look at the [Redis Quickstart](https://redis.io/topics/quickstart) page for help.
@@ -79,6 +79,63 @@ Exit the redis-cli by entering ``ctrl-C``. In your terminal, install REEM and al
 pip3 install reem rejson redis six numpy
 ```
 
+Let's try running something!
+
+Copy the following code into a file ``example.py`` into the directory ``.``
+```python
+from reem.connections import RedisInterface
+from reem.datatypes import KeyValueStore
+import numpy as np
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
+server = KeyValueStore(interface)
+
+# Set a key and read it and its subkeys
+server["foo"] = {"number": 100.0, "string": "REEM"}
+print("Reading Root  : {}".format(server["foo"].read()))
+print("Reading Subkey: {}".format(server["foo"]["number"].read()))
+
+# Set a new key that didn't exist before to a numpy array
+server["foo"]["numpy"] = np.random.rand(3,4)
+print("Reading Root  : {}".format(server["foo"].read()))
+print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
+
+```
+In ``.``, run ``python3 example.py``
+If it runs without error, congratulations! Installation was successful. Let's look deeper at the code.
+
+#### Initialization
+```python
+interface = RedisInterface(host="localhost")
+interface.initialize()
+server = KeyValueStore(interface)
+```
+The ``interface`` variable defines what a connection to redis is going to look like. You will need to specify the host name of the redis server you wish to connect to.
+
+Every datatype you wish to instantiate later is going to refer to this interface to know what server it is connected to. Here, we instantiate a ``KeyValueStore `` object with the interface as the variable ``server``. A ``KeyValueStore`` object serves as your standard get and set database.
+
+
+#### Database Syntax
+```python
+# Set a key and read it and its subkeys
+server["foo"] = {"number": 100.0, "string": "REEM"}
+print("Reading Root  : {}".format(server["foo"].read()))
+print("Reading Subkey: {}".format(server["foo"]["number"].read()))
+
+# Set a new key that didn't exist before to a numpy array
+server["foo"]["numpy"] = np.random.rand(3,4)
+print("Reading Root  : {}".format(server["foo"].read()))
+print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
+```
+In the first section of this example code, we set a top level json inside the server to be a python dictionary. Next we read exactly what we wrote. What we get back is a python dictionary identical to the one we submitted. We can also execute a read on a specific subkey of the data we set as we do in third line.
+
+In the second section of the code, we set a numpy array inside the redis server. A numpy array is treated exactly as any other object that we had. Internally, it is handled differently than the strings and numbers we set earlier because a numpy array is not serialiable and thus cannot normally be stored in a JSON. If you are interestined in handling more non-serializable data types, see the ``Ship`` class documentation, coming soon.
+
+Congratulations! You have completed the basic tutorial on REEM. You can explore further topics of interest to you:
+- Key Value Store Paradigm
+- Publish/Subscribe Paradigm
+<!-- #### A Publish/Subscribe Example
 Following a successful installation, you should be able to run any of the examples listed in this repository!
 
 Download [ImageProcessing.py](https://github.com/tn74/reem/blob/master/examples/ImageProcessing.py) into your working directory (the one that contains database-server). Execute the following:
@@ -86,7 +143,7 @@ Download [ImageProcessing.py](https://github.com/tn74/reem/blob/master/examples/
 cd ..
 python3 ImageProcessing.py
 ```
-If the file executes without error, you have successfully installed and ran a program with REEM!
+If the file executes without error, you have successfully installed and ran a program with REEM!  -->
 ## Getting Started
 Before any machines can communicate using REEM, someone has to run a redis server. Set up a computer to run a redis server. This can be on your local machine. These [instructions](https://redis.io/topics/quickstart) are a great help.
 

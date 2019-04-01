@@ -39,7 +39,7 @@ def test_store_non_dict():
 
 def test_store_under_non_existant_top_key():
     # Storing into a subkey of top level key that does not yet exist
-    random_key_name = get_flat_data()["string"] # A random key that does not exist with high probability
+    random_key_name = get_flat_data()["string"]  # A random key that does not exist with high probability
     try:
         server[random_key_name]["item"] = 5
     except redis.exceptions.ResponseError as e:
@@ -60,7 +60,6 @@ def test_store_under_non_existant_sub_key():
 
 
 def test_bad_key_name():
-    server.track_schema_changes(True)
     server["data"] = {"foo": 5}
     try:
         server["data"] = {"foo*": 5}
@@ -127,19 +126,47 @@ def test_kvs_upload_all():
 
 # Test Updating Elements inside the existing dictionaries
 def test_kvs_update():
+    """
+    Test Cases: See Comments
+    """
     test_kvs_upload_all()
 
+    # Add a new dictionary as a subkey
     server["layered_dict"]["update"] = flat_data
     assert str(layered_dictionary) != str(server["layered_dict"].read())
     assert str(flat_data) == str(server["layered_dict"]["update"].read())
 
-    server.track_schema_changes(True)
+    # Overwrite an existing dictionary subkey with a value
     server["layered_dict"]["update"] = image_array
     assert np.array_equal(image_array, server["layered_dict"]["update"].read())
 
+    # Overwrite an existing value with a dictionary
+    server["layered_dict"]["update"] = flat_data
+    assert str(layered_dictionary) != str(server["layered_dict"].read())
+    assert str(flat_data) == str(server["layered_dict"]["update"].read())
+
+    # Overwrite everything
+    server["layered_dict"] = {}
+    assert(len(server["layered_dict"].read().keys()) == 0)
+
+
+def test_kvs_schema_track():
+    test_kvs_upload_all()
     server.track_schema_changes(False)  # Skipping Metadata Checking means setting a new key should fail
+
+    # Try setting a new non-serializable
     try:
-        server["layered_dict"]["update2"] = image_dict
+        server["layered_dict"]["update"] = image_array
     except TypeError as e:
         pass
 
+    # Try setting a new dictionary that contains a non-serializable
+    try:
+        server["layered_dict"]["update"] = image_dict
+    except TypeError as e:
+        pass
+    server.track_schema_changes(True)
+    server["layered_dict"]["update2"] = image_dict
+    assert np.array_equal(image_array, server["layered_dict"]["update2"]["image"].read())
+    server["layered_dict"]["update2"] = image_array
+    assert np.array_equal(image_array, server["layered_dict"]["update2"].read())

@@ -96,7 +96,6 @@ def test_nested_np_read():
 def test_sequence_1():
     writer = datatypes.Writer("Sequence1", intf)
     reader = datatypes.Reader("Sequence1", intf)
-    writer.do_metadata_update = True
     writer.send_to_redis(".", flat_data)
     print("1. Full Data: {}".format(reader.read_from_redis(".")))
 
@@ -181,7 +180,6 @@ def test_skip_metadata():
     subdict["time"] = current_time
 
     server["test_skip_metadata"] = test  # First time posting to key
-    server.track_schema_changes(True)
     server["test_skip_metadata"]["newkey1"] = test
     server.track_schema_changes(False)
     try:
@@ -189,9 +187,11 @@ def test_skip_metadata():
         assert False
     except TypeError:
         pass
+    server.track_schema_changes(True)
 
 
-### Publish Subscribe Testing ###
+#  Publish Subscribe Testing 
+
 
 def test_publish():
     p = datatypes.Publisher("test_publish", intf)
