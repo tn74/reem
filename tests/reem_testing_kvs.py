@@ -28,14 +28,6 @@ server = KeyValueStore(interface)
 
 
 # Can't-Do  Behavior Defining Tests
-def test_store_non_dict():
-    # Store something that is not a dictionary at the top level of server. This wouldn't use ReJSON
-    try:
-        server["image_array"] = image_array
-    except AssertionError:
-        return
-    assert False
-
 
 def test_store_under_non_existant_top_key():
     # Storing into a subkey of top level key that does not yet exist
@@ -170,3 +162,17 @@ def test_kvs_schema_track():
     assert np.array_equal(image_array, server["layered_dict"]["update2"]["image"].read())
     server["layered_dict"]["update2"] = image_array
     assert np.array_equal(image_array, server["layered_dict"]["update2"].read())
+
+
+def test_store_non_dict():
+    # Set a new top key as a non-dictionary
+    server["non_dict_test"] = image_array
+    assert np.array_equal(image_array, server["non_dict_test"].read())
+
+    # Overwrite an existing value with a dictionary
+    server["non_dict_test"] = flat_data
+    assert str(flat_data) == str(server["non_dict_test"].read())
+
+    # Overwrite an existing dictionary with a value
+    server["non_dict_test"] = image_array
+    assert np.array_equal(image_array, server["non_dict_test"].read())

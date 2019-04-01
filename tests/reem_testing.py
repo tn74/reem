@@ -190,7 +190,7 @@ def test_skip_metadata():
     server.track_schema_changes(True)
 
 
-#  Publish Subscribe Testing 
+#  Publish Subscribe Testing
 
 
 def test_publish():

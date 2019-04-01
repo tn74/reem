@@ -6,13 +6,16 @@ import queue
 
 logger = logging.getLogger("reem.datatypes")
 
+SEPARATOR_CHARACTER = "&&&&"
+ROOT_VALUE_SEQUENCE = "%%%%"
+
 
 class Writer:
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
 
-        self.separator = "&&&&" # If changed, ensure it is changed in helper_functions too
+        self.separator = SEPARATOR_CHARACTER # If changed, ensure it is changed in helper_functions
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
@@ -156,8 +159,12 @@ class KeyValueStore:
         self.track_schema = True
 
     def __setitem__(self, key, value):
-        assert type(value) == dict, "Top level entries must be json"
         assert type(key) == str, "Key Names must be strings"
+
+        if type(value) != dict:
+            value = {"{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE): value}
+
+        # assert type(value) == dict, "Top level entries must be json"
         self.ensure_key_existence(key)
         writer, reader = self.entries[key]
         writer.send_to_redis(Path.rootPath(), value)
