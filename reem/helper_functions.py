@@ -69,7 +69,7 @@ def insert_into_dictionary(dictionary: Dict, path: str, value):
     parent[key_sequence[-1]] = value
 
 
-def get_special_path_updates(set_path: str, set_value, sp_to_label: Dict, label_to_ship: Dict):
+def get_special_paths(set_path: str, set_value, sp_to_label: Dict, label_to_ship: Dict):
     """
     Get info on how to update sp_to_label according to the user uploading `set_value` in location `set_path`
     :param set_path: ".key1.key0" kind of string indicating path within parent that set_value is supposed to be set
@@ -79,11 +79,11 @@ def get_special_path_updates(set_path: str, set_value, sp_to_label: Dict, label_
     :return: set( tuple(str:paths added, str:labels added) ), set( str:paths removed )
     """
     logger.debug("Set Path: {}, Set Value: {}, ".format(set_path, set_value))
-    additions, deletions = set(), set()
+    additions = set()
     if type(set_value) is not dict:
         if set_path in sp_to_label:
             if label_to_ship[sp_to_label[set_path]].check_fit(set_value):
-                return additions, deletions
+                return additions
 
         # If this is something a ship covers, add it as a special path
         for ship in label_to_ship.values():
@@ -91,17 +91,14 @@ def get_special_path_updates(set_path: str, set_value, sp_to_label: Dict, label_
                 additions.add( (set_path, ship.get_label()) )
 
     else:
-        if set_path in sp_to_label:
-            deletions.add( set_path )
         for k, v in set_value.items():
             if not check_valid_key_name(k):
                 raise ValueError("Invalid Key Name: {}".format(k))
             child_path = "{}.{}".format(set_path, k)
-            child_add, child_del = get_special_path_updates(child_path, v, sp_to_label, label_to_ship)
+            child_add = get_special_paths(child_path, v, sp_to_label, label_to_ship)
             additions = additions.union(child_add)
-            deletions = deletions.union(child_del)
 
-    return additions, deletions
+    return additions
 
 
 def check_valid_key_name(name: str):

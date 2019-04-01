@@ -44,14 +44,19 @@ class Writer:
         if path == Path.rootPath():
             path = ""
 
-        adds, dels = get_special_path_updates(path, value, self.sp_to_label, self.interface.label_to_shipper)
-        logger.debug("Del Paths: {}".format(dels))
-        for path in dels:
-            self.pipeline.delete("{}.{}".format(self.top_key_name, path))
-            self.sp_to_label.pop(path)
-        for path, label in adds:
+        check_paths = set()
+        for p in self.sp_to_label:
+            if p.startswith(path):
+                check_paths.add(p)
+        for p in check_paths:
+            self.sp_to_label.pop(p)
+
+        special_paths = get_special_paths(path, value, self.sp_to_label, self.interface.label_to_shipper)
+        dels = check_paths - special_paths
+        adds = special_paths - check_paths
+        for path, label in special_paths:
             self.sp_to_label[path] = label
-        if len(adds) > 0:
+        if len(adds) > 0 or len(dels) > 0:
             self.pipeline.jsonset(self.metadata_key_name, ".special_paths", self.sp_to_label)
             channel, message = "__keyspace@0__:{}".format(self.metadata_key_name), "set"
             self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
