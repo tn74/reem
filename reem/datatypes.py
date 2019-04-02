@@ -159,7 +159,7 @@ class KeyValueStore:
         self.track_schema = True
 
     def __setitem__(self, key, value):
-        assert type(key) == str, "Key Names must be strings"
+        assert check_valid_key_name(key), "Invalid Key: {}".format(key)
 
         if type(value) != dict:
             value = {"{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE): value}
@@ -170,15 +170,14 @@ class KeyValueStore:
         writer.send_to_redis(Path.rootPath(), value)
 
     def __getitem__(self, item):
-        assert type(item) == str
+        assert check_valid_key_name(item), "Invalid Key: {}".format(item)
         logger.debug("KVS Get Item Accessed: {}".format(item))
         self.ensure_key_existence(item)
         writer, reader = self.entries[item]
         return ReadablePathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
 
     def ensure_key_existence(self, key):
-        if not check_valid_key_name(key):
-            raise ValueError("Invalid Key Name: {}".format(key))
+        assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
             self.entries[key][0].do_metadata_update = self.track_schema
@@ -222,6 +221,7 @@ class PublishSpace(KeyValueStore):
         return PathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
 
     def ensure_key_existence(self, key):
+        assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Publisher(key, self.interface), None)
 
@@ -265,6 +265,9 @@ class SilentSubscriber(Reader):
         self.passive_subscriber.listen()
 
     def value(self):
+        root_name = "{0}ROOT{0}".format(ROOT_VALUE_SEQUENCE)
+        if root_name in self.local_copy:
+            return self.local_copy[root_name]
         # Copy dictionary - paths to omit is blank, so we copy everything
         return copy_dictionary_without_paths(self.local_copy, [])
 

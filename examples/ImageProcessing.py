@@ -77,6 +77,3 @@ if __name__ == "__main__":
     camera.start()
     actor.start()
 
-    # time.sleep(5)
-
-

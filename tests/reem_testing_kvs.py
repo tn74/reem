@@ -51,38 +51,40 @@ def test_store_under_non_existant_sub_key():
     assert False
 
 
-def test_bad_key_name():
+def test_key_names():
     server["data"] = {"foo": 5}
     try:
         server["data"] = {"foo*": 5}
         assert False
-    except ValueError as e:
+    except AssertionError as e:
         pass
 
     try:
         server["data"] = {"foo.": 5}
         assert False
-    except ValueError as e:
+    except AssertionError as e:
         pass
 
     try:
         server["data"] = {"fo&&&&o": 5}
         assert False
-    except ValueError as e:
+    except AssertionError as e:
         pass
 
     try:
         server["data*"].read()
         assert False
-    except ValueError as e:
+    except AssertionError as e:
         pass
 
     try:
         server["data"]["data*"].read()
         assert False
-    except ValueError as e:
+    except AssertionError as e:
         pass
 
+    # server["data"][0] = flat_data
+    # assert str(server["data"][0].read() == str(flat_data))
 # ----------------------------
 
 

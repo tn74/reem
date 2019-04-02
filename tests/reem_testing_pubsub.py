@@ -31,7 +31,7 @@ active.listen()
 
 def test_active_update_basic():
     pspace["channel"] = flat_data
-    time.sleep(.01)
+    time.sleep(.05)
     assert str(active.value()) == str(flat_data)
 
 
@@ -51,7 +51,7 @@ def test_update_with_nparrays():
     test_active_update_sequence()
     pspace["channel"]["nparr1"] = image_dict
     time.sleep(.05)
-    assert np.array_equal(active["nparr1"]["image"].read(), image_dict["image"])
+    assert np.array_equal(image_dict["image"], active["nparr1"]["image"].read())
     time.sleep(.05)
     try:
         pspace["channel"]["nparr2"] = image_dict
