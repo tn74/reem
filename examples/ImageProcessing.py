@@ -28,7 +28,7 @@ class Camera(Thread):
 
 class ImageProcessor(Thread):
     def __init__(self, interface):
-        self.subscriber = CallbackSubscriber(top_key_name="raw_image",
+        self.subscriber = CallbackSubscriber(channel="raw_image",
                                              interface=interface,
                                              callback_function=self.process_image,
                                              kwargs={})
@@ -49,7 +49,7 @@ class ImageProcessor(Thread):
 
 class DataActor(Thread):
     def __init__(self, interface):
-        self.subscriber = CallbackSubscriber(top_key_name="processed_data",
+        self.subscriber = CallbackSubscriber(channel="processed_data",
                                              interface=interface,
                                              callback_function=self.actuation,
                                              kwargs={})

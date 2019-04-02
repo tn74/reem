@@ -197,7 +197,14 @@ bar = server["foo"].read()
 
 #### Limitations
 
-1. Have a list with nonserializable types.
+1. Cannot use non-string Keys
+```python
+server["foo"] = {0:"zero", 1:"one"} # Not Okay
+server["foo"] = {"0":"zero", "1":"one"} # Okay
+```
+REEM currently assumes all keys are strings to avoid having to parse JSON keys to determine if they are strings or numbers.
+
+2. Cannot have a list with nonserializable types.
 ```python
 server["foo"] = {"bar":[np.arange(3), np.arange(4)]} # Not Okay
 server["foo"] = {"bar":[3, 4]} # Okay
@@ -205,7 +212,130 @@ server["foo"] = {"bar":[3, 4]} # Okay
 REEM does not presently check lists for non serializable types. We hope to allow this in a future release. For now, we ask you substitute the list with a dictionary
 ```python
 server["foo"] = {"bar":[np.arange(3), np.arange(4)]} # Not Okay
-server["foo"] = {"bar":{0: np.arange(3), 1: np.arange(4)}} # Okay
+server["foo"] = {"bar":{"arr1": np.arange(3), "arr2": np.arange(4)}} # Okay
 ```
 
 ## Publish Subscribe
+The Publish-Subscribe Paradigm in REEM is designed to be as user-friendly as possible. Users publish data the same way they would set an item in a dictionary. Users subscribe to data by specifying what path inside that nested dictionary they would like to listen to.
+
+### Publishing
+Publishing is implemented with a PublishSpace Object. It is initialized with a RedisInterface object as below:
+
+```python
+from reem.datatypes import PublishSpace
+from reem.connection import RedisInterface
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
+publisher = PublishSpace(interface)
+```
+Treat ``publisher`` like a dictionary. Each time you set something in ``publisher``, the corresponding entry in the server is updated and a message is published stating that path was updated. Subscribers will see the message and pull the updated data. The below code gives an example
+
+```python
+data = {"image": np.random.rand(640, 480, 3), "id": 0}
+
+# publishes raw_image
+publisher["raw_image"] = data
+
+# publishes raw_image.id
+publisher["raw_image"]["id"] = 1
+```
+The ``PublishSpace`` object is implemeted exactly as a ``KeyValueStore`` object with two differences:
+1. Updated paths are published
+2. Cannot read from a ``PublishSpace`` object.
+
+
+### Subscribing
+Subscribes listen to a key on the Redis Server and will act based on changes to that key OR its subkeys. For example a subscriber to the key "camera_data" will be notified if "camera_data" is freshly uploaded by a publisher or if the path "camera_data.image" is updated.
+
+Subscribing is implented in two different ways - ``SilentSubscriber`` and ``CallbackSubscriber``. The former is designed to feel like a local variable that tracks the data in the server as closely as possible. It silently updates every time something is published. The latter allows the user to specify a function that should be called every time a message is published.
+
+#### SilentSubscriber
+
+A silent subscriber is initialized by specifying a channel name and an interface as below. Be sure to call subscriber.listen()! It engages the subscriber. Without it, the subcriber will not be tracking published updates
+
+```python
+from reem.datatypes import PublishSpace, SilentSubscriber
+from reem.connection import RedisInterface
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
+
+# Initialize a publisher
+publisher = PublishSpace(interface)
+
+# Initialize a silent subscriber
+subscriber = SilentSubscriber(channel="silent_channel", interface=interface)
+subscriber.listen()
+```
+
+To read the subscribers data, access it as though it were a dictionary. If you need to access the whole data strucutre associated with this channel, call ``subscriber.value()``
+```python
+publisher["silent_channel"] = {"number": 5, "string":"REEM"}
+time.sleep(0.01)
+
+foo = subscriber["number"].read()
+# foo = 5
+foo = subscriber.value()
+# foo = {"number": 5, "string":"REEM"}
+
+
+publisher["silent_channel"] = 5
+time.sleep(0.01)
+
+foo = subscriber.value()
+# foo = 5
+```
+
+#### CallbackSubscriber
+
+A callback subscriber allows you to call a function after every update. The function you set is required to take in keyword arguments ``data`` and ``updated_path`` that give information about the update. The behavior of the callback subscriber is as follows:
+1. Listen to channel
+2. Hear ``updated_path`` was modified in the server
+3. Pull new data at ``updated_path``
+4. Insert new data into local copy
+5. Call user function with arguments
+    - ``data`` - all data underneath this channel name in the server
+        - Includes what was updated and what was there before
+    - ``updated_path`` - the path that was modified by the recent publish
+    - ``**kwargs`` - unpacked keyword arguments that user provided with instantiation of subscriber.
+
+The initialization of a ``CallbackSubscriber`` is as below:
+```python
+from reem.datatypes import PublishSpace, CallbackSubscriber
+from reem.connection import RedisInterface
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
+
+# Initialize a publisher
+publisher = PublishSpace(interface)
+
+
+# Callback Function
+def callback(data, updated_path, foo):
+    print("Foo = {}".format(foo))
+    print("Data = {}".format(data))
+
+# # Initialize a callback subscriber
+subscriber = CallbackSubscriber(channel="callback_channel",
+                                interface=interface,
+                                callback_function=callback,
+                                kwargs={"foo":5})
+subscriber.listen()
+```
+The execution of the callback function happens in a secondary thread. When the following commands are executed by the publisher, the subscriber will automatically listen and act.
+
+```python
+publisher["callback_channel"] = {"number": 5, "string": "REEM"}
+publisher["callback_channel"]["number"] = 6
+```
+The standard out of the above execution is
+```
+Foo = 5
+Updated Path = callback_channel
+Data = {'number': 6, 'string': 'REEM'}
+Foo = 5
+Updated Path = callback_channel.number
+Data = {'number': 6, 'string': 'REEM'}
+```

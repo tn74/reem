@@ -237,10 +237,10 @@ class RawSubscriber:
 
 
 class SilentSubscriber(Reader):
-    def __init__(self, top_key_name, interface):
-        super().__init__(top_key_name, interface)
+    def __init__(self, channel_name, interface):
+        super().__init__(channel_name, interface)
         self.local_copy = {}
-        self.passive_subscriber = RawSubscriber(top_key_name + "*", interface, self.update_local_copy, {})
+        self.passive_subscriber = RawSubscriber(channel_name + "*", interface, self.update_local_copy, {})
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
@@ -277,16 +277,17 @@ class SilentSubscriber(Reader):
 
 
 class CallbackSubscriber(SilentSubscriber):
-    def __init__(self, top_key_name, interface, callback_function, kwargs):
-        super().__init__(top_key_name, interface)
+    def __init__(self, channel, interface, callback_function, kwargs):
+        super().__init__(channel, interface)
         self.queue = queue.Queue()
-        self.passive_subscriber = RawSubscriber(top_key_name + "*", interface, self.call_user_function, {})
+        self.passive_subscriber = RawSubscriber(channel + "*", interface, self.call_user_function, {})
         self.callback_function = callback_function
         self.kwargs = kwargs
 
     def call_user_function(self, channel, message):
         self.update_local_copy(channel, message)
-        self.callback_function(data=self.value(), updated_path=channel, **self.kwargs)
+        channel_name = channel.split("__pubspace@0__:")[1]
+        self.callback_function(data=self.value(), updated_path=channel_name, **self.kwargs)
 
     def process_update(self, channel, message):
         self.update_local_copy(channel, message)
