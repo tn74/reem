@@ -105,7 +105,7 @@ print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
 In ``.``, run ``python3 example.py``
 If it runs without error, congratulations! Installation was successful. Let's look deeper at the code.
 
-#### Initialization
+### Initialization
 ```python
 interface = RedisInterface(host="localhost")
 interface.initialize()
@@ -116,7 +116,7 @@ The ``interface`` variable defines what a connection to redis is going to look l
 Every datatype you wish to instantiate later is going to refer to this interface to know what server it is connected to. Here, we instantiate a ``KeyValueStore `` object with the interface as the variable ``server``. A ``KeyValueStore`` object serves as your standard get and set database.
 
 
-#### Database Syntax
+### Database Syntax
 ```python
 # Set a key and read it and its subkeys
 server["foo"] = {"number": 100.0, "string": "REEM"}
@@ -130,7 +130,7 @@ print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
 ```
 In the first section of this example code, we set a top level json inside the server to be a python dictionary. Next we read exactly what we wrote. What we get back is a python dictionary identical to the one we submitted. We can also execute a read on a specific subkey of the data we set as we do in third line.
 
-In the second section of the code, we set a numpy array inside the redis server. A numpy array is treated exactly as any other object that we had. Internally, it is handled differently than the strings and numbers we set earlier because a numpy array is not serialiable and thus cannot normally be stored in a JSON. If you are interestined in handling more non-serializable data types, see the ``Ship`` class documentation, coming soon.
+In the second section of the code, we set a numpy array inside the redis server. Normally, numpy arrays can't be stored in JSONs because they are not serialzable. Internally, REEM handles it differently, but you don't have to worry about that. If you are interestined in handling more non-serializable data types, see the ``Ship`` class documentation, coming soon.
 
 Congratulations! You have completed the basic tutorial on REEM. You can explore further topics of interest to you:
 - Key Value Store Paradigm
@@ -144,115 +144,68 @@ cd ..
 python3 ImageProcessing.py
 ```
 If the file executes without error, you have successfully installed and ran a program with REEM!  -->
-## Getting Started
-Before any machines can communicate using REEM, someone has to run a redis server. Set up a computer to run a redis server. This can be on your local machine. These [instructions](https://redis.io/topics/quickstart) are a great help.
+## Datatypes
+The following sections assume you are running a local redis server with rejson. See the [tutorial](#Tutorial) to get those up and running.
 
-### Starting an Interface
-```python
-from reem import supports, ships
+## KeyValueStore Database
 
-interface = supports.RedisInterface(host="localhost", shippers=[ships.NumpyShip()])
-interface.initialize()
-```
-The code above encapsulates information about the connection a specific redis database. You must specify:
-- ``hostname`` hostname of the computer running the redis server. Could be an IP address
-- ``ships`` A list of ships that will handle how non-serializable data will be transferred between your program and redis
+The ``KeyValueStore`` object is a get and set database with nested data structures. The interface to the user is almost identical to that of a python dictionary. Each time you set something in the "dictionary", the corresponding entry is updated in the server. To read from the server, you access the entry in the "dictionary" and call ``.read()``
 
-**Note: ``interface.initialize()`` must be called before this interface can be used**
-
-
-### Key-Value Database
+#### Set Up
 ```python
 from reem.datatypes import KeyValueStore
+from reem.connection import RedisInterface
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
 server = KeyValueStore(interface)
 ```
-The above is all you need to start your data store. The interface defines what database``server`` is connected to. From there you can write to and read from the database as below.
+The above is all you need to start your connection to the database. See the [initialization](#Initialization) section of the tutorial for more information about the interface variable.
+
+
+#### Basic Usage
+```python
+data = {'number': 1000, 'string': 'REEM'}
+server["foo"] = flat_data
+
+bar = server["foo"].read()
+# Sets bar = {'number': 1000, 'string': 'REEM'}
+
+bar = server["foo"]["number"].read()
+# Sets bar = 1000
+```
+The first section writes a dictionary to the Redis Server. The second section demonstrates that you can read either the whole dictionary or a subkey of it. The result will be identical to what you would get if you treated server like a local dictionary.
+
+#### Updates
+You can update and read entries as you would a normal python dictionary:
 
 ```python
->>> data = {"number": 1000, "string": "REEM" }
->>> server["flat_data"] = data
->>> server["flat_data"].read()
-{'number': 1000, 'string': 'REEM'}
->>> server["flat_data"]["number"].read()
-1000
+server["foo"]["new_key"] = data
+
+bar = server["flat_data"].read()
+# bar = {'number': 1000, 'string': 'REEM', 'new_key':{'number': 1000, 'string': 'REEM'} }
+
+bar = server["flat_data"]["new_key"]["number"].read()
+# bar = 1000
+
+import numpy as np
+server["foo"] = np.arange(3)
+
+bar = server["foo"].read()
+# bar = array([0, 1, 2])
 ```
 
-#### Things You Can Do:
+#### Limitations
 
-1. Set/Read a whole dictionary or Set/Read a subkey
-
+1. Have a list with nonserializable types.
 ```python
-# Set and read a whole dictionary
->>> server["foo"] = {"key1": data, "key2": data}
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
-
-
-# Set and read a terminal key
->>> server["foo"]["key1"]["number"] = 0
->>> server["foo"]["key1"]["number"].read()
-0
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
-
-
-# Set and read a subdictionary
->>> server["foo"]["key1"] = data
->>> server["foo"]["key1"].read()
-{'number': 1000, 'string': 'REEM'}
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
+server["foo"] = {"bar":[np.arange(3), np.arange(4)]} # Not Okay
+server["foo"] = {"bar":[3, 4]} # Okay
 ```
-
-2. Set dictionaries that contain non-serializable types if they are covered by the interface's ships
-
+REEM does not presently check lists for non serializable types. We hope to allow this in a future release. For now, we ask you substitute the list with a dictionary
 ```python
-# Set and read dictionary containing numpy array
->>> server["bar"] = {"image": np.random.rand(3,4)}
->>> server["bar"].read()
-{'image': array([[0.71795717, 0.77878419, 0.25546115, 0.7323883 ],
-       [0.03937303, 0.28085217, 0.79515465, 0.0912133 ],
-       [0.91485541, 0.99704263, 0.65124421, 0.4761731 ]])}
-
-# Read array directly
->>> server["new_key"]["image"].read()
-array([[0.71795717, 0.77878419, 0.25546115, 0.7323883 ],
-       [0.03937303, 0.28085217, 0.79515465, 0.0912133 ],
-       [0.91485541, 0.99704263, 0.65124421, 0.4761731 ]])
-```
-#### Things You Can't Do:
-1. Set a top level key of the server to something other than a dictionary.
-```python
- server["new_key"] = image_array              # Not Okay
- server["new_key"] = {"foo":image_array}      # Okay
-```
-2. Set a subkey of a key that does not exist yet
-```python
- server["existing_key"]["non_existant_key"]["non_existant_key"] = 5  # Not Okay
- server["existing_key"]["non_existant_key"] = 5  # Okay
-```
-#### Changing Schema
-
-REEM by default presumes that the schema underneath a top level key is static. For example, if you write
-```python
- server["new_key"] = {"foo":image_array, "bar":1}
-```
-then REEM expects that the only paths accessed are ``new_key, new_key.foo, new_key.bar``. Additionally it expects that ``new_key.foo`` is a numpy array and ``new_key.bar`` is a number. This is done for performance reasons.
-
-If you want to dynamically change the schema under a specific key, you must call this function with the key names in the list ``keys`` before you alter the schema
-
-```python
- server.track_schema_changes(True, keys=["new_key"])
+server["foo"] = {"bar":[np.arange(3), np.arange(4)]} # Not Okay
+server["foo"] = {"bar":{0: np.arange(3), 1: np.arange(4)}} # Okay
 ```
 
-Once you do this, you can overwrite the top level key or any subkey with anything you like, doing something like below.
-
-```python
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
->>> server["foo"] = data
->>> server["foo"].read()
-{'number': 1000, 'string': 'REEM'}
-```
-
-**Note that if you fail to call ``track_schema_changes()`` and update the schema, there is no guaranteed behavior. It may or may not work.**
+## Publish Subscribe
