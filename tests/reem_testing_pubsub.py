@@ -71,6 +71,14 @@ def test_callback_subscriber():
     test_update_with_nparrays()
 
 
+# Subscribe to top level value instead of dictionary
+def test_top_level_no_dict():
+    subscriber = SilentSubscriber("not_dict", interface)
+    subscriber.listen()
+    num = random.randint(0,10000)
+    pspace["not_dict"] = num
+    time.sleep(.1)
+    assert subscriber.value() == num
 
 """
 Subscribing to N Topics:
