@@ -226,7 +226,7 @@ class PublishSpace(KeyValueStore):
             self.entries[key] = (Publisher(key, self.interface), None)
 
 
-class PassiveSubscriber:
+class RawSubscriber:
     def __init__(self, channel_name, interface, callback_function, kwargs):
         self.listening_channel = '__pubspace@0__:{}'.format(channel_name)
         self.listener = ChannelListener(interface, self.listening_channel, callback_function, kwargs)
@@ -236,11 +236,11 @@ class PassiveSubscriber:
         self.listener.start()
 
 
-class ActiveSubscriber(Reader):
+class SilentSubscriber(Reader):
     def __init__(self, top_key_name, interface):
         super().__init__(top_key_name, interface)
         self.local_copy = {}
-        self.passive_subscriber = PassiveSubscriber(top_key_name + "*", interface, self.update_local_copy, {})
+        self.passive_subscriber = RawSubscriber(top_key_name + "*", interface, self.update_local_copy, {})
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
@@ -265,6 +265,7 @@ class ActiveSubscriber(Reader):
         self.passive_subscriber.listen()
 
     def value(self):
+        # Copy dictionary - paths to omit is blank, so we copy everything
         return copy_dictionary_without_paths(self.local_copy, [])
 
     def __getitem__(self, item):
@@ -272,16 +273,17 @@ class ActiveSubscriber(Reader):
         return ActiveSubscriberPathHandler(None, self, "{}{}".format(Path.rootPath(), item))
 
 
-class UpdateSubscriber(ActiveSubscriber):
-    def __init__(self, top_key_name, interface):
+class CallbackSubscriber(SilentSubscriber):
+    def __init__(self, top_key_name, interface, callback_function, kwargs):
         super().__init__(top_key_name, interface)
-        self.local_copy = {}
         self.queue = queue.Queue()
-        self.passive_subscriber = PassiveSubscriber(top_key_name + "*", interface, self.post_to_queue, {})
+        self.passive_subscriber = RawSubscriber(top_key_name + "*", interface, self.call_user_function, {})
+        self.callback_function = callback_function
+        self.kwargs = kwargs
 
-    def post_to_queue(self, channel, message):
-        self.queue.put((channel, message))
-        logger.info("Called")
+    def call_user_function(self, channel, message):
+        self.update_local_copy(channel, message)
+        self.callback_function(data=self.value(), updated_path=channel, **self.kwargs)
 
     def process_update(self, channel, message):
         self.update_local_copy(channel, message)
