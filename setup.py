@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='reem',
-    version='v0.0.3',
+    version='v0.0.4',
     packages=['reem'],
     url='https://www.github.com/tn74/reem',
     license='Apache 2.0',
