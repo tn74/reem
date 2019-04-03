@@ -6,9 +6,6 @@ import queue
 
 logger = logging.getLogger("reem.datatypes")
 
-SEPARATOR_CHARACTER = "&&&&"
-ROOT_VALUE_SEQUENCE = "%%%%"
-
 
 class Writer:
     def __init__(self, top_key_name, interface):

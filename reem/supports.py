@@ -1,7 +1,6 @@
 from threading import Thread
 import rejson
 from .helper_functions import *
-from . import datatypes
 
 
 class MetadataListener(Thread):
@@ -46,7 +45,7 @@ class PathHandler:
 class ReadablePathHandler(PathHandler):
     def read(self):
         server_value = self.reader.read_from_redis(self.path)
-        root_value_read_name = "{}ROOT{}".format(datatypes.ROOT_VALUE_SEQUENCE, datatypes.ROOT_VALUE_SEQUENCE)
+        root_value_read_name = "{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE)
         if type(server_value)==dict and root_value_read_name in server_value:
             return server_value[root_value_read_name]
         return server_value

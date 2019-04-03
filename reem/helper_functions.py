@@ -107,3 +107,7 @@ def check_valid_key_name(name):
         if k in name:
             return False
     return True
+
+
+SEPARATOR_CHARACTER = "&&&&"
+ROOT_VALUE_SEQUENCE = "%%%%"
