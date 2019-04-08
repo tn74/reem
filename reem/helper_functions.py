@@ -91,8 +91,7 @@ def get_special_paths(set_path: str, set_value, sp_to_label: Dict, label_to_ship
 
     else:
         for k, v in set_value.items():
-            if not check_valid_key_name(k):
-                raise ValueError("Invalid Key Name: {}".format(k))
+            assert check_valid_key_name(k), "Invalid Key: {}".format(k)
             child_path = "{}.{}".format(set_path, k)
             child_add = get_special_paths(child_path, v, sp_to_label, label_to_ship)
             additions = additions.union(child_add)
@@ -100,9 +99,15 @@ def get_special_paths(set_path: str, set_value, sp_to_label: Dict, label_to_ship
     return additions
 
 
-def check_valid_key_name(name: str):
+def check_valid_key_name(name):
+    if type(name) not in [str]:
+        return False
     bad_chars = ["*", ".", "&&&&"]
     for k in bad_chars:
         if k in name:
             return False
     return True
+
+
+SEPARATOR_CHARACTER = "&&&&"
+ROOT_VALUE_SEQUENCE = "%%%%"

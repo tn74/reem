@@ -1,9 +1,22 @@
 # REEM
 
-REEM is a centralized middleware package for robotic communication that utilizes Redis, a fast in-memory key-value database. It is designed for ease of use and efficiency.
+REEM (Redis Extendable Efficient Middleware) is a centralized middleware package for robotic communication. It is designed to be a single-package solution for passing information anywhere in the robot while emphasizing ease of use and efficiency.
 
-## Design Philosophy:
-REEM expects you will store your data as a nested data structure - think of communication between computers as passing JSON's between machines. REEM is built to model as much data as it can using Redis's [ReJSON](https://pypi.org/project/rejson/) module. This works great for serializable data, but we often want to work with non-serializable types like numpy arrays. Users can define encoder/decoder objects called Ships that define how non-serializable types should be pushed to and retrieved from Redis. REEM provides a default Ship for handling numpy arrays.
+To make it easy, we chose to model information as a nested data structure that closely resembles python dictionaries. To the user, working with a database feels like working with a python dictionary. Out of the box, REEM supports communicating all native python types and numpy arrays.
+
+To make it fast, we used [Redis](https://redis.io/) (an in-memory key-value database) running [ReJSON](https://oss.redislabs.com/redisjson/) (enabling Redis to store JSON data) as a central information store. To get maximum performance, we give users the power to control exactly how information is passed between the local program and Redis by defining their own encoder/decoder objects.
+
+REEM currently offers two communication paradigms:
+- get/set database
+- publish-subscribe
+
+To install the python package (and its dependencies), run
+```
+pip install reem rejson redis six numpy
+```
+Go To:
+- [Tutorial](#Tutorial)
+- [Datatypes](#Datatypes)
 
 ## Tutorial
 
@@ -105,7 +118,7 @@ print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
 In ``.``, run ``python3 example.py``
 If it runs without error, congratulations! Installation was successful. Let's look deeper at the code.
 
-#### Initialization
+### Initialization
 ```python
 interface = RedisInterface(host="localhost")
 interface.initialize()
@@ -116,7 +129,7 @@ The ``interface`` variable defines what a connection to redis is going to look l
 Every datatype you wish to instantiate later is going to refer to this interface to know what server it is connected to. Here, we instantiate a ``KeyValueStore `` object with the interface as the variable ``server``. A ``KeyValueStore`` object serves as your standard get and set database.
 
 
-#### Database Syntax
+### Database Syntax
 ```python
 # Set a key and read it and its subkeys
 server["foo"] = {"number": 100.0, "string": "REEM"}
@@ -130,7 +143,7 @@ print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
 ```
 In the first section of this example code, we set a top level json inside the server to be a python dictionary. Next we read exactly what we wrote. What we get back is a python dictionary identical to the one we submitted. We can also execute a read on a specific subkey of the data we set as we do in third line.
 
-In the second section of the code, we set a numpy array inside the redis server. A numpy array is treated exactly as any other object that we had. Internally, it is handled differently than the strings and numbers we set earlier because a numpy array is not serialiable and thus cannot normally be stored in a JSON. If you are interestined in handling more non-serializable data types, see the ``Ship`` class documentation, coming soon.
+In the second section of the code, we set a numpy array inside the redis server. Normally, numpy arrays can't be stored in JSONs because they are not serialzable. Internally, REEM handles it differently, but you don't have to worry about that. If you are interestined in handling more non-serializable data types, see the ``Ship`` class documentation, coming soon.
 
 Congratulations! You have completed the basic tutorial on REEM. You can explore further topics of interest to you:
 - Key Value Store Paradigm
@@ -144,115 +157,199 @@ cd ..
 python3 ImageProcessing.py
 ```
 If the file executes without error, you have successfully installed and ran a program with REEM!  -->
-## Getting Started
-Before any machines can communicate using REEM, someone has to run a redis server. Set up a computer to run a redis server. This can be on your local machine. These [instructions](https://redis.io/topics/quickstart) are a great help.
+## Datatypes
+The following sections assume you are running a local redis server with rejson. See the [tutorial](#Tutorial) to get those up and running.
 
-### Starting an Interface
-```python
-from reem import supports, ships
+## KeyValueStore Database
 
-interface = supports.RedisInterface(host="localhost", shippers=[ships.NumpyShip()])
-interface.initialize()
-```
-The code above encapsulates information about the connection a specific redis database. You must specify:
-- ``hostname`` hostname of the computer running the redis server. Could be an IP address
-- ``ships`` A list of ships that will handle how non-serializable data will be transferred between your program and redis
+The ``KeyValueStore`` object is a get and set database with nested data structures. The interface to the user is almost identical to that of a python dictionary. Each time you set something in the "dictionary", the corresponding entry is updated in the server. To read from the server, you access the entry in the "dictionary" and call ``.read()``
 
-**Note: ``interface.initialize()`` must be called before this interface can be used**
-
-
-### Key-Value Database
+#### Set Up
 ```python
 from reem.datatypes import KeyValueStore
+from reem.connection import RedisInterface
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
 server = KeyValueStore(interface)
 ```
-The above is all you need to start your data store. The interface defines what database``server`` is connected to. From there you can write to and read from the database as below.
+The above is all you need to start your connection to the database. See the [initialization](#Initialization) section of the tutorial for more information about the interface variable.
+
+
+#### Basic Usage
+```python
+data = {'number': 1000, 'string': 'REEM'}
+server["foo"] = flat_data
+
+bar = server["foo"].read()
+# Sets bar = {'number': 1000, 'string': 'REEM'}
+
+bar = server["foo"]["number"].read()
+# Sets bar = 1000
+```
+The first section writes a dictionary to the Redis Server. The second section demonstrates that you can read either the whole dictionary or a subkey of it. The result will be identical to what you would get if you treated server like a local dictionary.
+
+#### Updates
+You can update and read entries as you would a normal python dictionary:
 
 ```python
->>> data = {"number": 1000, "string": "REEM" }
->>> server["flat_data"] = data
->>> server["flat_data"].read()
-{'number': 1000, 'string': 'REEM'}
->>> server["flat_data"]["number"].read()
-1000
+server["foo"]["new_key"] = data
+
+bar = server["flat_data"].read()
+# bar = {'number': 1000, 'string': 'REEM', 'new_key':{'number': 1000, 'string': 'REEM'} }
+
+bar = server["flat_data"]["new_key"]["number"].read()
+# bar = 1000
+
+import numpy as np
+server["foo"] = np.arange(3)
+
+bar = server["foo"].read()
+# bar = array([0, 1, 2])
 ```
 
-#### Things You Can Do:
+#### Limitations
 
-1. Set/Read a whole dictionary or Set/Read a subkey
+1. Cannot use non-string Keys
+```python
+server["foo"] = {0:"zero", 1:"one"} # Not Okay
+server["foo"] = {"0":"zero", "1":"one"} # Okay
+```
+REEM currently assumes all keys are strings to avoid having to parse JSON keys to determine if they are strings or numbers.
+
+2. Cannot have a list with nonserializable types.
+```python
+server["foo"] = {"bar":[np.arange(3), np.arange(4)]} # Not Okay
+server["foo"] = {"bar":[3, 4]} # Okay
+```
+REEM does not presently check lists for non serializable types. We hope to allow this in a future release. For now, we ask you substitute the list with a dictionary
+```python
+server["foo"] = {"bar":[np.arange(3), np.arange(4)]} # Not Okay
+server["foo"] = {"bar":{"arr1": np.arange(3), "arr2": np.arange(4)}} # Okay
+```
+
+## Publish Subscribe
+The Publish-Subscribe Paradigm in REEM is designed to be as user-friendly as possible. Users publish data the same way they would set an item in a dictionary. Users subscribe to data by specifying what path inside that nested dictionary they would like to listen to.
+
+### Publishing
+Publishing is implemented with a PublishSpace Object. It is initialized with a RedisInterface object as below:
 
 ```python
-# Set and read a whole dictionary
->>> server["foo"] = {"key1": data, "key2": data}
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
+from reem.datatypes import PublishSpace
+from reem.connection import RedisInterface
 
-
-# Set and read a terminal key
->>> server["foo"]["key1"]["number"] = 0
->>> server["foo"]["key1"]["number"].read()
-0
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
-
-
-# Set and read a subdictionary
->>> server["foo"]["key1"] = data
->>> server["foo"]["key1"].read()
-{'number': 1000, 'string': 'REEM'}
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
+interface = RedisInterface(host="localhost")
+interface.initialize()
+publisher = PublishSpace(interface)
 ```
-
-2. Set dictionaries that contain non-serializable types if they are covered by the interface's ships
+Treat ``publisher`` like a dictionary. Each time you set something in ``publisher``, the corresponding entry in the server is updated and a message is published stating that path was updated. Subscribers will see the message and pull the updated data. The below code gives an example
 
 ```python
-# Set and read dictionary containing numpy array
->>> server["bar"] = {"image": np.random.rand(3,4)}
->>> server["bar"].read()
-{'image': array([[0.71795717, 0.77878419, 0.25546115, 0.7323883 ],
-       [0.03937303, 0.28085217, 0.79515465, 0.0912133 ],
-       [0.91485541, 0.99704263, 0.65124421, 0.4761731 ]])}
+data = {"image": np.random.rand(640, 480, 3), "id": 0}
 
-# Read array directly
->>> server["new_key"]["image"].read()
-array([[0.71795717, 0.77878419, 0.25546115, 0.7323883 ],
-       [0.03937303, 0.28085217, 0.79515465, 0.0912133 ],
-       [0.91485541, 0.99704263, 0.65124421, 0.4761731 ]])
-```
-#### Things You Can't Do:
-1. Set a top level key of the server to something other than a dictionary.
-```python
- server["new_key"] = image_array              # Not Okay
- server["new_key"] = {"foo":image_array}      # Okay
-```
-2. Set a subkey of a key that does not exist yet
-```python
- server["existing_key"]["non_existant_key"]["non_existant_key"] = 5  # Not Okay
- server["existing_key"]["non_existant_key"] = 5  # Okay
-```
-#### Changing Schema
+# publishes raw_image
+publisher["raw_image"] = data
 
-REEM by default presumes that the schema underneath a top level key is static. For example, if you write
-```python
- server["new_key"] = {"foo":image_array, "bar":1}
+# publishes raw_image.id
+publisher["raw_image"]["id"] = 1
 ```
-then REEM expects that the only paths accessed are ``new_key, new_key.foo, new_key.bar``. Additionally it expects that ``new_key.foo`` is a numpy array and ``new_key.bar`` is a number. This is done for performance reasons.
+The ``PublishSpace`` object is implemeted exactly as a ``KeyValueStore`` object with two differences:
+1. Updated paths are published
+2. Cannot read from a ``PublishSpace`` object.
 
-If you want to dynamically change the schema under a specific key, you must call this function with the key names in the list ``keys`` before you alter the schema
+
+### Subscribing
+Subscribes listen to a key on the Redis Server and will act based on changes to that key OR its subkeys. For example a subscriber to the key "camera_data" will be notified if "camera_data" is freshly uploaded by a publisher or if the path "camera_data.image" is updated.
+
+Subscribing is implented in two different ways - ``SilentSubscriber`` and ``CallbackSubscriber``. The former is designed to feel like a local variable that tracks the data in the server as closely as possible. It silently updates every time something is published. The latter allows the user to specify a function that should be called every time a message is published.
+
+#### SilentSubscriber
+
+A silent subscriber is initialized by specifying a channel name and an interface as below. Be sure to call subscriber.listen()! It engages the subscriber. Without it, the subcriber will not be tracking published updates
 
 ```python
- server.track_schema_changes(True, keys=["new_key"])
+from reem.datatypes import PublishSpace, SilentSubscriber
+from reem.connection import RedisInterface
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
+
+# Initialize a publisher
+publisher = PublishSpace(interface)
+
+# Initialize a silent subscriber
+subscriber = SilentSubscriber(channel="silent_channel", interface=interface)
+subscriber.listen()
 ```
 
-Once you do this, you can overwrite the top level key or any subkey with anything you like, doing something like below.
+To read the subscribers data, access it as though it were a dictionary. If you need to access the whole data strucutre associated with this channel, call ``subscriber.value()``
+```python
+publisher["silent_channel"] = {"number": 5, "string":"REEM"}
+time.sleep(0.01)
+
+foo = subscriber["number"].read()
+# foo = 5
+foo = subscriber.value()
+# foo = {"number": 5, "string":"REEM"}
+
+
+publisher["silent_channel"] = 5
+time.sleep(0.01)
+
+foo = subscriber.value()
+# foo = 5
+```
+
+#### CallbackSubscriber
+
+A callback subscriber allows you to call a function after every update. The function you set is required to take in keyword arguments ``data`` and ``updated_path`` that give information about the update. The behavior of the callback subscriber is as follows:
+1. Listen to channel
+2. Hear ``updated_path`` was modified in the server
+3. Pull new data at ``updated_path``
+4. Insert new data into local copy
+5. Call user function with arguments
+    - ``data`` - all data underneath this channel name in the server
+        - Includes what was updated and what was there before
+    - ``updated_path`` - the path that was modified by the recent publish
+    - ``**kwargs`` - unpacked keyword arguments that user provided with instantiation of subscriber.
+
+The initialization of a ``CallbackSubscriber`` is as below:
+```python
+from reem.datatypes import PublishSpace, CallbackSubscriber
+from reem.connection import RedisInterface
+
+interface = RedisInterface(host="localhost")
+interface.initialize()
+
+# Initialize a publisher
+publisher = PublishSpace(interface)
+
+
+# Callback Function
+def callback(data, updated_path, foo):
+    print("Foo = {}".format(foo))
+    print("Data = {}".format(data))
+
+# # Initialize a callback subscriber
+subscriber = CallbackSubscriber(channel="callback_channel",
+                                interface=interface,
+                                callback_function=callback,
+                                kwargs={"foo":5})
+subscriber.listen()
+```
+The execution of the callback function happens in a secondary thread. When the following commands are executed by the publisher, the subscriber will automatically listen and act.
 
 ```python
->>> server["foo"].read()
-{'key1': {'number': 1000, 'string': 'REEM'}, 'key2': {'number': 1000, 'string': 'REEM'}}
->>> server["foo"] = data
->>> server["foo"].read()
-{'number': 1000, 'string': 'REEM'}
+publisher["callback_channel"] = {"number": 5, "string": "REEM"}
+publisher["callback_channel"]["number"] = 6
+```
+The standard out of the above execution is
+```
+Foo = 5
+Updated Path = callback_channel
+Data = {'number': 6, 'string': 'REEM'}
+Foo = 5
+Updated Path = callback_channel.number
+Data = {'number': 6, 'string': 'REEM'}
 ```
 
-**Note that if you fail to call ``track_schema_changes()`` and update the schema, there is no guaranteed behavior. It may or may not work.**

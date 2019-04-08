@@ -202,7 +202,7 @@ def test_publish():
 
 def test_pubsub():
     p = datatypes.Publisher("test_pubsub", intf)
-    active = datatypes.ActiveSubscriber("test_pubsub", intf)
+    active = datatypes.SilentSubscriber("test_pubsub", intf)
     active.listen()
     p.send_to_redis(".", flat_data)
     time.sleep(1)

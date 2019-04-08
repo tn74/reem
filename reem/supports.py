@@ -1,7 +1,6 @@
 from threading import Thread
 import rejson
 from .helper_functions import *
-from . import datatypes
 
 
 class MetadataListener(Thread):
@@ -33,16 +32,12 @@ class PathHandler:
         self.path = initial_path
 
     def __getitem__(self, item):
-        assert type(item) == str
-        if not check_valid_key_name(item):
-            raise ValueError("Invalid Key Name: {}".format(item))
+        assert check_valid_key_name(item)
         self.path = append_to_path(self.path, item)
         return self
 
     def __setitem__(self, instance, value):
-        assert type(instance) == str
-        if not check_valid_key_name(instance):
-            raise ValueError("Invalid Key Name: {}".format(instance))
+        assert check_valid_key_name(instance)
         self.path = append_to_path(self.path, instance)
         self.writer.send_to_redis(self.path, value)
 
@@ -50,7 +45,7 @@ class PathHandler:
 class ReadablePathHandler(PathHandler):
     def read(self):
         server_value = self.reader.read_from_redis(self.path)
-        root_value_read_name = "{}ROOT{}".format(datatypes.ROOT_VALUE_SEQUENCE, datatypes.ROOT_VALUE_SEQUENCE)
+        root_value_read_name = "{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE)
         if type(server_value)==dict and root_value_read_name in server_value:
             return server_value[root_value_read_name]
         return server_value
@@ -60,7 +55,6 @@ class ActiveSubscriberPathHandler(PathHandler):
     def read(self):
         return_val = self.reader.local_copy
         dissect_path = self.path[1:]
-        print("dissect_path: {}".format(dissect_path))
         if len(dissect_path) == 0:
             pass
         elif "." in dissect_path:

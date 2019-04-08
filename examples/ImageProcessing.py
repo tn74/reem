@@ -5,6 +5,9 @@ import numpy as np
 import time
 
 
+TIME_TO_RUN = 5.0  # seconds
+
+
 class Camera(Thread):
     def __init__(self, interface):
         self.publisher = PublishSpace(interface=interface)
@@ -16,7 +19,8 @@ class Camera(Thread):
         self.publisher["raw_image"] = {"image": image, "id": self.images_sent}
 
     def run(self):
-        while True:
+        start_time = time.time()
+        while time.time() < start_time + TIME_TO_RUN:
             self.send_image()
             self.images_sent += 1
             print("Image {} Sent".format(self.images_sent))
@@ -24,30 +28,52 @@ class Camera(Thread):
 
 class ImageProcessor(Thread):
     def __init__(self, interface):
-        self.subscriber = UpdateSubscriber(top_key_name="raw_image", interface=interface)
+        self.subscriber = CallbackSubscriber(channel="raw_image",
+                                             interface=interface,
+                                             callback_function=self.process_image,
+                                             kwargs={})
         self.subscriber.listen()
         self.publisher = PublishSpace(interface=interface)
         super().__init__()
 
-    def process_images(self):
-        while True:
-            channel, message = self.subscriber.queue.get()
-            self.subscriber.process_update(channel, message)
-            data = self.subscriber.value()
-            print("Image {} Read".format(data["id"]))
+    def process_image(self, data, updated_path):
+        print("Image {} Read".format(data["id"]))
+        processed_data = {"id": data["id"], "mean": np.nanmean(data["image"])}
+        self.publisher["processed_data"] = processed_data
 
     def run(self):
-        self.process_images()
+        start_time = time.time()
+        while time.time() < start_time + TIME_TO_RUN:
+            time.sleep(0.1)
+
+
+class DataActor(Thread):
+    def __init__(self, interface):
+        self.subscriber = CallbackSubscriber(channel="processed_data",
+                                             interface=interface,
+                                             callback_function=self.actuation,
+                                             kwargs={})
+        self.subscriber.listen()
+        self.publisher = PublishSpace(interface=interface)
+        super().__init__()
+
+    def actuation(self, data, updated_path):
+        print("Acted on {}".format(data))
+
+    def run(self):
+        start_time = time.time()
+        while time.time() < start_time + TIME_TO_RUN:
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":
     interface = RedisInterface(host='localhost')
+
     camera = Camera(interface)
-    camera.setDaemon(True)
     processor = ImageProcessor(interface)
-    processor.setDaemon(True)
+    actor = DataActor(interface)
+
     processor.start()
     camera.start()
-    time.sleep(5)
-
+    actor.start()
 

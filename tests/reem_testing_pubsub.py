@@ -1,5 +1,5 @@
 from tests.testing import *
-from reem.datatypes import PublishSpace, ActiveSubscriber, PassiveSubscriber, UpdateSubscriber
+from reem.datatypes import PublishSpace, SilentSubscriber, CallbackSubscriber
 from reem.connection import RedisInterface
 import logging
 import numpy as np
@@ -25,31 +25,13 @@ interface.initialize()
 
 pspace = PublishSpace(interface)
 pspace.track_schema_changes(True)
-active = ActiveSubscriber("channel", interface)
+active = SilentSubscriber("channel", interface)
 active.listen()
-
-
-def callback_1(channel, message, store_list):
-    store_list.append( (channel, message) )
-
-
-def test_passive_basic():
-    storage = []
-    passive = PassiveSubscriber(channel_name="channel",
-                                interface=interface,
-                                callback_function=callback_1,
-                                kwargs={"store_list": storage})
-    passive.listen()
-    # print(storage)
-    pspace["channel"] = flat_data
-    time.sleep(.01)
-    # print(storage)
-    assert len(storage) > 0
 
 
 def test_active_update_basic():
     pspace["channel"] = flat_data
-    time.sleep(.01)
+    time.sleep(.05)
     assert str(active.value()) == str(flat_data)
 
 
@@ -67,11 +49,9 @@ def test_active_update_sequence():
 
 def test_update_with_nparrays():
     test_active_update_sequence()
-    pspace.track_schema_changes(True)
     pspace["channel"]["nparr1"] = image_dict
     time.sleep(.05)
-    assert np.array_equal(active["nparr1"]["image"].read(), image_dict["image"])
-    pspace.track_schema_changes(False)
+    assert np.array_equal(image_dict["image"], active["nparr1"]["image"].read())
     time.sleep(.05)
     try:
         pspace["channel"]["nparr2"] = image_dict
@@ -80,15 +60,25 @@ def test_update_with_nparrays():
         pass
 
 
-def test_update_subscriber():
-    pspace.track_schema_changes(True)
-    update_subscriber = UpdateSubscriber("channel", interface)
+# Callback Subscriber Testing
+def print_data(data, updated_path):
+    print("Updated Path: {}, Data: {}".format(updated_path, data))
+
+
+def test_callback_subscriber():
+    update_subscriber = CallbackSubscriber("channel", interface, print_data, {})
     update_subscriber.listen()
     test_update_with_nparrays()
-    while not update_subscriber.queue.empty():
-        channel, message = update_subscriber.queue.get()
-        update_subscriber.process_update(channel, message)
-    assert str(active.value()) == str(update_subscriber.value())
+
+
+# Subscribe to top level value instead of dictionary
+def test_top_level_no_dict():
+    subscriber = SilentSubscriber("not_dict", interface)
+    subscriber.listen()
+    num = random.randint(0,10000)
+    pspace["not_dict"] = num
+    time.sleep(.1)
+    assert subscriber.value() == num
 
 """
 Subscribing to N Topics:

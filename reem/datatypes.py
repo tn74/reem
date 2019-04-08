@@ -6,16 +6,13 @@ import queue
 
 logger = logging.getLogger("reem.datatypes")
 
-METADATA_SEQUENCE = "$$$$"
-ROOT_VALUE_SEQUENCE = "%%%%"
-
 
 class Writer:
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
 
-        self.separator = METADATA_SEQUENCE # If changed, ensure it is changed in helper_functions
+        self.separator = SEPARATOR_CHARACTER # If changed, ensure it is changed in helper_functions
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
@@ -34,10 +31,7 @@ class Writer:
         logger.debug("SET {} {} Non-Serializables Pipelined".format(self.top_key_name, path))
         self.publish_serializables(path, value)
         logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, path))
-        self.publish_metadata()
-        logger.debug("SET {} {} Metadata Pipelined".format(self.top_key_name, path))
-        responses = self.pipeline.execute()
-        logger.debug(responses)
+        self.pipeline.execute()
         logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, path))
 
     def process_metadata(self, path, value):
@@ -55,9 +49,15 @@ class Writer:
         for p in check_paths:
             self.sp_to_label.pop(p)
         special_paths = get_special_paths(path, value, self.sp_to_label, self.interface.label_to_shipper)
+        dels = check_paths - special_paths
+        adds = special_paths - check_paths
+
         for path, label in special_paths:
             self.sp_to_label[path] = label
-        logger.debug("Special Paths: {}".format(self.sp_to_label))
+        if len(adds) > 0 or len(dels) > 0:
+            self.pipeline.jsonset(self.metadata_key_name, ".special_paths", self.sp_to_label)
+            channel, message = "__keyspace@0__:{}".format(self.metadata_key_name), "set"
+            self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
 
     def publish_non_serializables(self, path, value):
         publish_paths = list(filter(lambda special_path: path == special_path[:len(path)], self.sp_to_label.keys()))
@@ -79,23 +79,22 @@ class Writer:
         elif path not in self.sp_to_label:
             self.pipeline.jsonset(self.top_key_name, path, value)
 
-    def publish_metadata(self):
-        self.pipeline.jsonset(self.top_key_name, ".{0}METADATA{0}".format(METADATA_SEQUENCE), self.metadata)
-
 
 class Reader:
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
 
+        self.separator = "&&&&"
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.sp_to_label = self.metadata["special_paths"]
+        self.update_metadata_flag = False
         self.pipeline = self.interface.client.pipeline()
         self.pipeline_no_decode = self.interface.client_no_decode.pipeline()
 
-        # self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
-        # self.interface.metadata_listener.add_listener(self.metadata_key_name, self)
-        # self.pull_metadata = True
+        self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
+        self.interface.metadata_listener.add_listener(self.metadata_key_name, self)
+        self.pull_metadata = True
 
     def read_from_redis(self, path):
         """
@@ -104,49 +103,34 @@ class Reader:
         :return:
         """
         logger.info("GET {} {}".format(self.top_key_name, path))
-        serializables = self.perform_json_reads(path)
-        self.queue_non_serializable_reads(path)
-        return self.build_dictionary(path, serializables)
 
+        self.update_metadata()
+        logger.debug("GET {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
+        if path in self.sp_to_label:
+            return self.pull_special_path(path)
+        self.queue_reads(path)
+        logger.debug("GET {} {} Reads Queued".format(self.top_key_name, path))
+        return self.build_dictionary(path)
 
-        # logger.debug("GET {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
-        # if path in self.sp_to_label:
-        #     return self.pull_special_path(path)
-        # self.queue_non_serializable_reads(path)
-        # logger.debug("GET {} {} Reads Queued".format(self.top_key_name, path))
-        # return self.build_dictionary(path)
+    def update_metadata(self):
+        if self.pull_metadata:
+            self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
+            self.sp_to_label = self.metadata["special_paths"]
+        if self.metadata is None:
+            return None
+        self.pull_metadata = False
 
-    def perform_json_reads(self, path):
-        self.pipeline.jsonget(self.top_key_name, ".{0}METADATA{0}".format(METADATA_SEQUENCE))
+    def queue_reads(self, path):
         self.pipeline.jsonget(self.top_key_name, path)
-        responses = self.pipeline.execute()
-        self.metadata = responses[0]
-        self.sp_to_label = self.metadata["special_paths"]
-        desired_data = responses[1]
-        if path == Path.rootPath():
-            desired_data.pop("{0}METADATA{0}".format(METADATA_SEQUENCE))
-        return responses[1]
-
-
-
-    # def update_metadata(self):
-    #     if self.pull_metadata:
-    #         self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
-    #         self.sp_to_label = self.metadata["special_paths"]
-    #     if self.metadata is None:
-    #         return None
-    #     self.pull_metadata = False
-
-    def queue_non_serializable_reads(self, path):
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
         for path in special_paths:
             special_name = "{}{}".format(self.top_key_name, path)
             self.interface.label_to_shipper[self.sp_to_label[path]].read(special_name, self.pipeline_no_decode)
 
-    def build_dictionary(self, path, serializable_dict):
+    def build_dictionary(self, path):
         if path == Path.rootPath():
             path = ""
-        return_val = serializable_dict
+        return_val = self.pipeline.execute()[0]
         logger.debug("GET {} {} Pipeline Executed".format(self.top_key_name, path))
         responses = self.pipeline_no_decode.execute()
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
@@ -172,7 +156,7 @@ class KeyValueStore:
         self.track_schema = True
 
     def __setitem__(self, key, value):
-        assert type(key) == str, "Key Names must be strings"
+        assert check_valid_key_name(key), "Invalid Key: {}".format(key)
 
         if type(value) != dict:
             value = {"{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE): value}
@@ -183,15 +167,14 @@ class KeyValueStore:
         writer.send_to_redis(Path.rootPath(), value)
 
     def __getitem__(self, item):
-        assert type(item) == str
+        assert check_valid_key_name(item), "Invalid Key: {}".format(item)
         logger.debug("KVS Get Item Accessed: {}".format(item))
         self.ensure_key_existence(item)
         writer, reader = self.entries[item]
         return ReadablePathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
 
     def ensure_key_existence(self, key):
-        if not check_valid_key_name(key):
-            raise ValueError("Invalid Key Name: {}".format(key))
+        assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
             self.entries[key][0].do_metadata_update = self.track_schema
@@ -235,11 +218,12 @@ class PublishSpace(KeyValueStore):
         return PathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
 
     def ensure_key_existence(self, key):
+        assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Publisher(key, self.interface), None)
 
 
-class PassiveSubscriber:
+class RawSubscriber:
     def __init__(self, channel_name, interface, callback_function, kwargs):
         self.listening_channel = '__pubspace@0__:{}'.format(channel_name)
         self.listener = ChannelListener(interface, self.listening_channel, callback_function, kwargs)
@@ -249,11 +233,11 @@ class PassiveSubscriber:
         self.listener.start()
 
 
-class ActiveSubscriber(Reader):
-    def __init__(self, top_key_name, interface):
-        super().__init__(top_key_name, interface)
+class SilentSubscriber(Reader):
+    def __init__(self, channel_name, interface):
+        super().__init__(channel_name, interface)
         self.local_copy = {}
-        self.passive_subscriber = PassiveSubscriber(top_key_name + "*", interface, self.update_local_copy, {})
+        self.passive_subscriber = RawSubscriber(channel_name + "*", interface, self.update_local_copy, {})
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
@@ -278,6 +262,10 @@ class ActiveSubscriber(Reader):
         self.passive_subscriber.listen()
 
     def value(self):
+        root_name = "{0}ROOT{0}".format(ROOT_VALUE_SEQUENCE)
+        if root_name in self.local_copy:
+            return self.local_copy[root_name]
+        # Copy dictionary - paths to omit is blank, so we copy everything
         return copy_dictionary_without_paths(self.local_copy, [])
 
     def __getitem__(self, item):
@@ -285,16 +273,18 @@ class ActiveSubscriber(Reader):
         return ActiveSubscriberPathHandler(None, self, "{}{}".format(Path.rootPath(), item))
 
 
-class UpdateSubscriber(ActiveSubscriber):
-    def __init__(self, top_key_name, interface):
-        super().__init__(top_key_name, interface)
-        self.local_copy = {}
+class CallbackSubscriber(SilentSubscriber):
+    def __init__(self, channel, interface, callback_function, kwargs):
+        super().__init__(channel, interface)
         self.queue = queue.Queue()
-        self.passive_subscriber = PassiveSubscriber(top_key_name + "*", interface, self.post_to_queue, {})
+        self.passive_subscriber = RawSubscriber(channel + "*", interface, self.call_user_function, {})
+        self.callback_function = callback_function
+        self.kwargs = kwargs
 
-    def post_to_queue(self, channel, message):
-        self.queue.put((channel, message))
-        logger.info("Called")
+    def call_user_function(self, channel, message):
+        self.update_local_copy(channel, message)
+        channel_name = channel.split("__pubspace@0__:")[1]
+        self.callback_function(data=self.value(), updated_path=channel_name, **self.kwargs)
 
     def process_update(self, channel, message):
         self.update_local_copy(channel, message)
