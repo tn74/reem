@@ -3,7 +3,7 @@ import rejson
 from .helper_functions import *
 
 
-class MetadataListener(Thread):
+class MetadataListener:
     def __init__(self, interface):
         self.client = rejson.Client(host=interface.hostname)
         self.pubsub = self.client.pubsub()
@@ -17,8 +17,11 @@ class MetadataListener(Thread):
             self.listeners[listen_name] = []
         self.listeners[listen_name].append(reader)
 
-    def run(self):
-        for item in self.pubsub.listen():
+    def flush(self):
+        while True:
+            item = self.pubsub.get_message()
+            if item is None:
+                break
             channel = item['channel'].decode("utf_8")
             if channel in self.listeners:
                 for listener in self.listeners[channel]:

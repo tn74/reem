@@ -27,5 +27,4 @@ class RedisInterface:
         Call before doing anything with this connection
         :return:
         """
-        self.metadata_listener.setDaemon(True)
-        self.metadata_listener.start()
+        pass

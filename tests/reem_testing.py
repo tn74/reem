@@ -92,7 +92,6 @@ def test_nested_np_read():
 
 
 # Write and Read Sequences
-
 def test_sequence_1():
     writer = datatypes.Writer("Sequence1", intf)
     reader = datatypes.Reader("Sequence1", intf)

@@ -113,6 +113,7 @@ class Reader:
         return self.build_dictionary(path)
 
     def update_metadata(self):
+        self.interface.metadata_listener.flush()
         if self.pull_metadata:
             self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
             self.sp_to_label = self.metadata["special_paths"]
