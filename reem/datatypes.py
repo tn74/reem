@@ -6,7 +6,7 @@ import queue
 
 logger = logging.getLogger("reem.datatypes")
 
-SEPARATOR_CHARACTER = "&&&&"
+METADATA_SEQUENCE = "$$$$"
 ROOT_VALUE_SEQUENCE = "%%%%"
 
 
@@ -15,7 +15,7 @@ class Writer:
         self.interface = interface
         self.top_key_name = top_key_name
 
-        self.separator = SEPARATOR_CHARACTER # If changed, ensure it is changed in helper_functions
+        self.separator = METADATA_SEQUENCE # If changed, ensure it is changed in helper_functions
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
@@ -34,7 +34,10 @@ class Writer:
         logger.debug("SET {} {} Non-Serializables Pipelined".format(self.top_key_name, path))
         self.publish_serializables(path, value)
         logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, path))
-        self.pipeline.execute()
+        self.publish_metadata()
+        logger.debug("SET {} {} Metadata Pipelined".format(self.top_key_name, path))
+        responses = self.pipeline.execute()
+        logger.debug(responses)
         logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, path))
 
     def process_metadata(self, path, value):
@@ -52,15 +55,9 @@ class Writer:
         for p in check_paths:
             self.sp_to_label.pop(p)
         special_paths = get_special_paths(path, value, self.sp_to_label, self.interface.label_to_shipper)
-        dels = check_paths - special_paths
-        adds = special_paths - check_paths
-
         for path, label in special_paths:
             self.sp_to_label[path] = label
-        if len(adds) > 0 or len(dels) > 0:
-            self.pipeline.jsonset(self.metadata_key_name, ".special_paths", self.sp_to_label)
-            channel, message = "__keyspace@0__:{}".format(self.metadata_key_name), "set"
-            self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
+        logger.debug("Special Paths: {}".format(self.sp_to_label))
 
     def publish_non_serializables(self, path, value):
         publish_paths = list(filter(lambda special_path: path == special_path[:len(path)], self.sp_to_label.keys()))
@@ -82,22 +79,23 @@ class Writer:
         elif path not in self.sp_to_label:
             self.pipeline.jsonset(self.top_key_name, path, value)
 
+    def publish_metadata(self):
+        self.pipeline.jsonset(self.top_key_name, ".{0}METADATA{0}".format(METADATA_SEQUENCE), self.metadata)
+
 
 class Reader:
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
 
-        self.separator = "&&&&"
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.sp_to_label = self.metadata["special_paths"]
-        self.update_metadata_flag = False
         self.pipeline = self.interface.client.pipeline()
         self.pipeline_no_decode = self.interface.client_no_decode.pipeline()
 
-        self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
-        self.interface.metadata_listener.add_listener(self.metadata_key_name, self)
-        self.pull_metadata = True
+        # self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
+        # self.interface.metadata_listener.add_listener(self.metadata_key_name, self)
+        # self.pull_metadata = True
 
     def read_from_redis(self, path):
         """
@@ -106,34 +104,49 @@ class Reader:
         :return:
         """
         logger.info("GET {} {}".format(self.top_key_name, path))
+        serializables = self.perform_json_reads(path)
+        self.queue_non_serializable_reads(path)
+        return self.build_dictionary(path, serializables)
 
-        self.update_metadata()
-        logger.debug("GET {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
-        if path in self.sp_to_label:
-            return self.pull_special_path(path)
-        self.queue_reads(path)
-        logger.debug("GET {} {} Reads Queued".format(self.top_key_name, path))
-        return self.build_dictionary(path)
 
-    def update_metadata(self):
-        if self.pull_metadata:
-            self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
-            self.sp_to_label = self.metadata["special_paths"]
-        if self.metadata is None:
-            return None
-        self.pull_metadata = False
+        # logger.debug("GET {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
+        # if path in self.sp_to_label:
+        #     return self.pull_special_path(path)
+        # self.queue_non_serializable_reads(path)
+        # logger.debug("GET {} {} Reads Queued".format(self.top_key_name, path))
+        # return self.build_dictionary(path)
 
-    def queue_reads(self, path):
+    def perform_json_reads(self, path):
+        self.pipeline.jsonget(self.top_key_name, ".{0}METADATA{0}".format(METADATA_SEQUENCE))
         self.pipeline.jsonget(self.top_key_name, path)
+        responses = self.pipeline.execute()
+        self.metadata = responses[0]
+        self.sp_to_label = self.metadata["special_paths"]
+        desired_data = responses[1]
+        if path == Path.rootPath():
+            desired_data.pop("{0}METADATA{0}".format(METADATA_SEQUENCE))
+        return responses[1]
+
+
+
+    # def update_metadata(self):
+    #     if self.pull_metadata:
+    #         self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
+    #         self.sp_to_label = self.metadata["special_paths"]
+    #     if self.metadata is None:
+    #         return None
+    #     self.pull_metadata = False
+
+    def queue_non_serializable_reads(self, path):
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
         for path in special_paths:
             special_name = "{}{}".format(self.top_key_name, path)
             self.interface.label_to_shipper[self.sp_to_label[path]].read(special_name, self.pipeline_no_decode)
 
-    def build_dictionary(self, path):
+    def build_dictionary(self, path, serializable_dict):
         if path == Path.rootPath():
             path = ""
-        return_val = self.pipeline.execute()[0]
+        return_val = serializable_dict
         logger.debug("GET {} {} Pipeline Executed".format(self.top_key_name, path))
         responses = self.pipeline_no_decode.execute()
         special_paths = filter_paths_by_prefix(self.sp_to_label.keys(), path)
