@@ -17,6 +17,7 @@ pip install reem rejson redis six numpy
 Go To:
 - [Tutorial](#Tutorial)
 - [Datatypes](#Datatypes)
+- [Performance](#Performance)
 
 ## Tutorial
 
@@ -32,14 +33,19 @@ Open a new terminal and navigate to the directory you would like to work in. **W
 ### Redis
 First we will install Redis. If at any point, you are stuck in this tutorial, take a look at the [Redis Quickstart](https://redis.io/topics/quickstart) page for help.
 
+#### Ubuntu
 Run the following commands in your terminal
 ```bash
 mkdir database-server
 cd database-server
-wget http://download.redis.io/redis-stable.tar.gz
-tar xvzf redis-stable.tar.gz
-cd redis-stable
+wget http://download.redis.io/releases/redis-5.0.4.tar.gz
+tar xzf redis-5.0.4.tar.gz
+cd redis-5.0.4/deps
+make hiredis lua jemalloc linenoise
+cd ..
 make
+alias redis-server=$PWD/src/redis-server
+alias redis-cli=$PWD/src/redis-cli
 ```
 Congratulations! You have installed Redis. Test your installation by running the following in your terminal
 ```bash
@@ -70,12 +76,13 @@ Now we will install ReJSON. Refer to [ReJSON's Instructions](https://oss.redisla
 ```bash
 cd ..
 git clone https://github.com/RedisLabsModules/redisjson.git
-cd rejson
+cd redisjson
 make
 cd ..
 ```
-ReJSON is now installed on your computer as an so file inside ``.rejson/src/rejson.so``. We need to tell Redis to use this module. We will do this with a redis configuration file. Download [this example file](https://github.com/tn74/reem/blob/master/examples/redis.conf) configuration file and put it inside the ``database-server`` directory. Then run the following
+ReJSON is now installed on your computer as an so file inside ``.redisjson/src/rejson.so``. We need to tell Redis to use this module. We will do this with a redis configuration file. Download [this example file](https://github.com/tn74/reem/blob/master/examples/redis.conf) configuration file and put it inside the ``database-server`` directory. Then run the following
 ```bash
+wget https://raw.githubusercontent.com/tn74/reem/master/examples/redis.conf
 redis-server redis.conf --daemonize yes
 redis-cli
 ```
@@ -87,7 +94,7 @@ OK
 You now have a server running Redis and ReJSON!
 
 ### Running REEM
-Exit the redis-cli by entering ``ctrl-C``. In your terminal, install REEM and all of its dependencies with the following command:
+Exit the redis-cli by entering ``ctrl-C``. In your terminal, install REEM and all of its dependencies with the following command. You may want to be in your virtual environment at this point.
 ```bash
 pip3 install reem rejson redis six numpy
 ```
@@ -99,6 +106,7 @@ Copy the following code into a file ``example.py`` into the directory ``.``
 from reem.connections import RedisInterface
 from reem.datatypes import KeyValueStore
 import numpy as np
+import time
 
 interface = RedisInterface(host="localhost")
 interface.initialize()
@@ -111,6 +119,7 @@ print("Reading Subkey: {}".format(server["foo"]["number"].read()))
 
 # Set a new key that didn't exist before to a numpy array
 server["foo"]["numpy"] = np.random.rand(3,4)
+time.sleep(0.0001)  # Needed on ubuntu machine for numpy set to register?
 print("Reading Root  : {}".format(server["foo"].read()))
 print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
 
@@ -352,4 +361,51 @@ Foo = 5
 Updated Path = callback_channel.number
 Data = {'number': 6, 'string': 'REEM'}
 ```
+
+## Performance
+
+Below we give some performance metrics to help you understand if REEM will meet your needs.
+
+### KeyValueStore
+![](https://i.imgur.com/k3EjhdZ.png)
+
+In this graph, a dictionary of the form ``{"string1": "<100-character-string>", "string2": "<100-character-string>", ...}`` was transmitted. The number of ``stringN`` keys present in the dictionary is the number specified on the x axis.
+
+![](https://i.imgur.com/JIxhafF.png)
+This graph is identical to the last except 3x4 numpy arrays were transmitted in place of the 100 character strings. Notice that data is more rapidly transmitted as a string than as a numpy array.
+
+In both the above graphs, we notice that time to set an entry in the databse is linearly proportional to the amount of data transmitted. This principle applies to reads and more heavily nested dictionaries as well. That is, a key buried ten layers deep in the dictionary will not take noticeably longer to transmit than a key at the  first level **given** that the quantity of information transmitted remains constant.
+
+![](https://i.imgur.com/5FaPm0F.png)
+This graph illustrates the speed at which single numpy arrays are transimtted to Redis. Note that this example was conducted where a single python thread blasted numpy arrays to redis as fast as it could. There was no one reading it simultaneously. Noticeably, however, we see that we can set 100x100 numpy arrays at a frequency around 1 kHz in isolation.
+
+
+![](https://i.imgur.com/45ZwFxb.png)
+This graph is the complement to the graph before it, but we read numpy arrays instead of writing them here.
+
+![](https://i.imgur.com/T7MlnK0.png)
+We explored the performance of setting a entire dictionary vs setting a single key inside the dictionary to determine if one was faster. Testing on both numpy arrays and normal strings, we see that it does not make a difference if the amount of data transmitted is constant.
+
+![](https://i.imgur.com/DbB97Il.png)
+![](https://i.imgur.com/qCnorVt.png)
+
+The above graphs serve to demonstrate how not to transmit data. If you would like to send or receive 100 strings, you have three possible methods:
+- As a dictionary: ``{"1": "string1", "2":"string2", ...}``
+- As a list: ``["string1", "2":"string2", ...]``
+- As individual keys:
+    ```python
+    foo["1"] = "string1"
+    foo["2"] = "string2"
+    ...
+    ```
+The graphs demonstrate you should try to set as much data as you can in one go. Setting data as individual keys creates unnecessary overhead.
+
+### Publish Subscribe
+Since the publish-subscribe features uses the key-value store for its back-end, all the previous graphs still hold. The primary concern with publish subscribe is understanding what overhead you will create by having multiple subscribers.
+
+![](https://i.imgur.com/hDhvXCq.png)
+The above graph illustrates the transmission time from a publisher to n subscribers where n is on the x-axis. The data demonstrates essentially linear growwth. On average, the time it takes a message to go from the publisher to the subscriber is linearly proportional to the number of subscribers to that channel.
+
+
+
 

@@ -3,6 +3,7 @@ import rejson
 import numpy as np
 import random
 import string
+from matplotlib import pyplot as plt
 
 rejson_client = rejson.Client(host='localhost', port=6379, decode_responses=True)
 
@@ -113,3 +114,33 @@ def nested_level_dictionary(levels=10, data=sample_data()):
         subdict[key] = data[key]
     return test
 
+
+def plot_performance(info):
+    """
+    Plot a graphic representing the plot described by info
+    :param info: {"title": "name", "plots": [ {plot1}, {times: [8,9]}] }
+    :return:
+    """
+    plots = info["plots"]
+    fig, axes = plt.subplots(1, 1, sharey=True)
+    datas = []
+    tick_labels = []
+    for i, plot in enumerate(plots):
+        datas.append(plot["times"])
+        if "ticker_label" in plot:
+            tick_labels.append(plot["ticker_label"])
+        else:
+            tick_labels.append("")
+    axes.boxplot(datas)
+    axes.set_xticklabels(tick_labels)
+    axes.set_ylabel("Milliseconds")
+
+    if "y_label" in info:
+        axes.set_ylabel(info["y_label"])
+    if "y_scale" in info:
+        axes.set_yscale(info["y_scale"])
+    if "x_label" in info:
+        axes.set_xlabel(info["x_label"])
+
+    fig.suptitle(info["title"])
+    plt.show()
