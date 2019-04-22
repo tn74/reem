@@ -235,10 +235,10 @@ class RawSubscriber:
 
 
 class SilentSubscriber(Reader):
-    def __init__(self, channel_name, interface):
-        super().__init__(channel_name, interface)
+    def __init__(self, channel, interface):
+        super().__init__(channel, interface)
         self.local_copy = {}
-        self.passive_subscriber = RawSubscriber(channel_name + "*", interface, self.update_local_copy, {})
+        self.passive_subscriber = RawSubscriber(channel + "*", interface, self.update_local_copy, {})
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
