@@ -179,3 +179,10 @@ def test_store_non_dict():
     server["non_dict_test"] = image_array
     assert np.array_equal(image_array, server["non_dict_test"].read())
 
+
+def test_new_key_read():
+    server["image_dict"] = image_dict
+    kvs_new = KeyValueStore(interface)
+    logger.debug("Set KVS Gets Metadata: {}".format(server.interface.client.jsonget(server.entries["image_dict"][1].metadata_key_name)))
+    logger.debug("Get KVS Gets Metadata: {}".format(kvs_new.interface.client.jsonget(server.entries["image_dict"][1].metadata_key_name)))
+    assert np.array_equal(kvs_new["image_dict"]["image"].read(), image_array)

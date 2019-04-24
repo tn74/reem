@@ -12,13 +12,12 @@ class Writer:
         self.interface = interface
         self.top_key_name = top_key_name
 
-        self.separator = SEPARATOR_CHARACTER # If changed, ensure it is changed in helper_functions
+        self.separator = SEPARATOR_CHARACTER
+        self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
+        self.pull_metadata_from_server()
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
-
-        self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
-        self.interface.client.jsonset(self.metadata_key_name, Path.rootPath(), self.metadata)
 
         self.do_metadata_update = True
 
@@ -33,6 +32,12 @@ class Writer:
         logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, path))
         self.pipeline.execute()
         logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, path))
+
+    def pull_metadata_from_server(self):
+        try:
+            self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
+        except Exception:  # Metadata not on server implying key does not yet exist
+            pass
 
     def process_metadata(self, path, value):
         if self.do_metadata_update:
@@ -54,8 +59,9 @@ class Writer:
 
         for path, label in special_paths:
             self.sp_to_label[path] = label
+
         if len(adds) > 0 or len(dels) > 0:
-            self.pipeline.jsonset(self.metadata_key_name, ".special_paths", self.sp_to_label)
+            self.pipeline.jsonset(self.metadata_key_name, ".", self.metadata)
             channel, message = "__keyspace@0__:{}".format(self.metadata_key_name), "set"
             self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
 
@@ -114,8 +120,11 @@ class Reader:
 
     def update_metadata(self):
         self.interface.metadata_listener.flush()
+        logger.debug("Pull Metadata: {}".format(self.pull_metadata))
         if self.pull_metadata:
+            logger.debug("Pulling")
             self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
+            logger.debug("Pulled {} = {}".format(self.metadata_key_name, self.metadata))
             self.sp_to_label = self.metadata["special_paths"]
         if self.metadata is None:
             return None
@@ -222,6 +231,7 @@ class PublishSpace(KeyValueStore):
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Publisher(key, self.interface), None)
+            self.entries[key][0].do_metadata_update = self.track_schema
 
 
 class RawSubscriber:
