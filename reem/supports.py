@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Lock
 import rejson
 from .helper_functions import *
 
@@ -9,6 +9,7 @@ class MetadataListener:
         self.pubsub = self.client.pubsub()
         self.pubsub.psubscribe(['__keyspace@0__:*'])
         self.listeners = {}
+
         super().__init__()
 
     def add_listener(self, key_name, reader):

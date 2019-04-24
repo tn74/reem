@@ -11,14 +11,12 @@ class Writer:
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
-
         self.separator = SEPARATOR_CHARACTER
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
         self.pull_metadata_from_server()
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
-
         self.do_metadata_update = True
 
     def send_to_redis(self, path, value):
@@ -32,6 +30,8 @@ class Writer:
         logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, path))
         self.pipeline.execute()
         logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, path))
+        logger.debug("Lock Released")
+
 
     def pull_metadata_from_server(self):
         try:
@@ -103,20 +103,22 @@ class Reader:
         self.pull_metadata = True
 
     def read_from_redis(self, path):
-        """
-        Return dictionary value of what was stored at the stated path
-        :param path: path inside the json
-        :return:
-        """
+        logger.debug("Asking for Lock")
+        self.interface.INTERFACE_LOCK.acquire(timeout=1)
+        logger.debug("Lock Acquired")
         logger.info("GET {} {}".format(self.top_key_name, path))
-
         self.update_metadata()
         logger.debug("GET {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
         if path in self.sp_to_label:
-            return self.pull_special_path(path)
+            ret_val = self.pull_special_path(path)
+            self.interface.INTERFACE_LOCK.release()
+            return ret_val
         self.queue_reads(path)
         logger.debug("GET {} {} Reads Queued".format(self.top_key_name, path))
-        return self.build_dictionary(path)
+        ret_val = self.build_dictionary(path)
+        logger.debug("Lock Releasing")
+        self.interface.INTERFACE_LOCK.release()
+        return ret_val
 
     def update_metadata(self):
         self.interface.metadata_listener.flush()

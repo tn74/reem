@@ -1,6 +1,7 @@
 import rejson
 from .supports import  MetadataListener
 from .ships import *
+from threading import Lock
 
 
 class RedisInterface:
@@ -15,6 +16,7 @@ class RedisInterface:
         self.client = rejson.Client(host=host, decode_responses=True)
         self.client_no_decode = rejson.Client(host=host)
         self.metadata_listener = MetadataListener(self)
+        self.INTERFACE_LOCK = Lock()
 
         self.label_to_shipper = {}
         for sh in self.ships:
