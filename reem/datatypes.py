@@ -13,8 +13,8 @@ class Writer:
         self.top_key_name = top_key_name
         self.separator = SEPARATOR_CHARACTER
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, self.separator)
-        self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
-        self.pull_metadata_from_server()
+        self.metadata = None
+        self.initialize_metadata()
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
         self.do_metadata_update = True
@@ -32,12 +32,17 @@ class Writer:
         logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, path))
         logger.debug("Lock Released")
 
-
-    def pull_metadata_from_server(self):
+    def initialize_metadata(self):
+        # Pull it from server and if not, set a default
         try:
-            self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
-        except Exception:  # Metadata not on server implying key does not yet exist
+            pulled = self.interface.client.jsonget(self.metadata_key_name, ".")
+            if pulled is not None:
+                self.metadata = pulled
+                return
+        except TypeError as e:
             pass
+        self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
+
 
     def process_metadata(self, path, value):
         if self.do_metadata_update:
@@ -125,7 +130,10 @@ class Reader:
         logger.debug("Pull Metadata: {}".format(self.pull_metadata))
         if self.pull_metadata:
             logger.debug("Pulling")
-            self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
+            try:
+                self.metadata = self.interface.client.jsonget(self.metadata_key_name, ".")
+            except TypeError:  # No Metadata online
+                return
             logger.debug("Pulled {} = {}".format(self.metadata_key_name, self.metadata))
             self.sp_to_label = self.metadata["special_paths"]
         if self.metadata is None:
