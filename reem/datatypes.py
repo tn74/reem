@@ -8,8 +8,7 @@ logger = logging.getLogger("reem")
 
 """
 Terminology:
-Interface - Compatible: 
-
+Interface-Compatible: A datatype that can be pushed to redis through the JSON or the interface's ships
 """
 
 
@@ -282,32 +281,54 @@ class Publisher(Writer):
         super().__init__(top_key_name, interface)
         self.message = "Publish"
 
-    def send_to_redis(self, path, set_value):
-        logger.info("PUBLISH {} {} = {}".format(self.top_key_name, path, type(set_value)))
-        logger.debug("PUBLISH Metadata Update?: {}".format(self.do_metadata_update))
-        self.process_metadata(path, set_value)
-        logger.debug("PUBLISH {} {} Metadata: {}".format(self.top_key_name, path, self.metadata))
-        self.publish_non_serializables(path, set_value)
-        self.publish_serializables(path, set_value)
+    def send_to_redis(self, set_path, set_value):
+        """
+        Handles how publishers write to redis. They are identical to writers but they also publish a message indicating
+        which channel that was updated
+        :param set_path: path the user wants to write data to
+        :param set_value: value the user wants to set
+        :return:
+        """
+        logger.info("PUBLISH {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
+        logger.debug("PUBLISH {} {} Metadata Update?: {}".format(self.top_key_name, set_path, self.do_metadata_update))
+        self.process_metadata(set_path, set_value)
+        logger.debug("PUBLISH {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
+        self.publish_non_serializables(set_path, set_value)
+        self.publish_serializables(set_path, set_value)
 
         # Addition to Writer class
-        if path == Path.rootPath():
-            path = ""
-        channel_name = "__pubspace@0__:{}{}".format(self.top_key_name, path)
+        if set_path == Path.rootPath():
+            set_path = ""
+        channel_name = "__pubspace@0__:{}{}".format(self.top_key_name, set_path)
         self.pipeline.publish(channel_name, self.message)
 
         # Resume Writer Class
         self.pipeline.execute()
+        logger.debug("PUBLISH {} {} pipeline executed, published {} to {}".format(
+            self.top_key_name, set_path, self.message, channel_name)
+        )
 
 
 class PublishSpace(KeyValueStore):
     def __getitem__(self, item):
+        """
+        Identical to KeyValueStore but replace writers with publishers and provide non-readable path handlers
+        :param item: string
+        :return: None
+        :rtype: None
+        """
         assert type(item) == str
         self.ensure_key_existence(item)
-        writer, reader = self.entries[item]
-        return PathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
+        publisher, _ = self.entries[item]
+        return PathHandler(writer=publisher, reader=_, initial_path=Path.rootPath())
 
     def ensure_key_existence(self, key):
+        """
+        Identical to KeyValueStore but don't instantiate a Reader type object
+        :param key: string
+        :return: None
+        :rtype: None
+        """
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Publisher(key, self.interface), None)
@@ -332,7 +353,15 @@ class SilentSubscriber(Reader):
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
-        logger.debug("Update Local Copy: Channel = {}, Prefix = {}, Message = {}".format(channel, self.prefix, message))
+        """
+        Update the local copy of the data stored under this channel name in redis.
+        This is a callback function to a ChannelListener object and must fit that protocol
+        :param channel: the name of the channel that was published.
+        :param message: message published on that channel
+        :return: None
+        :rtype: None
+        """
+        logger.info("SILENT_SUBSCRIBER @{} : channel={} message={}".format(self.prefix, channel, message))
         try:
             message = message.decode("utf-8")
         except Exception as e:
@@ -343,16 +372,25 @@ class SilentSubscriber(Reader):
         if channel == self.prefix:
             self.local_copy = self.read_from_redis(Path.rootPath())
             return
-        path = channel[len(self.prefix):]
 
+        path = channel[len(self.prefix):]
         redis_value = self.read_from_redis(path)
-        logger.debug("Active Subscriber Read from Redis: {}".format(redis_value))
-        insert_into_dictionary(self.local_copy, path, redis_value)
+        logger.debug("SILENT_SUBSCRIBER @{} : Read from Redis: {}".format(self.prefix, redis_value))
+        insert_into_dictionary(self.local_copy, path_to_key_sequence(path), redis_value)
+        logger.debug("SILENT_SUBSCRIBER @{} : Local Copy: {}".format(self.prefix, self.local_copy))
 
     def listen(self):
+        """
+        Begin listening on the channel. Must be called to hear published messages
+        :return:
+        """
         self.passive_subscriber.listen()
 
     def value(self):
+        """
+        Get all the data underneath this key in Redis
+        :return: all data in this channel
+        """
         root_name = "{0}ROOT{0}".format(ROOT_VALUE_SEQUENCE)
         if root_name in self.local_copy:
             return self.local_copy[root_name]
@@ -360,6 +398,12 @@ class SilentSubscriber(Reader):
         return copy_dictionary_without_paths(self.local_copy, [])
 
     def __getitem__(self, item):
+        """
+        Implement the dictionary api
+        :param item: string
+        :return: an object that will handle further path construction and accessing inside self.local_copy
+        :rtype: ActiveSubscriberPathHandler
+        """
         assert type(item) == str, "Key name must be string"
         return ActiveSubscriberPathHandler(None, self, "{}{}".format(Path.rootPath(), item))
 
@@ -373,9 +417,14 @@ class CallbackSubscriber(SilentSubscriber):
         self.kwargs = kwargs
 
     def call_user_function(self, channel, message):
+        """
+        Wrapper callback function (wrapping user function) for this class to work with a RawSubscriber object
+        Fits required interface for a ChannelSubscriber callback function
+        :param channel: channel published to
+        :param message: message that was published
+        :return: None
+        :rtype: None
+        """
         self.update_local_copy(channel, message)
         channel_name = channel.split("__pubspace@0__:")[1]
         self.callback_function(data=self.value(), updated_path=channel_name, **self.kwargs)
-
-    def process_update(self, channel, message):
-        self.update_local_copy(channel, message)

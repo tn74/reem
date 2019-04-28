@@ -7,9 +7,9 @@ import time
 from queue import Queue
 
 # Logging Configuration
-FORMAT = "%(asctime)20s %(filename)s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
+FORMAT = "%(asctime)20s %(filename)s:%(lineno)3s  %(funcName)30s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT)
-logger = logging.getLogger("reem.datatypes")
+logger = logging.getLogger("reem")
 logger.setLevel(logging.DEBUG)
 
 image_array = np.random.rand(640, 480, 3)
