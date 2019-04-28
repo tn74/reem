@@ -1,6 +1,6 @@
 from threading import Thread, Lock
 import rejson
-from .helper_functions import *
+from .utilities import *
 
 
 class MetadataListener:

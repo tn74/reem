@@ -7,9 +7,9 @@ import redis
 
 # Logging Configuration
 log_file_name = "logs/reem_testing_kvs_timed.log"
-FORMAT = "%(asctime)20s %(filename)15s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
+FORMAT = "%(asctime)20s %(filename)15s:%(lineno)3s  %(funcName)30s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT)
-logger = logging.getLogger("reem.datatypes")
+logger = logging.getLogger("reem")
 logger.setLevel(logging.DEBUG)
 
 
@@ -115,6 +115,9 @@ def test_kvs_upload_all():
     assert np.array_equal(hundred_key_dict["copy_49_np_arr"], server["hundred_key_dict"]["copy_49_np_arr"].read())
 
     # Layered Dictionary
+    print("In House then read")
+    print(layered_dictionary)
+    print(server["layered_dict"].read())
     assert str(layered_dictionary) == str(server["layered_dict"].read())
 
 
