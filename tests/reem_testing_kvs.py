@@ -115,9 +115,6 @@ def test_kvs_upload_all():
     assert np.array_equal(hundred_key_dict["copy_49_np_arr"], server["hundred_key_dict"]["copy_49_np_arr"].read())
 
     # Layered Dictionary
-    print("In House then read")
-    print(layered_dictionary)
-    print(server["layered_dict"].read())
     assert str(layered_dictionary) == str(server["layered_dict"].read())
 
 
