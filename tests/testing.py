@@ -4,6 +4,7 @@ import numpy as np
 import random
 import string
 from matplotlib import pyplot as plt
+import multiprocessing
 
 rejson_client = rejson.Client(host='localhost', port=6379, decode_responses=True)
 
@@ -144,3 +145,17 @@ def plot_performance(info):
 
     fig.suptitle(info["title"])
     plt.show()
+
+
+def run_as_processes(processes):
+    """
+    Run a set of functions, each in a different processes
+    Waits until last process finishes
+    :param processes: Tuples of (function, args, kwargs)
+    :return: None
+    """
+    spawned_processes = []
+    for func, args, kwargs in processes:
+        spawned_processes.append(multiprocessing.Process(target=func, args=args, kwargs=kwargs))
+        spawned_processes[-1].start()
+    spawned_processes[-1].join()

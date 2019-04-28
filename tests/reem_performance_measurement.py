@@ -4,39 +4,19 @@ from reem.connection import RedisInterface
 import numpy as np
 import logging
 import time
-from multiprocessing import Process, Manager
+import os
+import shutil
 
-"""
-Desired Tests:
-1. Growth with number of string keys
-2. Growth with number of numpy arrays
-3. Growth with size of numpy array
-4. Growth with number of Subscribers
-5. Strings in 100 keys vs Strings in a list vs Strings updated individually
-"""
 log_file_name = "logs/reem_testing_kvs_timed.log"
 FORMAT = "%(asctime)20s %(filename)30s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT, filename=log_file_name, filemode='w')
-
 logger = logging.getLogger("reem.datatypes")
 logger.setLevel(logging.DEBUG)
 
-test_data = {
-    "title": "Test Title",
-    "plots": [
-        {
-            "times": [3,4,4,4,5,6,7,8,6],
-            "y_label": "Milliseconds",
-            "x_label": "X"
-        }
-    ]
-}
-# plot_performance(test_data)
 
 interface = RedisInterface()
 kvs = KeyValueStore(interface)
 publisher = PublishSpace(interface)
-
 
 
 def set(keys, value):
@@ -183,12 +163,95 @@ def hundred_key_gets():
     plot_performance(info)
 
 
+# --------------------------- Subscriber Overhead Testing ---------------------------
+
+
+PULSE_GAP = 0.02
+TRIALS = 200
+
+
+def append_time_to_list(data, updated_path, times):
+    times.append(time.time() - data["timestamp"])
+
+
+def overhead_testing_subscriber(test_name, timeout=10):
+    times = []
+    interface = RedisInterface()
+    subscriber = CallbackSubscriber("overhead_test", interface, append_time_to_list, {"times": times})
+    subscriber.listen()
+    time.sleep(timeout)
+    base = os.path.dirname(os.path.abspath(__file__))
+    save_dir = os.path.join(base, "logs", "overhead_test", test_name)
+    save_path = os.path.join(save_dir, "subscriber_{}.txt".format(os.getpid()))
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    with open(save_path, "w") as f:
+        for t in times:
+            f.write("{}\n".format(t))
+
+
+def overhead_testing_publisher():
+    interface = RedisInterface()
+    publisher = PublishSpace(interface)
+    for i in range(TRIALS):
+        publisher["overhead_test"] = {"timestamp": time.time()}
+        time.sleep(PULSE_GAP)
+
+
+def generate_subscriber_overhead_data(num_subscriber_list):
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "overhead_test")
+    shutil.rmtree(base)
+    for num_subscribers in num_subscriber_list:
+        processes = [(overhead_testing_publisher, (), {})]
+        test_name = "subs={}".format(num_subscribers)
+        save_dir = os.path.join(base, test_name)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        for i in range(num_subscribers):
+            processes.append((overhead_testing_subscriber, (test_name, PULSE_GAP * TRIALS), {}))
+
+        run_as_processes(processes)
+        print("Completed test with {} subscribers".format(num_subscribers))
+
+
+def plot_overhead_data():
+    time_data = {}
+    base = os.path.dirname(os.path.abspath(__file__))
+    save_dir = os.path.join(base, "logs", "overhead_test")
+    for dirpath, dirs, files in os.walk(save_dir):
+        if "subs" not in dirpath:
+            continue
+        num_subscribers = int(dirpath.split("subs=")[1])
+        time_data[num_subscribers] = []
+        for fpath in files:
+            with open(os.path.join(dirpath, fpath), 'r') as file:
+                for line in file:
+                    time_data[num_subscribers].append(float(line) * 1000)   # Seconds to milliseconds conversion
+    plot_info = {
+        "title": "# of Publishers vs Message Latency ({} Messages Published)".format(TRIALS),
+        "x_label": "# of Subscribers",
+        "y_label": "Latency (ms)",
+        "y_scale": "log",
+        "plots": []
+    }
+    for key, value in sorted(time_data.items(), key=lambda kv: kv[0]):
+        plot_info["plots"].append({"ticker_label": key, "times": value})
+    plot_performance(plot_info)
+
+
+def overhead_tests_main():
+    generate_subscriber_overhead_data([1, 10, 100, 1000])
+    plot_overhead_data()
 # ------------------------ Publish Subscribe Testing ----------------------------------
 
-# key_growth_strings()
-# key_growth_numpy()
-# set_key_vs_set_dict()
-# numpy_set_frame_rates()
-# numpy_get_frame_rates()
-# hundred_key_sets()
-# hundred_key_gets()
+
+if __name__ == "__main__":
+    # key_growth_strings()
+    # key_growth_numpy()
+    # set_key_vs_set_dict()
+    # numpy_set_frame_rates()
+    # numpy_get_frame_rates()
+    # hundred_key_sets()
+    # hundred_key_gets()
+    overhead_tests_main()
