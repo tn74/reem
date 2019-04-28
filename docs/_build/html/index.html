@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome to REEM’s documentation! &#8212; REEM v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-reem.datatypes">
+<span id="welcome-to-reem-s-documentation"></span><h1>Welcome to REEM’s documentation!<a class="headerlink" href="#module-reem.datatypes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="reem.datatypes.Publisher">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">Publisher</code><span class="sig-paren">(</span><em>top_key_name</em>, <em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="reem.datatypes.Publisher.send_to_redis">
+<code class="descname">send_to_redis</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher.send_to_redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles how publishers write to redis. They are identical to writers but they also publish a message indicating
+which channel that was updated
+:param set_path: path the user wants to write data to
+:param set_value: value the user wants to set
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reem.datatypes.Writer">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">Writer</code><span class="sig-paren">(</span><em>top_key_name</em>, <em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Include all functionality for</p>
+<dl class="method">
+<dt id="reem.datatypes.Writer._Writer__process_metadata">
+<code class="descname">_Writer__process_metadata</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer._Writer__process_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle Metadata updates</p>
+<p>Given a path and value, update the local copy of metadata to find new non-serializable objects.
+Update Redis if needed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> – path user wants to set</p></li>
+<li><p><strong>set_value</strong> – value user wants to store</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Writer.publish_non_serializables">
+<code class="descname">publish_non_serializables</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer.publish_non_serializables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a set, publish the non-serializable components to redis, given that metadata has been updated already
+:param set_path: path user wants to set
+:param set_value: value user wants to store
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Writer.send_to_redis">
+<code class="descname">send_to_redis</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer.send_to_redis" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">JSON.SET</span> <span class="pre">self.top_key_name</span> <span class="pre">&lt;set_path&gt;</span> <span class="pre">&lt;set_value&gt;</span></code></p>
+<p>Execute the equivalent of JSON.SET self.top_key_name &lt;path&gt; &lt;value&gt;</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> – a subpath: “.” for root, “.key1.key2” for a subpath</p></li>
+<li><p><strong>set_value</strong> – anything that can be sent to Redis through JSON or ships</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">REEM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Trishul Nagenalli, Dr. Kris Hauser.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
