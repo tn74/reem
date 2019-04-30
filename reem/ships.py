@@ -3,59 +3,91 @@ import numpy as np
 import io
 
 
-class SpecialCaseShip(ABC):
+class SpecialDatatypeShip(ABC):
     def __init__(self):
         super().__init__()
 
     @abstractmethod
     def check_fit(self, value):
-        """
-        Check if the value is such that this is the class that ought to handle storing and loading it
-        :param value:
-        :return:
+        """ Determine if this ship will handle ``value``
+
+        This method returns true if ``value`` is data that this ship is supposed to handle. If this ship handled all
+        numpy arrays, it would check if ``value``'s type is a numpy array.
+
+        Args:
+            value: object to check
+
+        Returns: True if ship will handle ``value``
+
         """
         pass
 
     @abstractmethod
     def write(self, key, value, client):
-        """
-        Given a top level key name and a value, write to the redis database however you choose
-        :param key: Top Key to store value under in redis
-        :param value: Data to store
-        :param client: Client to use
-        :return: None
+        """ Write ``value`` to Redis at the specified ``key`` using ``client``
+
+        Given a Redis client, execute any number of needed commands to store the ``value`` in Redis. You
+        are required to use the key given for REEM to find it. If you must store multiple pieces of information,
+        use a `Redis Hash <https://redis.io/topics/data-types>`_ which acts like a one level dictionary.
+
+        Args:
+            key (str): The Redis key name this ship must store data under
+            value: The value to write into Redis
+            client: A `ReJSON Redis Client <https://github.com/RedisJSON/rejson-py>`_ pipeline
+
+        Returns: None
+
         """
         pass
 
     @abstractmethod
     def read(self, key, client):
-        """
-        Issue ONE ACTION you need to retrieve information from redis
-        :param key: Top Key under which the encoded value is stored
-        :param client: Client to use
-        :return: None
+        """ Retrieve necessary information from Redis
+
+        Given a Redis client, execute ONE command to retrieve all the information you need to rebuild the data
+        that was stored in ``write`` from Redis. This method should execute the command that allows you to retrieve
+        all data stored under key
+
+        Args:
+            key (str): a keyname that contains data stored by ``write``
+            client: A `ReJSON Redis Client <https://github.com/RedisJSON/rejson-py>`_ pipeline
+
+        Returns: None
+
         """
         pass
 
     @abstractmethod
     def interpret_read(self, responses):
-        """
-        Your client actions in the read method returned a series of responses from redis.
-        This method interprets them and gives the result
-        :param responses: responses from Redis Client
-        :return: Value of object when read
+        """ Translate Redis data into a local object
+
+        Redis will reply to you with something according to what read command you executed in ``read``. This method
+        takes whatever Redis replied with and turns it into an object identical to what was initially passed to
+        ``write`` as value.
+
+        Args:
+            responses: Redis's reply data based on ``read`` method
+
+        Returns: An object identical to what was initially written to Redis.
+
         """
         pass
 
     @abstractmethod
     def get_label(self):
-        """
-        Return a string that will be used in key names to indicate this class should be used to decode data
+        """ Return a unique string identifier
+
+        This method should return a string that uniquely identifies this ship. REEM will use it to determine what ship
+        to use to decode data that is already stored in Redis.
+
+        Returns:
+             str: the string identifier
+
         """
         pass
 
 
-class NumpyShip(SpecialCaseShip):
+class NumpyShip(SpecialDatatypeShip):
     def check_fit(self, value):
         return type(value) in [np.array, np.ndarray]
 

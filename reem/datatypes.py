@@ -6,25 +6,35 @@ import queue
 
 logger = logging.getLogger("reem")
 
-"""
-Terminology:
-Interface-Compatible: A datatype that can be pushed to redis through the JSON or the interface's ships
-"""
-
 
 class Writer:
+    """Responsible for setting data inside Redis
+
+    The Writer class is an internal class that is used for all data sent to Redis (not including pub/sub messages).
+    Each key that will have nested data below requires a new instantiation of Writer
+
+    Attributes:
+        top_key_name (str): The name of the Redis key under which JSON data will be stored. To Redis,
+            this will become a ReJSON key name. It is also used to generate the Redis key name that ``ship``'s use to
+            store non JSON data.
+        interface (RedisInterface): Defines the connection to Redis this writer will use
+    """
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
         self.metadata_key_name = "{}{}metadata".format(self.top_key_name, SEPARATOR_CHARACTER)
         self.metadata = None
-        self.initialize_metadata()
+        self.__initialize_metadata()
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
         self.do_metadata_update = True
 
-    def initialize_metadata(self):
-        # Pull metadata from server and set a default if it is not there
+    def __initialize_metadata(self):
+        """ Pull metadata for this key from Redis or set a default
+
+        Returns:
+            None
+        """
         try:
             pulled = self.interface.client.jsonget(self.metadata_key_name, ".")
             if pulled is not None:
@@ -35,31 +45,44 @@ class Writer:
         self.metadata = {"special_paths": {}, "required_labels": self.interface.shipper_labels}
 
     def send_to_redis(self, set_path, set_value):
-        """
-        Execute "JSON.SET self.top_key_name <path> <value>"
-        :param set_path: a subpath: "." for root, ".key1.key2" for a subpath
-        :param set_value: anything that can be sent to Redis through JSON or ships
-        :return: None
-        :rtype: None
+        """ Execute equivalent of ``JSON.SET self.top_key_name <set_path> <set_value>``
+
+        From the user's perspective, it executes ``JSON.SET self.top_key_name <set_path> <set_value>``
+        except that ``set_value`` can be json-incompatible. This is the only public
+        method of this class. It determines what non-serializable types are inside set_value, stores the
+        serializable data as a JSON, and stores the non-serializable data using ``self.interface``'s ships
+
+        Args:
+            set_path (str): path underneath JSON key to set
+            set_value: value to set
+
+        Returns:
+            None
+
         """
         logger.info("SET {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
-        self.process_metadata(set_path, set_value)
+        self.__process_metadata(set_path, set_value)
         logger.debug("SET {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
-        self.publish_non_serializables(set_path, set_value)
+        self.__publish_non_serializables(set_path, set_value)
         logger.debug("SET {} {} Non-Serializables Pipelined".format(self.top_key_name, set_path))
-        self.publish_serializables(set_path, set_value)
+        self.__publish_serializables(set_path, set_value)
         logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, set_path))
         self.pipeline.execute()
         logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, set_path))
 
-    def process_metadata(self, set_path, set_value):
-        """
-        Given a path and value, update the local copy of metadata to find new non-serializable objects.
-        Update Redis if needed
-        :param set_path: path user wants to set
-        :param set_value: value user wants to store
-        :return: None
-        :rtype: None
+    def __process_metadata(self, set_path, set_value):
+        """ Handle metadata updates
+
+        Given the path and value the user would like to set, check if there are non-serializable data types and update
+        metadata locally and in Redis. Happens without pipeline
+
+        Args:
+            set_path (str): path underneath JSON key to set
+            set_value: value to set
+
+        Returns:
+            None
+
         """
         if not self.do_metadata_update:
             return
@@ -80,13 +103,19 @@ class Writer:
             channel, message = "__keyspace@0__:{}".format(self.metadata_key_name), "set"
             self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
 
-    def publish_non_serializables(self, set_path, set_value):
-        """
+    def __publish_non_serializables(self, set_path, set_value):
+        """Publish JSON incompatible data to Redis
+
         Given a set, publish the non-serializable components to redis, given that metadata has been updated already
-        :param set_path: path user wants to set
-        :param set_value: value user wants to store
-        :return:
+
+        Args:
+            set_path (str): path underneath JSON key to set
+            set_value: value to set
+
+        Returns:
+            None
         """
+
         overridden_paths, suffixes = filter_paths_by_prefix(self.sp_to_label.keys(), set_path)
         for full_path, suffix in zip(overridden_paths, suffixes):
             logger.debug("Suffix = {}".format(suffix))
@@ -101,7 +130,18 @@ class Writer:
                 client=self.pipeline
             )
 
-    def publish_serializables(self, set_path, set_value):
+    def __publish_serializables(self, set_path, set_value):
+        """ Publish the serializable portion of ``set_value
+
+        Take out the non-serializable part of set_value and publish it at set_path
+
+        Args:
+            set_path (str): path underneath JSON key to set
+            set_value: value to set
+
+        Returns: None
+
+        """
         if type(set_value) is dict:
             intrusive_paths, suffixes = filter_paths_by_prefix(self.sp_to_label.keys(), set_path)
             excised_copy = copy_dictionary_without_paths(set_value, [path_to_key_sequence(s) for s in suffixes])
@@ -113,6 +153,15 @@ class Writer:
 
 
 class Reader:
+    """Responsible for getting data from Redis
+
+    The Reader class is an internal class that is used for all read from Redis (not including pub/sub messages).
+    Each key that will have nested data below requires a new instantiation of Reader
+
+    Attributes:
+        top_key_name (str): The name of the Redis key under which JSON data is stored
+        interface (RedisInterface): Defines the connection to Redis this reader will use
+    """
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
@@ -126,11 +175,19 @@ class Reader:
         # Will need to update metadata on first read regardless so the simple initialization we have here is sufficient
 
     def read_from_redis(self, read_path):
+        """ Read specified path from Redis
+
+        This is the only public method of the Reader class. It will retrieve the data stored at a specified path
+        from Redis. At a high level, it reads data stored with ReJSON and inserts non-JSON compatible data
+        at appropriate paths using the metadata associated with this key.
+
+        Args:
+            read_path (str): path the user wants to read
+
+        Returns: data stored at value in Redis
+
         """
-        Read the specified path from Redis
-        :param read_path: path the user wants to read
-        :return: the value (dictionary or terminal value) stored at this path in Redis
-        """
+
         self.interface.INTERFACE_LOCK.acquire(timeout=1)
         logger.info("GET {} {} pull_metadata = {}".format(self.top_key_name, read_path, self.pull_metadata))
         self.update_metadata()
@@ -146,12 +203,14 @@ class Reader:
         return ret_val
 
     def update_metadata(self):
-        """
-        Update the local copy of metadata if a relevant path has been updated.
+        """ Update the local copy of metadata if a relevant path has been updated.
+
         The metadata listener is a redis client subscribed to key-space notifications. If a relevant path is updated,
-        this Reader's pull_metadata flag will be turned on
-        :return: None
-        :rtype: None
+        this Reader's ``pull_metadata`` flag will be turned on. If ``pull_metadata`` is ``True``, then the reader
+        will fetch metadata from the Redis server.
+
+        Returns: None
+
         """
         self.interface.metadata_listener.flush()
         if self.pull_metadata:
@@ -165,13 +224,16 @@ class Reader:
         self.pull_metadata = False
 
     def queue_reads(self, read_path):
-        """
+        """ Queue reads in a pipeline
+
         Queue all redis queries necessary to read data at path into the appropriate redis pipeline.
         First, queue decoded pipeline with the ReJSON query
-        Next, queue all the special path reads with the non-decoded pipeline
-        :param read_path: path user wants to read
-        :return: None
-        :rtype: None
+        Next, queue all the special path reads with the non-decoded pipeline and ships
+
+        Args:
+            read_path: path user wants to read
+
+        Returns: None
         """
         self.pipeline.jsonget(self.top_key_name, read_path)
         special_paths, suffixes = filter_paths_by_prefix(self.sp_to_label.keys(), read_path)
@@ -182,10 +244,12 @@ class Reader:
             ship.read(special_path_redis_key_name, self.pipeline_no_decode)
 
     def build_dictionary(self, read_path):
-        """
-        Execute pipelines that were queued in self.queue_reads and consolidate the data type expected by user
-        :param read_path: the path the user wants to read
-        :return: type of the value stored at this path in Redis
+        """ Execute pipelines and consolidate data into a dictionary
+
+        Args:
+            read_path: path user wants to read
+
+        Returns: The data stored at ``read_path`` in Redis
         """
 
         return_val = self.pipeline.execute()[0]
@@ -202,73 +266,101 @@ class Reader:
         logger.debug("GET {} {} Dictionary Built".format(self.top_key_name, read_path))
         return return_val
 
-    def pull_special_path(self, path):
+    def pull_special_path(self, read_path):
+        """ Directly pull a non-JSON path
+
+        If the user specified path is not in JSON, this will retrieve the data directly without going through ReJSON.
+
+        Args:
+            read_path: path user wants to read
+
+        Returns:
+
         """
-        Handle the case where the user is pulling a terminal non-serializable value
-        :param path: path user wants to read
-        :return: value at the path in Redis, but it will not be a dictionary, string, or number
-        """
-        shipper = self.interface.label_to_shipper[self.sp_to_label[path]]
-        special_name = "{}{}".format(self.top_key_name, path)
+        shipper = self.interface.label_to_shipper[self.sp_to_label[read_path]]
+        special_name = "{}{}".format(self.top_key_name, read_path)
         shipper.read(special_name, self.pipeline_no_decode)
         responses = self.pipeline_no_decode.execute()
         return shipper.interpret_read(responses)
 
 
 class KeyValueStore:
+    """Dictionary Like object used for get/set paradigm
+
+    The ``KeyValueStore`` object is one that users will frequently use. It keeps ``Reader`` and ``Writer`` objects
+    for each key that the user read or written to. It does not actually handle the getting and setting of data
+    but produces ``ReadablePathHandler`` objects that assist with path construction and call the reader and
+    writer's write and read methods.
+
+    Attributes:
+        interface (RedisInterface): Defines the connection to Redis this reader will use
+    """
     def __init__(self, interface):
         self.interface = interface
         self.entries = {}
         self.track_schema = True
 
     def __setitem__(self, key, value):
+        """ Only used for setting key on first level of KVS. i.e. KVS["top_key"] = value. Otherwise see __getitem__
+
+        Args:
+            key (str): "dictionary" key. It becomes a top-level Redis key
+            value: value to store
+
+        Returns: None
+
         """
-        Only used for setting key on first level of KVS. i.e. KVS["top_key"] = value. Otherwise see __getitem__
-        :param key: string
-        :param value: interface-compatible data
-        :return: None
-        """
+
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if type(value) != dict:
             value = {"{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE): value}
-        self.ensure_key_existence(key)
+        self.__ensure_key_existence(key)
         writer, reader = self.entries[key]
         writer.send_to_redis(Path.rootPath(), value)
 
     def __getitem__(self, item):
+        """Used to retrieve ReadablePathHandler object for handling path construction when setting/getting Redis
+
+        Args:
+            item (str): "dictionary" key. It must be a top-level Redis key
+
+        Returns:
+
         """
-        Used to retrieve ReadablePathHandler object for handling path construction when setting/getting Redis
-        :param item: string
-        :return: a ReadablePathHandler object
-        :rtype: ReadablePathHandler
-        """
+
         assert check_valid_key_name(item), "Invalid Key: {}".format(item)
         logger.debug("KVS GET {}".format(item))
-        self.ensure_key_existence(item)
+        self.__ensure_key_existence(item)
         writer, reader = self.entries[item]
         return ReadablePathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
 
-    def ensure_key_existence(self, key):
+    def __ensure_key_existence(self, key):
+        """ Ensure that the requested key has a reader and writer associated with it.
+
+        Returns: None
+
         """
-        Ensure that the specified key has a top write and reader. Note that the key is top level in redis, not a path
-        :param key: string
-        :return: None
-        :rtype: None
-        """
+
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
             self.entries[key][0].do_metadata_update = self.track_schema
 
     def track_schema_changes(self, set_value, keys=None):
-        """
+        """ Performance optimization for skipping schema update checks
+
         Stop checking for schema updates when setting data. Use ONLY if your data's schema is static
-        and you need major performance optimization.
-        :param set_value: a boolean that is true if you want to track schema
-        :param keys: A list of keys to set schema tracking on/off. If None, do for all keys
-        :return: None
-        :rtype: None
+        and you are really trying to eek out every bit of optimization.
+
+        Args:
+            set_value (bool): True/False indicating if the keys' schema should be tracked
+            keys (List[str]): List of keys to track. If None, all present and future keys are tracked
+            according to ``set_value``
+
+        Returns: None
+
         """
+
         if keys is None:
             keys = self.entries.keys()
             self.track_schema = set_value
@@ -277,24 +369,36 @@ class KeyValueStore:
 
 
 class Publisher(Writer):
+    """ Defines Publisher behavior
+
+    The Publisher is identical to the writer but publishes a message when it writes a value.
+
+    """
+
     def __init__(self, top_key_name, interface):
         super().__init__(top_key_name, interface)
         self.message = "Publish"
 
     def send_to_redis(self, set_path, set_value):
+        """ Publisher equivalent of Writer ``send_to_redis``
+
+        This is an equivalent function to ``Writer``'s ``send_to_redis`` method but also publishes a message
+        indicating what channel has been updated.
+
+        Args:
+            set_path (str): path underneath JSON key to set
+            set_value: value to set
+
+        Returns: None
+
         """
-        Handles how publishers write to redis. They are identical to writers but they also publish a message indicating
-        which channel that was updated
-        :param set_path: path the user wants to write data to
-        :param set_value: value the user wants to set
-        :return:
-        """
+
         logger.info("PUBLISH {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
         logger.debug("PUBLISH {} {} Metadata Update?: {}".format(self.top_key_name, set_path, self.do_metadata_update))
-        self.process_metadata(set_path, set_value)
+        self.__process_metadata(set_path, set_value)
         logger.debug("PUBLISH {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
-        self.publish_non_serializables(set_path, set_value)
-        self.publish_serializables(set_path, set_value)
+        self.__publish_non_serializables(set_path, set_value)
+        self.__publish_serializables(set_path, set_value)
 
         # Addition to Writer class
         if set_path == Path.rootPath():
@@ -310,25 +414,24 @@ class Publisher(Writer):
 
 
 class PublishSpace(KeyValueStore):
+    """ Convenience class for publishing
+
+    This class keeps track of ``Publisher`` objects for each key the user has published on.
+
+    """
     def __getitem__(self, item):
-        """
-        Identical to KeyValueStore but replace writers with publishers and provide non-readable path handlers
-        :param item: string
-        :return: None
-        :rtype: None
+        """ Identical to ``KeyValueStore`` method of same name but provides non-readable ``PathHandler`` objects
+
         """
         assert type(item) == str
-        self.ensure_key_existence(item)
+        self.__ensure_key_existence(item)
         publisher, _ = self.entries[item]
         return PathHandler(writer=publisher, reader=_, initial_path=Path.rootPath())
 
-    def ensure_key_existence(self, key):
+    def __ensure_key_existence(self, key):
+        """ Identical to ``KeyValueStore`` method of same name but does not instantiate a ``Reader`` object
         """
-        Identical to KeyValueStore but don't instantiate a Reader type object
-        :param key: string
-        :return: None
-        :rtype: None
-        """
+
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (Publisher(key, self.interface), None)
@@ -346,6 +449,8 @@ class RawSubscriber:
 
 
 class SilentSubscriber(Reader):
+    """ Silent Subscriber Implementation"""
+
     def __init__(self, channel, interface):
         super().__init__(channel, interface)
         self.local_copy = {}
@@ -353,14 +458,16 @@ class SilentSubscriber(Reader):
         self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
 
     def update_local_copy(self, channel, message):
+        """ Update the local copy of the data stored under this channel name in redis.
+
+        Args:
+            channel: the name of the channel that was published.
+            message: message published on that channel
+
+        Returns: None
+
         """
-        Update the local copy of the data stored under this channel name in redis.
-        This is a callback function to a ChannelListener object and must fit that protocol
-        :param channel: the name of the channel that was published.
-        :param message: message published on that channel
-        :return: None
-        :rtype: None
-        """
+
         logger.info("SILENT_SUBSCRIBER @{} : channel={} message={}".format(self.prefix, channel, message))
         try:
             message = message.decode("utf-8")
@@ -380,16 +487,22 @@ class SilentSubscriber(Reader):
         logger.debug("SILENT_SUBSCRIBER @{} : Local Copy: {}".format(self.prefix, self.local_copy))
 
     def listen(self):
-        """
-        Begin listening on the channel. Must be called to hear published messages
-        :return:
+        """ Makes this subscriber start listening
+
+        Returns: None
+
         """
         self.passive_subscriber.listen()
 
     def value(self):
-        """
-        Get all the data underneath this key in Redis
-        :return: all data in this channel
+        """ Get data stored at root
+
+        Where as the reader can do ``server["foo"].read()`` with if server is a ``KeyValueStore``,
+        accessing the root value of a subscriber is not as easy. This method retrieves all data stored underneath
+        a top level key.
+
+        Returns: all data stored underneath a top level Redis key.
+
         """
         root_name = "{0}ROOT{0}".format(ROOT_VALUE_SEQUENCE)
         if root_name in self.local_copy:
@@ -398,17 +511,22 @@ class SilentSubscriber(Reader):
         return copy_dictionary_without_paths(self.local_copy, [])
 
     def __getitem__(self, item):
-        """
-        Implement the dictionary api
-        :param item: string
-        :return: an object that will handle further path construction and accessing inside self.local_copy
-        :rtype: ActiveSubscriberPathHandler
+        """ Implement dictionary API for local copy
+
+        We do not give the user direct access to the dictionary representing the lcoal
+        Args:
+            item:
+
+        Returns:
+
         """
         assert type(item) == str, "Key name must be string"
         return ActiveSubscriberPathHandler(None, self, "{}{}".format(Path.rootPath(), item))
 
 
 class CallbackSubscriber(SilentSubscriber):
+    """ Callback Subscriber Implementation"""
+
     def __init__(self, channel, interface, callback_function, kwargs):
         super().__init__(channel, interface)
         self.queue = queue.Queue()

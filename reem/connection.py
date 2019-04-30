@@ -5,12 +5,10 @@ from threading import Lock
 
 
 class RedisInterface:
+    """
+
+    """
     def __init__(self, host='localhost', ships=[NumpyShip()]):
-        """
-        Define a connection to redis with certain translators
-        :param host: hostname of redis server connection
-        :param translators: list of translators used by connections with this interface
-        """
         self.hostname = host
         self.ships = ships
         self.client = rejson.Client(host=host, decode_responses=True)
