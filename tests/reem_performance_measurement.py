@@ -6,8 +6,11 @@ import logging
 import time
 import os
 import shutil
+from redis import Redis
+from pottery import RedisDict
 
-log_file_name = "logs/reem_testing_kvs_timed.log"
+base = os.path.dirname(os.path.abspath(__file__))
+log_file_name = os.path.join(base, "logs/reem_testing_kvs_timed.log")
 FORMAT = "%(asctime)20s %(filename)30s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT, filename=log_file_name, filemode='w')
 logger = logging.getLogger("reem.datatypes")
@@ -243,7 +246,46 @@ def plot_overhead_data():
 def overhead_tests_main():
     generate_subscriber_overhead_data([1, 10, 100, 1000])
     plot_overhead_data()
-# ------------------------ Publish Subscribe Testing ----------------------------------
+
+
+# ------------------- Pottery Testing -----------------------------
+
+
+def set_pottery(redis_dict, value):
+    redis_dict["data"] = value
+
+
+def compare_to_potteryx():
+    client = Redis.from_url('redis://localhost:6379/')
+    pottery_dict = RedisDict(redis=client, key='pottery')
+
+    info = {"title": "REEM vs Pottery", "plots": [],
+            "x_label": "Package"}
+
+    data = single_level_dictionary(
+        copies=100,
+        data={
+            "single_key": "".join(["A" for i in range(10 ** 2)]),
+            "nested_data": {
+                "subkey": "".join(["A" for i in range(10 ** 2)])
+            }
+        }
+    )
+
+    # REEM
+    p = {
+        "ticker_label": "REEM",
+        "times": multitrial_time_test(set, {"keys": ["key_growth"], "value": data}, iterations=100)
+    }
+    info["plots"].append(p)
+
+    # Pottery
+    p = {
+        "ticker_label": "Pottery",
+        "times": multitrial_time_test(set_pottery, {"redis_dict": pottery_dict, "value": data}, iterations=100)
+    }
+    info["plots"].append(p)
+    plot_performance(info)
 
 
 if __name__ == "__main__":
@@ -254,4 +296,5 @@ if __name__ == "__main__":
     # numpy_get_frame_rates()
     # hundred_key_sets()
     # hundred_key_gets()
-    overhead_tests_main()
+    # overhead_tests_main()
+    compare_to_potteryx()

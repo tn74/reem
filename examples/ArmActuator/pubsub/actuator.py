@@ -18,6 +18,7 @@ start_time = time.time()
 
 interface = RedisInterface(host="localhost")
 subscriber = SilentSubscriber(channel="command", interface=interface)
+subscriber.listen()
 
 frequency = 1000  # Hz
 period = 1.0/frequency
