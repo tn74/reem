@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Basic Usage &mdash; REEM v1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Advanced Usage" href="advanced.html" />
+    <link rel="prev" title="Set Up Tutorial" href="gettingstarted.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> REEM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Set Up Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#initialization">Initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-value-store">Key Value Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publish-subscribe">Publish/Subscribe</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#publisher">Publisher</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subscribers">Subscribers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#silent-subscribers">Silent Subscribers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#callback-subscribers">Callback Subscribers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs.html">Docs</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">REEM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Basic Usage</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/basic.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="basic-usage">
+<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>This page explains how to use database and publish/subscribe paradigms with REEM.</p>
+<div class="section" id="initialization">
+<h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this headline">¶</a></h2>
+<p>Before any information can be passed to a Redis server, we need to specify how to contact the server.
+A <code class="docutils literal notranslate"><span class="pre">RedisInterface</span></code> object is meant to represent a connection to a specific server. Instantiate it and call initialize
+before attaching any datatypes to it. You must specify the host as the IP address of the server running Redis
+(or localhost). If no host is provided, <strong>the default argument for host is localhost</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.connection</span> <span class="kn">import</span> <span class="n">RedisInterface</span>
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">interface</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="key-value-store">
+<h2>Key Value Store<a class="headerlink" href="#key-value-store" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> object is meant to be your way of interacting with Redis as a nested database server.
+You should treat a <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> object as though it were a python dictionary that can
+contain native python types and numpy arrays. When you set something inside this “dictionary”, the corresponding
+entry will be set in Redis. Reading the “dictionary” will read the corresponding entry in Redis.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> is instantiated with a <code class="docutils literal notranslate"><span class="pre">RedisInterface</span></code> object, identifying what Redis server it is connected
+to.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="kn">import</span> <span class="n">KeyValueStore</span>
+<span class="n">server</span> <span class="o">=</span> <span class="n">KeyValueStore</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The below code illustrates:</p>
+<ul class="simple">
+<li><p>To set an item in Redis, the syntax is identical to that setting a path in a Python dictionary</p></li>
+<li><p>To get an item from Redis, the syntax is the same as a dictionary’s but you must call <code class="docutils literal notranslate"><span class="pre">.read()</span></code> on the final path.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span> <span class="s1">&#39;REEM&#39;</span><span class="p">}</span>
+<span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flat_data</span>
+
+<span class="n">bar</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="c1"># Sets bar = {&#39;number&#39;: 1000, &#39;string&#39;: &#39;REEM&#39;}</span>
+
+<span class="n">bar</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">][</span><span class="s2">&quot;number&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="c1"># Sets bar = 1000</span>
+</pre></div>
+</div>
+<p><strong>Limitations</strong></p>
+<ol class="arabic simple">
+<li><p>Cannot use non-string Keys</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="s2">&quot;one&quot;</span><span class="p">}</span> <span class="c1"># Not Okay</span>
+<span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;0&quot;</span><span class="p">:</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span><span class="s2">&quot;one&quot;</span><span class="p">}</span> <span class="c1"># Okay</span>
+</pre></div>
+</div>
+<p>REEM assumes all keys are strings to avoid having to parse JSON keys to determine if they are strings or numbers.</p>
+<ol class="arabic simple" start="2">
+<li><p>Cannot have a list with nonserializable types.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="p">)]}</span> <span class="c1"># Not Okay</span>
+<span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}</span> <span class="c1"># Okay</span>
+</pre></div>
+</div>
+<p>REEM does not presently check lists for non serializable types. We hope to allow this in a future release.
+For now, we ask you substitute the list with a dictionary</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="p">)]}</span> <span class="c1"># Not Okay</span>
+<span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:{</span><span class="s2">&quot;arr1&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;arr2&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="p">)}}</span> <span class="c1"># Okay</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="publish-subscribe">
+<h2>Publish/Subscribe<a class="headerlink" href="#publish-subscribe" title="Permalink to this headline">¶</a></h2>
+<p>Publishing and subscribing is implemented with a single type of publisher and two types of subscribers. Publishers</p>
+<div class="section" id="publisher">
+<h3>Publisher<a class="headerlink" href="#publisher" title="Permalink to this headline">¶</a></h3>
+<p>Publishers are instantiated with an <code class="docutils literal notranslate"><span class="pre">RedisInterface</span></code>.
+You may treat a publisher like an python dictionary that you CANNOT read.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="kn">import</span> <span class="n">PublishSpace</span>
+<span class="n">publisher</span> <span class="o">=</span> <span class="n">PublishSpace</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When you set something inside this “dictionary”  the publisher broadcasts a message indicating what path was updated.
+All subscribers listening to that path are notified and will act accordingly.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">640</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+
+<span class="c1"># publishes raw_image</span>
+<span class="n">publisher</span><span class="p">[</span><span class="s2">&quot;raw_image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+<span class="c1"># publishes raw_image.id</span>
+<span class="n">publisher</span><span class="p">[</span><span class="s2">&quot;raw_image&quot;</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>All limitations that apply to <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> apply to <code class="docutils literal notranslate"><span class="pre">PublishSpace</span></code> as well.
+<code class="docutils literal notranslate"><span class="pre">PublishSpace</span></code> is a subclass of <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> with alterations.</p>
+</div>
+<div class="section" id="subscribers">
+<h3>Subscribers<a class="headerlink" href="#subscribers" title="Permalink to this headline">¶</a></h3>
+<p>Subscribes listen to a key on the Redis Server and will act based on changes to that key OR its subkeys.
+For example a subscriber to the key “raw_image” will be notified if “camera_data” is freshly uploaded
+by a publisher or if the path “raw_image.id” is updated.</p>
+<p>A subscriber’s <code class="docutils literal notranslate"><span class="pre">.listen()</span></code> method must be called for it to start listening to Redis updates.</p>
+<p>Subscribing has two implementations</p>
+<div class="section" id="silent-subscribers">
+<h4>Silent Subscribers<a class="headerlink" href="#silent-subscribers" title="Permalink to this headline">¶</a></h4>
+<p>A silent subscriber acts like a local variable that mimics the data in Redis
+underneath the key indicated by its channel. It will silently update as fast as it can without notifying the
+user that an updated occurred. Use it if you would like a variable that just keeps the latest copy of Redis information
+at all times.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">SilentSubscriber</span></code> is initialized with a channel name and an interface. The channel represents the path inside
+the RedisServer this subscriber should listen to. Initialization is as below</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="kn">import</span> <span class="n">SilentSubscriber</span>
+<span class="n">subscriber</span> <span class="o">=</span> <span class="n">SilentSubscriber</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="s2">&quot;silent_channel&quot;</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">)</span>
+<span class="n">subscriber</span><span class="o">.</span><span class="n">listen</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The below code illustrates how to read data from a subscriber.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">publisher</span><span class="p">[</span><span class="s2">&quot;silent_channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span><span class="s2">&quot;REEM&quot;</span><span class="p">}</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+
+<span class="n">foo</span> <span class="o">=</span> <span class="n">subscriber</span><span class="p">[</span><span class="s2">&quot;number&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="c1"># foo = 5</span>
+<span class="n">foo</span> <span class="o">=</span> <span class="n">subscriber</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="c1"># foo = {&quot;number&quot;: 5, &quot;string&quot;:&quot;REEM&quot;}</span>
+
+<span class="n">publisher</span><span class="p">[</span><span class="s2">&quot;silent_channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+
+<span class="n">foo</span> <span class="o">=</span> <span class="n">subscriber</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="c1"># foo = 5</span>
+</pre></div>
+</div>
+<p><strong>Note:</strong> The <code class="docutils literal notranslate"><span class="pre">.read()</span></code> method does not go to
+Redis but copies the dictionary at that path in the local variable. This is faster than the <code class="docutils literal notranslate"><span class="pre">.read()</span></code> method used by
+the <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code></p>
+</div>
+<div class="section" id="callback-subscribers">
+<h4>Callback Subscribers<a class="headerlink" href="#callback-subscribers" title="Permalink to this headline">¶</a></h4>
+<p>Callback Subscribers listen to a key in Redis and execute a user-specified function when an update occurs.
+They are instantiated with an interface, channel name, a function, and dictionary specifying key-word
+arguments to the function.</p>
+<p>Instantiation is as below</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">updated_path</span><span class="p">,</span> <span class="n">foo</span><span class="p">):</span>
+ <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Foo = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">foo</span><span class="p">))</span>
+ <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Data = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+<span class="c1"># Initialize a callback subscriber</span>
+<span class="n">subscriber</span> <span class="o">=</span> <span class="n">CallbackSubscriber</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="s2">&quot;callback_channel&quot;</span><span class="p">,</span>
+                                <span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">,</span>
+                                <span class="n">callback_function</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
+                                <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">})</span>
+<span class="n">subscriber</span><span class="o">.</span><span class="n">listen</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>The Callback Function</strong></p>
+<p>The callback function must have <code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">updated_path</span></code> as it’s first two arguments. When a publisher sets a key,
+<code class="docutils literal notranslate"><span class="pre">data</span></code> gives the entire updated data structure below the key and <code class="docutils literal notranslate"><span class="pre">updated_path</span></code> tells what path was updated.
+Further arguments can be passed as keyword arguments set during the instantiation of subscriber.</p>
+<p>If the publisher executes</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">publisher</span><span class="p">[</span><span class="s2">&quot;callback_channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span> <span class="s2">&quot;REEM&quot;</span><span class="p">}</span>
+<span class="n">publisher</span><span class="p">[</span><span class="s2">&quot;callback_channel&quot;</span><span class="p">][</span><span class="s2">&quot;number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">6</span>
+</pre></div>
+</div>
+<p>The subscriber program will have the following output:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Foo = 5</span>
+<span class="go">Updated Path = callback_channel</span>
+<span class="go">Data = {&#39;number&#39;: 6, &#39;string&#39;: &#39;REEM&#39;}</span>
+<span class="go">Foo = 5</span>
+<span class="go">Updated Path = callback_channel.number</span>
+<span class="go">Data = {&#39;number&#39;: 6, &#39;string&#39;: &#39;REEM&#39;}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="advanced.html" class="btn btn-neutral float-right" title="Advanced Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="gettingstarted.html" class="btn btn-neutral float-left" title="Set Up Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Trishul Nagenalli, Dr. Kris Hauser
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,805 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Docs &mdash; REEM v1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Performance" href="performance.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> REEM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Set Up Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Docs</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">REEM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Docs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/docs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-reem.datatypes">
+<span id="docs"></span><h1>Docs<a class="headerlink" href="#module-reem.datatypes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="reem.datatypes.Writer">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">Writer</code><span class="sig-paren">(</span><em>top_key_name</em>, <em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Responsible for setting data inside Redis</p>
+<p>The Writer class is an internal class that is used for all data sent to Redis (not including pub/sub messages).
+Each key that will have nested data below requires a new instantiation of Writer</p>
+<dl class="attribute">
+<dt id="reem.datatypes.Writer.top_key_name">
+<code class="descname">top_key_name</code><a class="headerlink" href="#reem.datatypes.Writer.top_key_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the Redis key under which JSON data will be stored. To Redis,
+this will become a ReJSON key name. It is also used to generate the Redis key name that <code class="docutils literal notranslate"><span class="pre">ship</span></code>’s use to
+store non JSON data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="reem.datatypes.Writer.interface">
+<code class="descname">interface</code><a class="headerlink" href="#reem.datatypes.Writer.interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the connection to Redis this writer will use</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>RedisInterface</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Writer.send_to_redis">
+<code class="descname">send_to_redis</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer.send_to_redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute equivalent of <code class="docutils literal notranslate"><span class="pre">JSON.SET</span> <span class="pre">self.top_key_name</span> <span class="pre">&lt;set_path&gt;</span> <span class="pre">&lt;set_value&gt;</span></code></p>
+<p>From the user’s perspective, it executes <code class="docutils literal notranslate"><span class="pre">JSON.SET</span> <span class="pre">self.top_key_name</span> <span class="pre">&lt;set_path&gt;</span> <span class="pre">&lt;set_value&gt;</span></code>
+except that <code class="docutils literal notranslate"><span class="pre">set_value</span></code> can be json-incompatible. This is the only public
+method of this class. It determines what non-serializable types are inside set_value, stores the
+serializable data as a JSON, and stores the non-serializable data using <code class="docutils literal notranslate"><span class="pre">self.interface</span></code>’s ships</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Writer._Writer__initialize_metadata">
+<code class="descname">_Writer__initialize_metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer._Writer__initialize_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pull metadata for this key from Redis or set a default</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Writer._Writer__process_metadata">
+<code class="descname">_Writer__process_metadata</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer._Writer__process_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle metadata updates</p>
+<p>Given the path and value the user would like to set, check if there are non-serializable data types and update
+metadata locally and in Redis. Happens without pipeline</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Writer._Writer__publish_non_serializables">
+<code class="descname">_Writer__publish_non_serializables</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer._Writer__publish_non_serializables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publish JSON incompatible data to Redis</p>
+<p>Given a set, publish the non-serializable components to redis, given that metadata has been updated already</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Writer._Writer__publish_serializables">
+<code class="descname">_Writer__publish_serializables</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Writer._Writer__publish_serializables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publish the serializable portion of <a href="#id1"><span class="problematic" id="id2">``</span></a>set_value</p>
+<p>Take out the non-serializable part of set_value and publish it at set_path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reem.datatypes.Reader">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">Reader</code><span class="sig-paren">(</span><em>top_key_name</em>, <em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Responsible for getting data from Redis</p>
+<p>The Reader class is an internal class that is used for all read from Redis (not including pub/sub messages).
+Each key that will have nested data below requires a new instantiation of Reader</p>
+<dl class="attribute">
+<dt id="reem.datatypes.Reader.top_key_name">
+<code class="descname">top_key_name</code><a class="headerlink" href="#reem.datatypes.Reader.top_key_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the Redis key under which JSON data is stored</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="reem.datatypes.Reader.interface">
+<code class="descname">interface</code><a class="headerlink" href="#reem.datatypes.Reader.interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the connection to Redis this reader will use</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>RedisInterface</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Reader.read_from_redis">
+<code class="descname">read_from_redis</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Reader.read_from_redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read specified path from Redis</p>
+<p>This is the only public method of the Reader class. It will retrieve the data stored at a specified path
+from Redis. At a high level, it reads data stored with ReJSON and inserts non-JSON compatible data
+at appropriate paths using the metadata associated with this key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> (<em>str</em>) – path the user wants to read</p>
+</dd>
+</dl>
+<p>Returns: data stored at value in Redis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Reader.update_metadata">
+<code class="descname">update_metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Reader.update_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the local copy of metadata if a relevant path has been updated.</p>
+<p>The metadata listener is a redis client subscribed to key-space notifications. If a relevant path is updated,
+this Reader’s <code class="docutils literal notranslate"><span class="pre">pull_metadata</span></code> flag will be turned on. If <code class="docutils literal notranslate"><span class="pre">pull_metadata</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the reader
+will fetch metadata from the Redis server.</p>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Reader.queue_reads">
+<code class="descname">queue_reads</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Reader.queue_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queue reads in a pipeline</p>
+<p>Queue all redis queries necessary to read data at path into the appropriate redis pipeline.
+First, queue decoded pipeline with the ReJSON query
+Next, queue all the special path reads with the non-decoded pipeline and ships</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Reader.build_dictionary">
+<code class="descname">build_dictionary</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Reader.build_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute pipelines and consolidate data into a dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns: The data stored at <code class="docutils literal notranslate"><span class="pre">read_path</span></code> in Redis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Reader.pull_special_path">
+<code class="descname">pull_special_path</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Reader.pull_special_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directly pull a non-JSON path</p>
+<p>If the user specified path is not in JSON, this will retrieve the data directly without going through ReJSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reem.datatypes.KeyValueStore">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">KeyValueStore</code><span class="sig-paren">(</span><em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.KeyValueStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary Like object used for get/set paradigm</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> object is one that users will frequently use. It keeps <code class="docutils literal notranslate"><span class="pre">Reader</span></code> and <code class="docutils literal notranslate"><span class="pre">Writer</span></code> objects
+for each key that the user read or written to. It does not actually handle the getting and setting of data
+but produces <code class="docutils literal notranslate"><span class="pre">ReadablePathHandler</span></code> objects that assist with path construction and call the reader and
+writer’s write and read methods.</p>
+<dl class="attribute">
+<dt id="reem.datatypes.KeyValueStore.interface">
+<code class="descname">interface</code><a class="headerlink" href="#reem.datatypes.KeyValueStore.interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the connection to Redis this reader will use</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>RedisInterface</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.KeyValueStore.track_schema_changes">
+<code class="descname">track_schema_changes</code><span class="sig-paren">(</span><em>set_value</em>, <em>keys=None</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.KeyValueStore.track_schema_changes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performance optimization for skipping schema update checks</p>
+<p>Stop checking for schema updates when setting data. Use ONLY if your data’s schema is static
+and you are really trying to eek out every bit of optimization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_value</strong> (<em>bool</em>) – True/False indicating if the keys’ schema should be tracked</p></li>
+<li><p><strong>keys</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of keys to track. If None, all present and future keys are tracked</p></li>
+<li><p><strong>to set_value</strong> (<em>according</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.KeyValueStore._KeyValueStore__ensure_key_existence">
+<code class="descname">_KeyValueStore__ensure_key_existence</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.KeyValueStore._KeyValueStore__ensure_key_existence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the requested key has a reader and writer associated with it.</p>
+<p>Returns: None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reem.datatypes.Publisher">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">Publisher</code><span class="sig-paren">(</span><em>top_key_name</em>, <em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines Publisher behavior</p>
+<p>The Publisher is identical to the writer but publishes a message when it writes a value.</p>
+<dl class="method">
+<dt id="reem.datatypes.Publisher.send_to_redis">
+<code class="descname">send_to_redis</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher.send_to_redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publisher equivalent of Writer <code class="docutils literal notranslate"><span class="pre">send_to_redis</span></code></p>
+<p>This is an equivalent function to <code class="docutils literal notranslate"><span class="pre">Writer</span></code>’s <code class="docutils literal notranslate"><span class="pre">send_to_redis</span></code> method but also publishes a message
+indicating what channel has been updated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Publisher._Writer__initialize_metadata">
+<code class="descname">_Writer__initialize_metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher._Writer__initialize_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pull metadata for this key from Redis or set a default</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Publisher._Writer__process_metadata">
+<code class="descname">_Writer__process_metadata</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher._Writer__process_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle metadata updates</p>
+<p>Given the path and value the user would like to set, check if there are non-serializable data types and update
+metadata locally and in Redis. Happens without pipeline</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Publisher._Writer__publish_non_serializables">
+<code class="descname">_Writer__publish_non_serializables</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher._Writer__publish_non_serializables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publish JSON incompatible data to Redis</p>
+<p>Given a set, publish the non-serializable components to redis, given that metadata has been updated already</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.Publisher._Writer__publish_serializables">
+<code class="descname">_Writer__publish_serializables</code><span class="sig-paren">(</span><em>set_path</em>, <em>set_value</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.Publisher._Writer__publish_serializables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publish the serializable portion of <a href="#id3"><span class="problematic" id="id4">``</span></a>set_value</p>
+<p>Take out the non-serializable part of set_value and publish it at set_path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_path</strong> (<em>str</em>) – path underneath JSON key to set</p></li>
+<li><p><strong>set_value</strong> – value to set</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reem.datatypes.PublishSpace">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">PublishSpace</code><span class="sig-paren">(</span><em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.PublishSpace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience class for publishing</p>
+<p>This class keeps track of <code class="docutils literal notranslate"><span class="pre">Publisher</span></code> objects for each key the user has published on.</p>
+<dl class="method">
+<dt id="reem.datatypes.PublishSpace._KeyValueStore__ensure_key_existence">
+<code class="descname">_KeyValueStore__ensure_key_existence</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.PublishSpace._KeyValueStore__ensure_key_existence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the requested key has a reader and writer associated with it.</p>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.PublishSpace._PublishSpace__ensure_key_existence">
+<code class="descname">_PublishSpace__ensure_key_existence</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.PublishSpace._PublishSpace__ensure_key_existence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identical to <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> method of same name but does not instantiate a <code class="docutils literal notranslate"><span class="pre">Reader</span></code> object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.PublishSpace.track_schema_changes">
+<code class="descname">track_schema_changes</code><span class="sig-paren">(</span><em>set_value</em>, <em>keys=None</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.PublishSpace.track_schema_changes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performance optimization for skipping schema update checks</p>
+<p>Stop checking for schema updates when setting data. Use ONLY if your data’s schema is static
+and you are really trying to eek out every bit of optimization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_value</strong> (<em>bool</em>) – True/False indicating if the keys’ schema should be tracked</p></li>
+<li><p><strong>keys</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of keys to track. If None, all present and future keys are tracked</p></li>
+<li><p><strong>to set_value</strong> (<em>according</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reem.datatypes.SilentSubscriber">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">SilentSubscriber</code><span class="sig-paren">(</span><em>channel</em>, <em>interface</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Silent Subscriber Implementation</p>
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.update_local_copy">
+<code class="descname">update_local_copy</code><span class="sig-paren">(</span><em>channel</em>, <em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.update_local_copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the local copy of the data stored under this channel name in redis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – the name of the channel that was published.</p></li>
+<li><p><strong>message</strong> – message published on that channel</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.listen">
+<code class="descname">listen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.listen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes this subscriber start listening</p>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.value">
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data stored at root</p>
+<p>Where as the reader can do <code class="docutils literal notranslate"><span class="pre">server[&quot;foo&quot;].read()</span></code> with if server is a <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code>,
+accessing the root value of a subscriber is not as easy. This method retrieves all data stored underneath
+a top level key.</p>
+<p>Returns: all data stored underneath a top level Redis key.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.build_dictionary">
+<code class="descname">build_dictionary</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.build_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute pipelines and consolidate data into a dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns: The data stored at <code class="docutils literal notranslate"><span class="pre">read_path</span></code> in Redis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.pull_special_path">
+<code class="descname">pull_special_path</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.pull_special_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directly pull a non-JSON path</p>
+<p>If the user specified path is not in JSON, this will retrieve the data directly without going through ReJSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.queue_reads">
+<code class="descname">queue_reads</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.queue_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queue reads in a pipeline</p>
+<p>Queue all redis queries necessary to read data at path into the appropriate redis pipeline.
+First, queue decoded pipeline with the ReJSON query
+Next, queue all the special path reads with the non-decoded pipeline and ships</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.read_from_redis">
+<code class="descname">read_from_redis</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.read_from_redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read specified path from Redis</p>
+<p>This is the only public method of the Reader class. It will retrieve the data stored at a specified path
+from Redis. At a high level, it reads data stored with ReJSON and inserts non-JSON compatible data
+at appropriate paths using the metadata associated with this key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> (<em>str</em>) – path the user wants to read</p>
+</dd>
+</dl>
+<p>Returns: data stored at value in Redis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.SilentSubscriber.update_metadata">
+<code class="descname">update_metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.SilentSubscriber.update_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the local copy of metadata if a relevant path has been updated.</p>
+<p>The metadata listener is a redis client subscribed to key-space notifications. If a relevant path is updated,
+this Reader’s <code class="docutils literal notranslate"><span class="pre">pull_metadata</span></code> flag will be turned on. If <code class="docutils literal notranslate"><span class="pre">pull_metadata</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the reader
+will fetch metadata from the Redis server.</p>
+<p>Returns: None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reem.datatypes.CallbackSubscriber">
+<em class="property">class </em><code class="descclassname">reem.datatypes.</code><code class="descname">CallbackSubscriber</code><span class="sig-paren">(</span><em>channel</em>, <em>interface</em>, <em>callback_function</em>, <em>kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback Subscriber Implementation</p>
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.call_user_function">
+<code class="descname">call_user_function</code><span class="sig-paren">(</span><em>channel</em>, <em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.call_user_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper callback function (wrapping user function) for this class to work with a RawSubscriber object
+Fits required interface for a ChannelSubscriber callback function
+:param channel: channel published to
+:param message: message that was published
+:return: None
+:rtype: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.build_dictionary">
+<code class="descname">build_dictionary</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.build_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute pipelines and consolidate data into a dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns: The data stored at <code class="docutils literal notranslate"><span class="pre">read_path</span></code> in Redis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.listen">
+<code class="descname">listen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.listen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes this subscriber start listening</p>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.pull_special_path">
+<code class="descname">pull_special_path</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.pull_special_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directly pull a non-JSON path</p>
+<p>If the user specified path is not in JSON, this will retrieve the data directly without going through ReJSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.queue_reads">
+<code class="descname">queue_reads</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.queue_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queue reads in a pipeline</p>
+<p>Queue all redis queries necessary to read data at path into the appropriate redis pipeline.
+First, queue decoded pipeline with the ReJSON query
+Next, queue all the special path reads with the non-decoded pipeline and ships</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> – path user wants to read</p>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.read_from_redis">
+<code class="descname">read_from_redis</code><span class="sig-paren">(</span><em>read_path</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.read_from_redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read specified path from Redis</p>
+<p>This is the only public method of the Reader class. It will retrieve the data stored at a specified path
+from Redis. At a high level, it reads data stored with ReJSON and inserts non-JSON compatible data
+at appropriate paths using the metadata associated with this key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>read_path</strong> (<em>str</em>) – path the user wants to read</p>
+</dd>
+</dl>
+<p>Returns: data stored at value in Redis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.update_local_copy">
+<code class="descname">update_local_copy</code><span class="sig-paren">(</span><em>channel</em>, <em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.update_local_copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the local copy of the data stored under this channel name in redis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – the name of the channel that was published.</p></li>
+<li><p><strong>message</strong> – message published on that channel</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.update_metadata">
+<code class="descname">update_metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.update_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the local copy of metadata if a relevant path has been updated.</p>
+<p>The metadata listener is a redis client subscribed to key-space notifications. If a relevant path is updated,
+this Reader’s <code class="docutils literal notranslate"><span class="pre">pull_metadata</span></code> flag will be turned on. If <code class="docutils literal notranslate"><span class="pre">pull_metadata</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the reader
+will fetch metadata from the Redis server.</p>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reem.datatypes.CallbackSubscriber.value">
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reem.datatypes.CallbackSubscriber.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data stored at root</p>
+<p>Where as the reader can do <code class="docutils literal notranslate"><span class="pre">server[&quot;foo&quot;].read()</span></code> with if server is a <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code>,
+accessing the root value of a subscriber is not as easy. This method retrieves all data stored underneath
+a top level key.</p>
+<p>Returns: all data stored underneath a top level Redis key.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="performance.html" class="btn btn-neutral float-left" title="Performance" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Trishul Nagenalli, Dr. Kris Hauser
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

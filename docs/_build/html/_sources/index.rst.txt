@@ -1,14 +1,18 @@
 Welcome to REEM's documentation!
 ================================
 
-.. automodule:: reem.datatypes
-    :members:
-    :private-members:
-
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   gettingstarted
+   basic
+   advanced
+   examples
+   performance
+   docs
+
+
 
 
 
