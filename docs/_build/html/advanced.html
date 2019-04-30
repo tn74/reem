@@ -257,7 +257,7 @@ to use to decode data that is already stored in Redis.</p>
 </div>
 <p><strong>Numpy Arrays</strong></p>
 <p>Numpy Arrays are stored in Redis through ships. If you want to keep the default ship for numpy arrays when including
-your own, you must include the default numpy ship in your list of ships.</p>
+your custom ships, you must include the default numpy ship in your list of ships.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">ships</span><span class="o">=</span><span class="p">[</span><span class="n">reem</span><span class="o">.</span><span class="n">ships</span><span class="o">.</span><span class="n">NumpyShip</span><span class="p">(),</span> <span class="n">CustomShip</span><span class="p">()])</span>
 </pre></div>
 </div>

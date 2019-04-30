@@ -84,7 +84,28 @@
 <li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Set Up Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#image-processing-system">Image Processing System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#camera-py">camera.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#processor-py">processor.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#actuator-py">actuator.py</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#arm-actuator">Arm Actuator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#database">Database</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#controller">Controller</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#actuator">Actuator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#publish-subscribe">Publish/Subscribe</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Controller</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Actuator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">Docs</a></li>
 </ul>
@@ -153,6 +174,301 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="image-processing-system">
+<h2>Image Processing System<a class="headerlink" href="#image-processing-system" title="Permalink to this headline">¶</a></h2>
+<p>Below is an example of what an image processing system might look like. In this robot, there are three components. The
+robot’s computation flow is as below</p>
+<ol class="arabic simple">
+<li><p>A camera takes an image and posts it to Redis</p></li>
+<li><p>A computer processes that image and posts the result to Redis. Here, the process is just to compute the mean value of the image.</p></li>
+<li><p>An actuator reads the result of the computation and does something with it.  Here, it just logs it.</p></li>
+</ol>
+<p>All the code and each component’s logs can be found in the <a class="reference external" href="https://github.com/tn74/reem/tree/master/examples/ImageProcessing">repository</a></p>
+<div class="section" id="camera-py">
+<h3>camera.py<a class="headerlink" href="#camera-py" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span>
+<span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Logging Configuration</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)20s</span><span class="s2"> </span><span class="si">%(filename)30s</span><span class="s2">:</span><span class="si">%(lineno)3s</span><span class="s2">  </span><span class="si">%(funcName)20s</span><span class="s2">() </span><span class="si">%(levelname)10s</span><span class="s2">     </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;camera.log&quot;</span><span class="p">,</span>
+    <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">TIME_TO_RUN</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># seconds</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+
+<span class="c1"># --------------------------- Main -----------------------------------</span>
+
+
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">pspace</span> <span class="o">=</span> <span class="n">PublishSpace</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">)</span>
+
+<span class="n">image_count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">TIME_TO_RUN</span><span class="p">:</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">640</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image</span><span class="p">,</span>
+        <span class="s2">&quot;images_sent&quot;</span><span class="p">:</span> <span class="n">image_count</span><span class="p">,</span>
+        <span class="s2">&quot;time_stamp&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+    <span class="p">}</span>
+    <span class="n">pspace</span><span class="p">[</span><span class="s2">&quot;raw_image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Published Image </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image_count</span><span class="p">))</span>
+    <span class="n">image_count</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="processor-py">
+<h3>processor.py<a class="headerlink" href="#processor-py" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span><span class="p">,</span> <span class="n">CallbackSubscriber</span>
+<span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Logging Configuration</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)20s</span><span class="s2"> </span><span class="si">%(filename)30s</span><span class="s2">:</span><span class="si">%(lineno)3s</span><span class="s2">  </span><span class="si">%(funcName)20s</span><span class="s2">() </span><span class="si">%(levelname)10s</span><span class="s2">     </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;processor.log&quot;</span><span class="p">,</span>
+    <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">TIME_TO_RUN</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># seconds</span>
+
+
+<span class="c1"># --------------------------- Main -----------------------------------</span>
+
+
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">pspace</span> <span class="o">=</span> <span class="n">PublishSpace</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">updated_path</span><span class="p">):</span>
+    <span class="n">pspace</span><span class="p">[</span><span class="s2">&quot;processed_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;time_stamp&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+        <span class="s2">&quot;images_sent&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;images_sent&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processed image </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;images_sent&quot;</span><span class="p">]))</span>
+
+
+<span class="n">subscriber</span> <span class="o">=</span> <span class="n">CallbackSubscriber</span><span class="p">(</span>
+    <span class="n">channel</span><span class="o">=</span><span class="s2">&quot;raw_image&quot;</span><span class="p">,</span>
+    <span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">,</span>
+    <span class="n">callback_function</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
+    <span class="n">kwargs</span><span class="o">=</span><span class="p">{}</span>
+<span class="p">)</span>
+
+<span class="n">subscriber</span><span class="o">.</span><span class="n">listen</span><span class="p">()</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">TIME_TO_RUN</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="actuator-py">
+<h3>actuator.py<a class="headerlink" href="#actuator-py" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span><span class="p">,</span> <span class="n">CallbackSubscriber</span>
+<span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Logging Configuration</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)20s</span><span class="s2"> </span><span class="si">%(filename)30s</span><span class="s2">:</span><span class="si">%(lineno)3s</span><span class="s2">  </span><span class="si">%(funcName)20s</span><span class="s2">() </span><span class="si">%(levelname)10s</span><span class="s2">     </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;actuator.log&quot;</span><span class="p">,</span>
+    <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">TIME_TO_RUN</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># seconds</span>
+
+
+<span class="c1"># --------------------------- Main -----------------------------------</span>
+
+
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">pspace</span> <span class="o">=</span> <span class="n">PublishSpace</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">updated_path</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processed image </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;images_sent&quot;</span><span class="p">]))</span>
+
+
+<span class="n">subscriber</span> <span class="o">=</span> <span class="n">CallbackSubscriber</span><span class="p">(</span>
+    <span class="n">channel</span><span class="o">=</span><span class="s2">&quot;processed_info&quot;</span><span class="p">,</span>
+    <span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">,</span>
+    <span class="n">callback_function</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
+    <span class="n">kwargs</span><span class="o">=</span><span class="p">{}</span>
+<span class="p">)</span>
+
+<span class="n">subscriber</span><span class="o">.</span><span class="n">listen</span><span class="p">()</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">TIME_TO_RUN</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="arm-actuator">
+<h2>Arm Actuator<a class="headerlink" href="#arm-actuator" title="Permalink to this headline">¶</a></h2>
+<p>This examples tries to mimic a system where one computer is responsible for actuating motors at a specific frequency
+while the set point is controlled by another computer at a different frequency.</p>
+<p>We have implemented in two ways - using a database paradigm and a publish/subscribe paradigm.</p>
+<p>All the code and each component’s logs can be found in the <a class="reference external" href="https://github.com/tn74/reem/tree/master/examples/ArmActuator">repository</a></p>
+<div class="section" id="database">
+<h3>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="controller">
+<h4>Controller<a class="headerlink" href="#controller" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">KeyValueStore</span><span class="p">,</span> <span class="n">CallbackSubscriber</span>
+<span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Logging Configuration</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)20s</span><span class="s2"> </span><span class="si">%(filename)30s</span><span class="s2">:</span><span class="si">%(lineno)3s</span><span class="s2">  </span><span class="si">%(funcName)20s</span><span class="s2">() </span><span class="si">%(levelname)10s</span><span class="s2">     </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;controller_kvs.log&quot;</span><span class="p">,</span>
+    <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">TIME_TO_RUN</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># seconds</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+
+<span class="c1"># --------------------------- Main -----------------------------------</span>
+
+
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">kvs</span> <span class="o">=</span> <span class="n">KeyValueStore</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">)</span>
+
+<span class="n">set_frequency</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Hz</span>
+<span class="n">set_period</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">set_frequency</span>
+
+<span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">TIME_TO_RUN</span><span class="p">:</span>
+    <span class="n">next_iteration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">set_period</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">kvs</span><span class="p">[</span><span class="s2">&quot;set_point&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote Set Point: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">next_iteration</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="actuator">
+<h4>Actuator<a class="headerlink" href="#actuator" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">KeyValueStore</span>
+<span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Logging Configuration</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)20s</span><span class="s2"> </span><span class="si">%(filename)30s</span><span class="s2">:</span><span class="si">%(lineno)3s</span><span class="s2">  </span><span class="si">%(funcName)20s</span><span class="s2">() </span><span class="si">%(levelname)10s</span><span class="s2">     </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;actuator_kvs.log&quot;</span><span class="p">,</span>
+    <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">TIME_TO_RUN</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># seconds</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="c1"># --------------------------- Main -----------------------------------</span>
+
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">kvs</span> <span class="o">=</span> <span class="n">KeyValueStore</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+
+<span class="n">polling_frequency</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># Hz</span>
+<span class="n">polling_period</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">polling_frequency</span>
+
+<span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">TIME_TO_RUN</span><span class="p">:</span>
+    <span class="n">next_iteration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">polling_period</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="n">kvs</span><span class="p">[</span><span class="s2">&quot;set_point&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Read Set Point: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">next_iteration</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="publish-subscribe">
+<h3>Publish/Subscribe<a class="headerlink" href="#publish-subscribe" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h4>Controller<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span>
+<span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Logging Configuration</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)20s</span><span class="s2"> </span><span class="si">%(filename)30s</span><span class="s2">:</span><span class="si">%(lineno)3s</span><span class="s2">  </span><span class="si">%(funcName)20s</span><span class="s2">() </span><span class="si">%(levelname)10s</span><span class="s2">     </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;controller_silent_subcsriber.log&quot;</span><span class="p">,</span>
+    <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">TIME_TO_RUN</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># seconds</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+
+<span class="c1"># --------------------------- Main -----------------------------------</span>
+
+
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">pspace</span> <span class="o">=</span> <span class="n">PublishSpace</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">)</span>
+
+<span class="n">set_frequency</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Hz</span>
+<span class="n">set_period</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">set_frequency</span>
+
+<span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">TIME_TO_RUN</span><span class="p">:</span>
+    <span class="n">next_iteration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">set_period</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">pspace</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Published Set Point: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">next_iteration</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h4>Actuator<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">SilentSubscriber</span>
+<span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Logging Configuration</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)20s</span><span class="s2"> </span><span class="si">%(filename)30s</span><span class="s2">:</span><span class="si">%(lineno)3s</span><span class="s2">  </span><span class="si">%(funcName)20s</span><span class="s2">() </span><span class="si">%(levelname)10s</span><span class="s2">     </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;actuator_silent_subscriber.log&quot;</span><span class="p">,</span>
+    <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">TIME_TO_RUN</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># seconds</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="c1"># --------------------------- Main -----------------------------------</span>
+
+<span class="n">interface</span> <span class="o">=</span> <span class="n">RedisInterface</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">subscriber</span> <span class="o">=</span> <span class="n">SilentSubscriber</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="n">interface</span><span class="p">)</span>
+<span class="n">subscriber</span><span class="o">.</span><span class="n">listen</span><span class="p">()</span>
+
+<span class="n">frequency</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># Hz</span>
+<span class="n">period</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">frequency</span>
+
+<span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">TIME_TO_RUN</span><span class="p">:</span>
+    <span class="n">next_iteration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">period</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="n">subscriber</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Read Set Point: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">next_iteration</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
 </div>
 
 

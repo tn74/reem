@@ -25,7 +25,7 @@ To use a ship, include it as an argument when creating a ``RedisInterface`` obje
 **Numpy Arrays**
 
 Numpy Arrays are stored in Redis through ships. If you want to keep the default ship for numpy arrays when including
-your own, you must include the default numpy ship in your list of ships.
+your custom ships, you must include the default numpy ship in your list of ships.
 
 .. code-block:: python
 
