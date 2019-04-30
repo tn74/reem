@@ -14,15 +14,15 @@ robot's computation flow is as below
 
 All the code and each component's logs can be found in the `repository <https://github.com/tn74/reem/tree/master/examples/ImageProcessing>`_
 
-camera.py
+Camera
 ^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../examples/ImageProcessing/camera.py
 
-processor.py
+Processor
 ^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../examples/ImageProcessing/processor.py
 
-actuator.py
+Actuator
 ^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../examples/ImageProcessing/actuator.py
 
