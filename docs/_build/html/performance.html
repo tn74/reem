@@ -174,7 +174,7 @@
             
   <div class="section" id="performance">
 <h1>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h1>
-<p>The below documents REEM Performance. See the
+<p>The below documents REEM Performance. See
 <a class="reference external" href="https://github.com/tn74/reem/blob/master/tests/reem_performance_measurement.py">the repository</a> for the full
 source code and more information.</p>
 <div class="section" id="data-transfer-rates">
@@ -366,7 +366,7 @@ read the image.</p>
 <h3>Potteryx<a class="headerlink" href="#potteryx" title="Permalink to this headline">¶</a></h3>
 <p>The package <a class="reference external" href="https://github.com/brainix/pottery">potteryx</a> offers pythonic ways of using Redis data types.
 It’s implementation of a python dictionary for JSON-compatible data is faster than REEM.</p>
-<img alt="_images/reem_v_pottery.png" src="_images/reem_v_pottery.png" />
+<img alt="_images/pottery_comparison.png" src="_images/pottery_comparison.png" />
 <p>The comparison was generated with the following code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
 
@@ -374,38 +374,64 @@ It’s implementation of a python dictionary for JSON-compatible data is faster 
     <span class="n">redis_dict</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
 
+<span class="k">def</span> <span class="nf">get_pottery</span><span class="p">(</span><span class="n">redis_dict</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">redis_dict</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+
 <span class="k">def</span> <span class="nf">compare_to_potteryx</span><span class="p">():</span>
     <span class="n">client</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="s1">&#39;redis://localhost:6379/&#39;</span><span class="p">)</span>
     <span class="n">pottery_dict</span> <span class="o">=</span> <span class="n">RedisDict</span><span class="p">(</span><span class="n">redis</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;pottery&#39;</span><span class="p">)</span>
 
     <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;REEM vs Pottery&quot;</span><span class="p">,</span> <span class="s2">&quot;plots&quot;</span><span class="p">:</span> <span class="p">[],</span>
-            <span class="s2">&quot;x_label&quot;</span><span class="p">:</span> <span class="s2">&quot;Package&quot;</span><span class="p">}</span>
+            <span class="s2">&quot;x_label&quot;</span><span class="p">:</span> <span class="s2">&quot;Package&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;y_label&quot;</span><span class="p">:</span> <span class="s2">&quot;Latency (ms)&quot;</span><span class="p">}</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="n">single_level_dictionary</span><span class="p">(</span>
-        <span class="n">copies</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-        <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;single_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;A&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)]),</span>
-            <span class="s2">&quot;nested_data&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;subkey&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;A&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)])</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">nested_level_dictionary</span><span class="p">(</span>
+        <span class="n">levels</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">single_level_dictionary</span><span class="p">(</span>
+            <span class="n">copies</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;single_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;A&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)]),</span>
+                <span class="s2">&quot;nested_data&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;subkey&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;A&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)])</span>
+                <span class="p">}</span>
             <span class="p">}</span>
-        <span class="p">}</span>
+        <span class="p">)</span>
     <span class="p">)</span>
-
-    <span class="c1"># REEM</span>
+    <span class="c1"># REEM Set</span>
     <span class="n">p</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;ticker_label&quot;</span><span class="p">:</span> <span class="s2">&quot;REEM&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;times&quot;</span><span class="p">:</span> <span class="n">multitrial_time_test</span><span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;key_growth&quot;</span><span class="p">],</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">},</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="s2">&quot;ticker_label&quot;</span><span class="p">:</span> <span class="s2">&quot;REEM Set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;times&quot;</span><span class="p">:</span> <span class="n">multitrial_time_test</span><span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pottery_comparison&quot;</span><span class="p">],</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">},</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
     <span class="p">}</span>
     <span class="n">info</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
-    <span class="c1"># Pottery</span>
+    <span class="c1"># Pottery Set</span>
     <span class="n">p</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;ticker_label&quot;</span><span class="p">:</span> <span class="s2">&quot;Pottery&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ticker_label&quot;</span><span class="p">:</span> <span class="s2">&quot;Pottery Set&quot;</span><span class="p">,</span>
         <span class="s2">&quot;times&quot;</span><span class="p">:</span> <span class="n">multitrial_time_test</span><span class="p">(</span><span class="n">set_pottery</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;redis_dict&quot;</span><span class="p">:</span> <span class="n">pottery_dict</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">},</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
     <span class="p">}</span>
     <span class="n">info</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">plot_performance</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
 
+    <span class="n">reem_read_path</span> <span class="o">=</span> <span class="n">path_to_key_sequence</span><span class="p">(</span><span class="s2">&quot;.pottery_comparison.sub_0.sub_1.sub_2.sub_3.sub_4.copy_0_single_key&quot;</span><span class="p">)</span>
+    <span class="n">pottery_read_path</span> <span class="o">=</span> <span class="n">path_to_key_sequence</span><span class="p">(</span><span class="s2">&quot;.data.sub_0.sub_1.sub_2.sub_3.sub_4.copy_0_single_key&quot;</span><span class="p">)</span>
+    <span class="c1"># REEM Get</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ticker_label&quot;</span><span class="p">:</span> <span class="s2">&quot;REEM Get&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;times&quot;</span><span class="p">:</span> <span class="n">multitrial_time_test</span><span class="p">(</span><span class="n">get</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="n">reem_read_path</span><span class="p">},</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="c1"># Pottery Get</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ticker_label&quot;</span><span class="p">:</span> <span class="s2">&quot;Pottery Get&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;times&quot;</span><span class="p">:</span> <span class="n">multitrial_time_test</span><span class="p">(</span><span class="n">get_pottery</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;redis_dict&quot;</span><span class="p">:</span> <span class="n">pottery_dict</span><span class="p">,</span> <span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="n">pottery_read_path</span><span class="p">},</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;plots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="n">plot_performance</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
 
 </pre></div>
 </div>

@@ -161,8 +161,8 @@
 <div class="section" id="custom-datatypes">
 <h2>Custom Datatypes<a class="headerlink" href="#custom-datatypes" title="Permalink to this headline">¶</a></h2>
 <p>REEM is designed to be customizable. Out of the box, it supports transferring native python types and numpy arrays.
-You can, however, store define how any type of data is stored in Redis using a <code class="docutils literal notranslate"><span class="pre">Ship</span></code> object.</p>
-<p>Inside the module, <code class="docutils literal notranslate"><span class="pre">reem.ships</span></code> is the abstract class <code class="docutils literal notranslate"><span class="pre">SpecialCaseShip</span></code>. If you define your own ship, you must
+You can, however, define how any type of data is stored in Redis using a <code class="docutils literal notranslate"><span class="pre">Ship</span></code> object.</p>
+<p>Inside the module, <code class="docutils literal notranslate"><span class="pre">reem.ships</span></code> is the abstract class <code class="docutils literal notranslate"><span class="pre">SpecialDatatypeShip</span></code>. If you define your own ship, you must
 subclass <code class="docutils literal notranslate"><span class="pre">SpecialDatatypeShip</span></code> and fill in the methods. The class’s documentation is below</p>
 <dl class="class">
 <dt id="reem.ships.SpecialDatatypeShip">

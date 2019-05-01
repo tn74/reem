@@ -255,36 +255,63 @@ def set_pottery(redis_dict, value):
     redis_dict["data"] = value
 
 
+def get_pottery(redis_dict, keys):
+    ret = redis_dict
+    for k in keys:
+        ret = ret[k]
+    return ret
+
+
 def compare_to_potteryx():
     client = Redis.from_url('redis://localhost:6379/')
     pottery_dict = RedisDict(redis=client, key='pottery')
 
     info = {"title": "REEM vs Pottery", "plots": [],
-            "x_label": "Package"}
+            "x_label": "Package",
+            "y_label": "Latency (ms)"}
 
-    data = single_level_dictionary(
-        copies=100,
-        data={
-            "single_key": "".join(["A" for i in range(10 ** 2)]),
-            "nested_data": {
-                "subkey": "".join(["A" for i in range(10 ** 2)])
+    data = nested_level_dictionary(
+        levels=5,
+        data=single_level_dictionary(
+            copies=100,
+            data={
+                "single_key": "".join(["A" for i in range(10 ** 2)]),
+                "nested_data": {
+                    "subkey": "".join(["A" for i in range(10 ** 2)])
+                }
             }
-        }
+        )
     )
-
-    # REEM
+    # REEM Set
     p = {
-        "ticker_label": "REEM",
-        "times": multitrial_time_test(set, {"keys": ["key_growth"], "value": data}, iterations=100)
+        "ticker_label": "REEM Set",
+        "times": multitrial_time_test(set, {"keys": ["pottery_comparison"], "value": data}, iterations=100)
     }
     info["plots"].append(p)
 
-    # Pottery
+    # Pottery Set
     p = {
-        "ticker_label": "Pottery",
+        "ticker_label": "Pottery Set",
         "times": multitrial_time_test(set_pottery, {"redis_dict": pottery_dict, "value": data}, iterations=100)
     }
     info["plots"].append(p)
+
+    reem_read_path = path_to_key_sequence(".pottery_comparison.sub_0.sub_1.sub_2.sub_3.sub_4.copy_0_single_key")
+    pottery_read_path = path_to_key_sequence(".data.sub_0.sub_1.sub_2.sub_3.sub_4.copy_0_single_key")
+    # REEM Get
+    p = {
+        "ticker_label": "REEM Get",
+        "times": multitrial_time_test(get, {"keys": reem_read_path}, iterations=100)
+    }
+    info["plots"].append(p)
+
+    # Pottery Get
+    p = {
+        "ticker_label": "Pottery Get",
+        "times": multitrial_time_test(get_pottery, {"redis_dict": pottery_dict, "keys": pottery_read_path}, iterations=100)
+    }
+    info["plots"].append(p)
+
     plot_performance(info)
 
 

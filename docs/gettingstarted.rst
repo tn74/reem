@@ -1,7 +1,7 @@
 Set Up Tutorial
 ================================
 
-In REEM, data is between client programs and a centralized Redis server.
+In REEM, data is passed between client programs and a centralized Redis server.
 This tutorial will demonstrate how to set
 up the server and connect to it with a REEM client. Both the server
 and client will run on the local machine.
@@ -24,7 +24,7 @@ Redis
 
 The following script will download and build Redis with supporting packages from source inside
 a folder called ``database-server``.
-REEM has been tested with version 5.0.4. You may want to pull the latest version of Redis in the future. Change the
+REEM has been tested with Redis version 5.0.4. You may want to pull the latest version of Redis in the future. Change the
 versioning in the script appropriately
 
 DO NOT install Redis through ``apt-get install redis-server``
@@ -71,7 +71,7 @@ Execute a basic set and get with Redis, ensuring the output looks similar to the
     "1"
     127.0.0.1:6379>
 
-Congratulations! You have successfully installed and ran Redis. Shutdown the Redis server (issue the shutdown command
+Congratulations! You have successfully installed and ran Redis. Shutdown the Redis server (issue the ``shutdown`` command
 in the cli) and exit the cli.
 
 ReJSON
@@ -90,7 +90,7 @@ build ReJSON from source.
     cd ..
 
 The above script produces an compiled library file at ``database-server/redisjson/src/rejson.so``. Redis needs to be
-told to use that library. You can tell Redis that by starting a server with a configuration file. Take this
+told to use that library. You can tell Redis that by starting a server with a configuration file. Download this
 `example <https://github.com/tn74/reem/blob/master/examples/redis.conf>`_ configuration file and place it inside
 ``database-server``.
 
@@ -124,7 +124,7 @@ Install REEM and it's dependencies with the below command
 
 .. code-block:: bash
 
-    pip3 install reem rejson redis six numpy
+    pip3 install reem
 
 Copy the below into a file and run it:
 
@@ -164,7 +164,7 @@ The output should appear something like the below
      [0.37884759 0.70176005 0.14115555 0.82246663]
      [0.24243882 0.86587402 0.19852017 0.21833667]]
 
-The code connects to a Redis server and and sets a dictionary with basic number and string data. It then
+The code connects to a Redis server and ``set`` s a dictionary with basic number and string data. It then
 reads and prints that data. Next, it sends a numpy array to Redis and reads that back as well. It uses a KeyValueStore
 object to do all this. Learn more about it in the next section.
 

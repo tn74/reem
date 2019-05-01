@@ -65,7 +65,7 @@ The below code illustrates:
 
 REEM assumes all keys are strings to avoid having to parse JSON keys to determine if they are strings or numbers.
 
-2. Cannot have a list with nonserializable types.
+2. Cannot have a list with non-serializable types.
 
 .. code-block:: python
 
@@ -85,13 +85,13 @@ For now, we ask you substitute the list with a dictionary
 Publish/Subscribe
 #################
 
-Publishing and subscribing is implemented with a single type of publisher and two types of subscribers. Publishers
+Publishing and subscribing is implemented with a single type of publisher and two types of subscribers.
 
 Publisher
 ----------
 
-Publishers are instantiated with an ``RedisInterface``.
-You may treat a publisher like an python dictionary that you CANNOT read.
+Publishers are implemented with the ``PublisherSpace`` class and are instantiated with a ``RedisInterface``.
+You may treat a ``PublishSpace`` like an python dictionary that you CANNOT read.
 
 .. code-block:: python
 
@@ -100,7 +100,7 @@ You may treat a publisher like an python dictionary that you CANNOT read.
 
 
 When you set something inside this "dictionary"  the publisher broadcasts a message indicating what path was updated.
-All subscribers listening to that path are notified and will act accordingly.
+All subscribers listening to that path are notified and act accordingly.
 
 .. code-block:: python
 
@@ -114,14 +114,14 @@ All subscribers listening to that path are notified and will act accordingly.
 
 
 All limitations that apply to ``KeyValueStore`` apply to ``PublishSpace`` as well.
-``PublishSpace`` is a subclass of ``KeyValueStore`` with alterations.
+``PublishSpace`` is a subclass of ``KeyValueStore``.
 
 Subscribers
 ------------
 
-Subscribes listen to a key on the Redis Server and will act based on changes to that key OR its subkeys.
-For example a subscriber to the key "raw_image" will be notified if "camera_data" is freshly uploaded
-by a publisher or if the path "raw_image.id" is updated.
+Subscribes listen to a key on the Redis Server and will act based on changes to that key OR its sub-keys.
+For example a subscriber to the key "raw_image" will be notified if "raw_image" is freshly uploaded
+by a publisher and if the path "raw_image.id" is updated.
 
 A subscriber's ``.listen()`` method must be called for it to start listening to Redis updates.
 
@@ -132,7 +132,7 @@ Silent Subscribers
 
 A silent subscriber acts like a local variable that mimics the data in Redis
 underneath the key indicated by its channel. It will silently update as fast as it can without notifying the
-user that an updated occurred. Use it if you would like a variable that just keeps the latest copy of Redis information
+user that an update occurred. Use it if you would like a variable that just keeps the latest copy of Redis information
 at all times.
 
 The ``SilentSubscriber`` is initialized with a channel name and an interface. The channel represents the path inside
@@ -164,8 +164,8 @@ The below code illustrates how to read data from a subscriber.
    # foo = 5
 
 **Note:** The ``.read()`` method does not go to
-Redis but copies the dictionary at that path in the local variable. This is faster than the ``.read()`` method used by
-the ``KeyValueStore``
+Redis but copies the value at that path in the local variable. This is faster than the ``.read()`` method used by
+the ``KeyValueStore`` which does go to Redis.
 
 
 
@@ -174,7 +174,7 @@ Callback Subscribers
 
 
 Callback Subscribers listen to a key in Redis and execute a user-specified function when an update occurs.
-They are instantiated with an interface, channel name, a function, and dictionary specifying key-word
+They are instantiated with an interface, a channel name, a function, and a dictionary specifying keyword
 arguments to the function.
 
 Instantiation is as below

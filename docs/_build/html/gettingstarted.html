@@ -162,7 +162,7 @@
             
   <div class="section" id="set-up-tutorial">
 <h1>Set Up Tutorial<a class="headerlink" href="#set-up-tutorial" title="Permalink to this headline">¶</a></h1>
-<p>In REEM, data is between client programs and a centralized Redis server.
+<p>In REEM, data is passed between client programs and a centralized Redis server.
 This tutorial will demonstrate how to set
 up the server and connect to it with a REEM client. Both the server
 and client will run on the local machine.</p>
@@ -181,7 +181,7 @@ will install both and check that they are working.</p>
 <h3>Redis<a class="headerlink" href="#redis" title="Permalink to this headline">¶</a></h3>
 <p>The following script will download and build Redis with supporting packages from source inside
 a folder called <code class="docutils literal notranslate"><span class="pre">database-server</span></code>.
-REEM has been tested with version 5.0.4. You may want to pull the latest version of Redis in the future. Change the
+REEM has been tested with Redis version 5.0.4. You may want to pull the latest version of Redis in the future. Change the
 versioning in the script appropriately</p>
 <p>DO NOT install Redis through <code class="docutils literal notranslate"><span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">redis-server</span></code>
 This will install Redis 3 which does not support modules. You will not be able to run REEM.</p>
@@ -218,7 +218,7 @@ OK
 <span class="m">127</span>.0.0.1:6379&gt;
 </pre></div>
 </div>
-<p>Congratulations! You have successfully installed and ran Redis. Shutdown the Redis server (issue the shutdown command
+<p>Congratulations! You have successfully installed and ran Redis. Shutdown the Redis server (issue the <code class="docutils literal notranslate"><span class="pre">shutdown</span></code> command
 in the cli) and exit the cli.</p>
 </div>
 <div class="section" id="rejson">
@@ -234,7 +234,7 @@ make
 </pre></div>
 </div>
 <p>The above script produces an compiled library file at <code class="docutils literal notranslate"><span class="pre">database-server/redisjson/src/rejson.so</span></code>. Redis needs to be
-told to use that library. You can tell Redis that by starting a server with a configuration file. Take this
+told to use that library. You can tell Redis that by starting a server with a configuration file. Download this
 <a class="reference external" href="https://github.com/tn74/reem/blob/master/examples/redis.conf">example</a> configuration file and place it inside
 <code class="docutils literal notranslate"><span class="pre">database-server</span></code>.</p>
 <p>Some details about this configuration file:</p>
@@ -261,7 +261,7 @@ OK
 If a server is not already running, run <code class="docutils literal notranslate"><span class="pre">redis-server</span> <span class="pre">redis.conf</span></code> in a terminal and leave that terminal be.</p>
 <p>Client machines connect to the server purely through Python with the REEM client.
 Install REEM and it’s dependencies with the below command</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install reem rejson redis six numpy
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install reem
 </pre></div>
 </div>
 <p>Copy the below into a file and run it:</p>
@@ -297,7 +297,7 @@ Install REEM and it’s dependencies with the below command</p>
 <span class="go"> [0.24243882 0.86587402 0.19852017 0.21833667]]</span>
 </pre></div>
 </div>
-<p>The code connects to a Redis server and and sets a dictionary with basic number and string data. It then
+<p>The code connects to a Redis server and <code class="docutils literal notranslate"><span class="pre">set</span></code> s a dictionary with basic number and string data. It then
 reads and prints that data. Next, it sends a numpy array to Redis and reads that back as well. It uses a KeyValueStore
 object to do all this. Learn more about it in the next section.</p>
 <p>Congratulations! You have got REEM working on your machine! Continue to the next section to see what it can do.</p>

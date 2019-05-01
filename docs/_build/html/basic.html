@@ -219,7 +219,7 @@ to.</p>
 </div>
 <p>REEM assumes all keys are strings to avoid having to parse JSON keys to determine if they are strings or numbers.</p>
 <ol class="arabic simple" start="2">
-<li><p>Cannot have a list with nonserializable types.</p></li>
+<li><p>Cannot have a list with non-serializable types.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="p">)]}</span> <span class="c1"># Not Okay</span>
 <span class="n">server</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}</span> <span class="c1"># Okay</span>
@@ -234,17 +234,17 @@ For now, we ask you substitute the list with a dictionary</p>
 </div>
 <div class="section" id="publish-subscribe">
 <h2>Publish/Subscribe<a class="headerlink" href="#publish-subscribe" title="Permalink to this headline">¶</a></h2>
-<p>Publishing and subscribing is implemented with a single type of publisher and two types of subscribers. Publishers</p>
+<p>Publishing and subscribing is implemented with a single type of publisher and two types of subscribers.</p>
 <div class="section" id="publisher">
 <h3>Publisher<a class="headerlink" href="#publisher" title="Permalink to this headline">¶</a></h3>
-<p>Publishers are instantiated with an <code class="docutils literal notranslate"><span class="pre">RedisInterface</span></code>.
-You may treat a publisher like an python dictionary that you CANNOT read.</p>
+<p>Publishers are implemented with the <code class="docutils literal notranslate"><span class="pre">PublisherSpace</span></code> class and are instantiated with a <code class="docutils literal notranslate"><span class="pre">RedisInterface</span></code>.
+You may treat a <code class="docutils literal notranslate"><span class="pre">PublishSpace</span></code> like an python dictionary that you CANNOT read.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="kn">import</span> <span class="n">PublishSpace</span>
 <span class="n">publisher</span> <span class="o">=</span> <span class="n">PublishSpace</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>When you set something inside this “dictionary”  the publisher broadcasts a message indicating what path was updated.
-All subscribers listening to that path are notified and will act accordingly.</p>
+All subscribers listening to that path are notified and act accordingly.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">640</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
 
 <span class="c1"># publishes raw_image</span>
@@ -255,20 +255,20 @@ All subscribers listening to that path are notified and will act accordingly.</p
 </pre></div>
 </div>
 <p>All limitations that apply to <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> apply to <code class="docutils literal notranslate"><span class="pre">PublishSpace</span></code> as well.
-<code class="docutils literal notranslate"><span class="pre">PublishSpace</span></code> is a subclass of <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> with alterations.</p>
+<code class="docutils literal notranslate"><span class="pre">PublishSpace</span></code> is a subclass of <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code>.</p>
 </div>
 <div class="section" id="subscribers">
 <h3>Subscribers<a class="headerlink" href="#subscribers" title="Permalink to this headline">¶</a></h3>
-<p>Subscribes listen to a key on the Redis Server and will act based on changes to that key OR its subkeys.
-For example a subscriber to the key “raw_image” will be notified if “camera_data” is freshly uploaded
-by a publisher or if the path “raw_image.id” is updated.</p>
+<p>Subscribes listen to a key on the Redis Server and will act based on changes to that key OR its sub-keys.
+For example a subscriber to the key “raw_image” will be notified if “raw_image” is freshly uploaded
+by a publisher and if the path “raw_image.id” is updated.</p>
 <p>A subscriber’s <code class="docutils literal notranslate"><span class="pre">.listen()</span></code> method must be called for it to start listening to Redis updates.</p>
 <p>Subscribing has two implementations</p>
 <div class="section" id="silent-subscribers">
 <h4>Silent Subscribers<a class="headerlink" href="#silent-subscribers" title="Permalink to this headline">¶</a></h4>
 <p>A silent subscriber acts like a local variable that mimics the data in Redis
 underneath the key indicated by its channel. It will silently update as fast as it can without notifying the
-user that an updated occurred. Use it if you would like a variable that just keeps the latest copy of Redis information
+user that an update occurred. Use it if you would like a variable that just keeps the latest copy of Redis information
 at all times.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">SilentSubscriber</span></code> is initialized with a channel name and an interface. The channel represents the path inside
 the RedisServer this subscriber should listen to. Initialization is as below</p>
@@ -294,13 +294,13 @@ the RedisServer this subscriber should listen to. Initialization is as below</p>
 </pre></div>
 </div>
 <p><strong>Note:</strong> The <code class="docutils literal notranslate"><span class="pre">.read()</span></code> method does not go to
-Redis but copies the dictionary at that path in the local variable. This is faster than the <code class="docutils literal notranslate"><span class="pre">.read()</span></code> method used by
-the <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code></p>
+Redis but copies the value at that path in the local variable. This is faster than the <code class="docutils literal notranslate"><span class="pre">.read()</span></code> method used by
+the <code class="docutils literal notranslate"><span class="pre">KeyValueStore</span></code> which does go to Redis.</p>
 </div>
 <div class="section" id="callback-subscribers">
 <h4>Callback Subscribers<a class="headerlink" href="#callback-subscribers" title="Permalink to this headline">¶</a></h4>
 <p>Callback Subscribers listen to a key in Redis and execute a user-specified function when an update occurs.
-They are instantiated with an interface, channel name, a function, and dictionary specifying key-word
+They are instantiated with an interface, a channel name, a function, and a dictionary specifying keyword
 arguments to the function.</p>
 <p>Instantiation is as below</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">updated_path</span><span class="p">,</span> <span class="n">foo</span><span class="p">):</span>

@@ -1,6 +1,6 @@
 Performance
 ===============
-The below documents REEM Performance. See the
+The below documents REEM Performance. See
 `the repository <https://github.com/tn74/reem/blob/master/tests/reem_performance_measurement.py>`_ for the full
 source code and more information.
 
@@ -85,21 +85,17 @@ Potteryx
 ^^^^^^^^^
 
 The package `potteryx <https://github.com/brainix/pottery>`_ offers pythonic ways of using Redis data types.
-It's implementation of a python dictionary for JSON-compatible data is faster than REEM.
+It's implementation for setting JSON-compatible data is faster than REEM but gets are comparable.
 
-.. image:: _static/reem_v_pottery.png
+.. image:: _static/pottery_comparison.png
 
 The comparison was generated with the following code:
 
 .. literalinclude:: ../tests/reem_performance_measurement.py
-    :lines: 252-290
+    :lines: 252-316
 
 Pottery does not use ReJSON. To store nested data, ``potteryx`` serializes data deeper than one level inside a
 Python dictionary to JSON. The JSON is then stored as a subkey of Redis Hash.
 
 Pottery will require some extra work to get non-serializable data like numpy arrays to work with it.
 
-REEM could potentially use Pottery in the future. Thoughts for a future implementation
-
-1. Need to understand how to convert encode/decode non-serializable data types to be JSON compatible
-2. Edit the Reader and Writer classes to use ``potteryx``

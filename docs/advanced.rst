@@ -7,9 +7,9 @@ Custom Datatypes
 *****************
 
 REEM is designed to be customizable. Out of the box, it supports transferring native python types and numpy arrays.
-You can, however, store define how any type of data is stored in Redis using a ``Ship`` object.
+You can, however, define how any type of data is stored in Redis using a ``Ship`` object.
 
-Inside the module, ``reem.ships`` is the abstract class ``SpecialCaseShip``. If you define your own ship, you must
+Inside the module, ``reem.ships`` is the abstract class ``SpecialDatatypeShip``. If you define your own ship, you must
 subclass ``SpecialDatatypeShip`` and fill in the methods. The class's documentation is below
 
 .. autoclass:: reem.ships.SpecialDatatypeShip
