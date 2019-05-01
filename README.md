@@ -12,7 +12,7 @@ REEM currently offers two communication paradigms:
 
 To install the python package (and its dependencies), run
 ```
-pip install reem rejson redis six numpy
+pip install reem
 ```
 See the docs on [read the docs](https://reem.readthedocs.io)
 
