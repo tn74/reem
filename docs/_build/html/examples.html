@@ -86,20 +86,20 @@
 <li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#image-processing-system">Image Processing System</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#camera-py">camera.py</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#processor-py">processor.py</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#actuator-py">actuator.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#camera">Camera</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#processor">Processor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#actuator">Actuator</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#arm-actuator">Arm Actuator</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#database">Database</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#controller">Controller</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#actuator">Actuator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Actuator</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#publish-subscribe">Publish/Subscribe</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id2">Controller</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id3">Actuator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Controller</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Actuator</a></li>
 </ul>
 </li>
 </ul>
@@ -107,6 +107,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server-utilities.html">Server Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">Docs</a></li>
 </ul>
 
@@ -184,8 +185,8 @@ robot’s computation flow is as below</p>
 <li><p>An actuator reads the result of the computation and does something with it.  Here, it just logs it.</p></li>
 </ol>
 <p>All the code and each component’s logs can be found in the <a class="reference external" href="https://github.com/tn74/reem/tree/master/examples/ImageProcessing">repository</a></p>
-<div class="section" id="camera-py">
-<h3>camera.py<a class="headerlink" href="#camera-py" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="camera">
+<h3>Camera<a class="headerlink" href="#camera" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span>
 <span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -224,8 +225,8 @@ robot’s computation flow is as below</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="processor-py">
-<h3>processor.py<a class="headerlink" href="#processor-py" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="processor">
+<h3>Processor<a class="headerlink" href="#processor" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span><span class="p">,</span> <span class="n">CallbackSubscriber</span>
 <span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -271,8 +272,8 @@ robot’s computation flow is as below</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="actuator-py">
-<h3>actuator.py<a class="headerlink" href="#actuator-py" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="actuator">
+<h3>Actuator<a class="headerlink" href="#actuator" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span><span class="p">,</span> <span class="n">CallbackSubscriber</span>
 <span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
 <span class="kn">import</span> <span class="nn">time</span>
@@ -358,8 +359,8 @@ while the set point is controlled by another computer at a different frequency.<
 </pre></div>
 </div>
 </div>
-<div class="section" id="actuator">
-<h4>Actuator<a class="headerlink" href="#actuator" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id2">
+<h4>Actuator<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">KeyValueStore</span>
 <span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
 <span class="kn">import</span> <span class="nn">time</span>
@@ -395,8 +396,8 @@ while the set point is controlled by another computer at a different frequency.<
 </div>
 <div class="section" id="publish-subscribe">
 <h3>Publish/Subscribe<a class="headerlink" href="#publish-subscribe" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id2">
-<h4>Controller<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id3">
+<h4>Controller<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">PublishSpace</span>
 <span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
 <span class="kn">import</span> <span class="nn">time</span>
@@ -432,8 +433,8 @@ while the set point is controlled by another computer at a different frequency.<
 </pre></div>
 </div>
 </div>
-<div class="section" id="id3">
-<h4>Actuator<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id4">
+<h4>Actuator<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">reem.datatypes</span> <span class="k">import</span> <span class="n">SilentSubscriber</span>
 <span class="kn">from</span> <span class="nn">reem.connection</span> <span class="k">import</span> <span class="n">RedisInterface</span>
 <span class="kn">import</span> <span class="nn">time</span>

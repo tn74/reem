@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Docs" href="docs.html" />
+    <link rel="next" title="Server Utilities" href="server-utilities.html" />
     <link rel="prev" title="Examples" href="examples.html" /> 
 </head>
 
@@ -106,6 +106,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="server-utilities.html">Server Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">Docs</a></li>
 </ul>
 
@@ -409,7 +410,7 @@ It’s implementation of a python dictionary for JSON-compatible data is faster 
 </pre></div>
 </div>
 <p>Pottery does not use ReJSON. To store nested data, <code class="docutils literal notranslate"><span class="pre">potteryx</span></code> serializes data deeper than one level inside a
-Python dictionary to JSON. The data is stored as a subkey of Redis Hash.</p>
+Python dictionary to JSON. The JSON is then stored as a subkey of Redis Hash.</p>
 <p>Pottery will require some extra work to get non-serializable data like numpy arrays to work with it.</p>
 <p>REEM could potentially use Pottery in the future. Thoughts for a future implementation</p>
 <ol class="arabic simple">
@@ -428,7 +429,7 @@ Python dictionary to JSON. The data is stored as a subkey of Redis Hash.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="docs.html" class="btn btn-neutral float-right" title="Docs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="server-utilities.html" class="btn btn-neutral float-right" title="Server Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

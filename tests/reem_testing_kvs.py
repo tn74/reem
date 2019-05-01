@@ -13,7 +13,7 @@ logger = logging.getLogger("reem")
 logger.setLevel(logging.DEBUG)
 
 
-image_array = np.random.rand(640, 480, 3)
+image_array = np.random.randint(0, 255, (640, 480, 3))
 
 flat_data = get_flat_data()
 nested_data = get_nested_data()

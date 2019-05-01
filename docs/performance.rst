@@ -95,7 +95,7 @@ The comparison was generated with the following code:
     :lines: 252-290
 
 Pottery does not use ReJSON. To store nested data, ``potteryx`` serializes data deeper than one level inside a
-Python dictionary to JSON. The data is stored as a subkey of Redis Hash.
+Python dictionary to JSON. The JSON is then stored as a subkey of Redis Hash.
 
 Pottery will require some extra work to get non-serializable data like numpy arrays to work with it.
 

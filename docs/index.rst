@@ -10,6 +10,7 @@ Welcome to REEM's documentation!
    advanced
    examples
    performance
+   server-utilities
    docs
 
 
