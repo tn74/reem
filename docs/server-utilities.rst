@@ -81,8 +81,12 @@ The script is called according to the syntax
 
 ``python reem-logger <path-to-directory-of-snapshots> <path-to-redis-dump-file> <seconds-between-snapshot>``
 
-The next (unimplemented) step is to select a snapshot based on a timestamp and load a Redis server with it. After
-that, we could use the REEM client to query the desired data.
+The next step is to select a snapshot based on a timestamp and load a Redis server with it. When Redis is executed
+inside a directory, Redis checks that directory for a file called ``dump.rdb`` and automatically loads it. If the file
+does not exist, Redis will create it. To restore data from a particular rdb file, copy that rdb-file to the directory in
+which you will run Redis and rename the rdb-file to ``dump.rdb.`` We have not provided functionality for this in
+python because it is a simple copy, paste, and rename that depends mainly on your paths.
+
 
 There are some existing `tools <https://github.com/sripathikrishnan/redis-rdb-tools>`_
 that allow the user to parse through RDB directly without starting a Redis server, but they generally
@@ -108,5 +112,6 @@ This `log function <https://github.com/tn74/reem-server/blob/master/logger_custo
 `key file <https://github.com/tn74/reem-server/blob/master/logger_custom/test_key_files/key1.txt>`_
 that specified a paths and periods (representing how frequently to read a specific path in Redis) and an output
 directory to store saved data.
+
 
 
