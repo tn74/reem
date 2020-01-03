@@ -1,11 +1,15 @@
-from abc import ABC, abstractmethod
+from __future__ import print_function,unicode_literals
+
+from abc import ABCMeta, abstractmethod
 import numpy as np
 import io
 
 
-class SpecialDatatypeShip(ABC):
+class SpecialDatatypeShip(object):
+    __metaclass__ = ABCMeta
+
     def __init__(self):
-        super().__init__()
+        super(SpecialDatatypeShip, self).__init__()
 
     @abstractmethod
     def check_fit(self, value):
@@ -92,7 +96,7 @@ class NumpyShip(SpecialDatatypeShip):
         return type(value) in [np.array, np.ndarray]
 
     def write(self, key, value, client):
-        client.hset(key, "arr", bytes(memoryview(value.data)))
+        client.hset(key, "arr", memoryview(value.data).tobytes())
         client.hset(key, "dtype", str(value.dtype))
         client.hset(key, "shape", str(value.shape))
         client.hset(key, "strides", str(value.strides))

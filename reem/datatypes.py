@@ -1,3 +1,7 @@
+from __future__ import print_function
+from six import iterkeys
+from builtins import str
+
 from .utilities import *
 from .supports import ReadablePathHandler, PathHandler, ChannelListener, ActiveSubscriberPathHandler
 from rejson import Path
@@ -6,8 +10,9 @@ import queue
 
 logger = logging.getLogger("reem")
 
+_ROOT_VALUE_READ_NAME = "{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE)
 
-class Writer:
+class Writer(object):
     """Responsible for setting data inside Redis
 
     The Writer class is an internal class that is used for all data sent to Redis (not including pub/sub messages).
@@ -22,7 +27,7 @@ class Writer:
     def __init__(self, top_key_name, interface):
         self.interface = interface
         self.top_key_name = top_key_name
-        self.metadata_key_name = "{}{}metadata".format(self.top_key_name, SEPARATOR_CHARACTER)
+        self.metadata_key_name = self.top_key_name + SEPARATOR_CHARACTER + "metadata"
         self.metadata = None
         self.__initialize_metadata()
         self.sp_to_label = self.metadata["special_paths"]
@@ -60,15 +65,15 @@ class Writer:
             None
 
         """
-        logger.info("SET {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
+        #logger.info("SET {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
         self.__process_metadata(set_path, set_value)
-        logger.debug("SET {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
+        #logger.debug("SET {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
         self.__publish_non_serializables(set_path, set_value)
-        logger.debug("SET {} {} Non-Serializables Pipelined".format(self.top_key_name, set_path))
+        #logger.debug("SET {} {} Non-Serializables Pipelined".format(self.top_key_name, set_path))
         self.__publish_serializables(set_path, set_value)
-        logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, set_path))
+        #logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, set_path))
         self.pipeline.execute()
-        logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, set_path))
+        #logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, set_path))
 
     def __process_metadata(self, set_path, set_value):
         """ Handle metadata updates
@@ -88,7 +93,7 @@ class Writer:
             return
 
         overridden_paths = set()
-        for existing_path in self.sp_to_label.keys():
+        for existing_path in iterkeys(self.sp_to_label):
             if existing_path.startswith(set_path):
                 overridden_paths.add(existing_path)
         [self.sp_to_label.pop(op) for op in overridden_paths]
@@ -100,7 +105,7 @@ class Writer:
 
         if len(adds) > 0 or len(dels) > 0:
             self.pipeline.jsonset(self.metadata_key_name, ".", self.metadata)
-            channel, message = "__keyspace@0__:{}".format(self.metadata_key_name), "set"
+            channel, message = "__keyspace@0__:"+ self.metadata_key_name, "set"
             self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
 
     def __publish_non_serializables(self, set_path, set_value):
@@ -116,14 +121,14 @@ class Writer:
             None
         """
 
-        overridden_paths, suffixes = filter_paths_by_prefix(self.sp_to_label.keys(), set_path)
+        overridden_paths, suffixes = filter_paths_by_prefix(iterkeys(self.sp_to_label), set_path)
         for full_path, suffix in zip(overridden_paths, suffixes):
-            logger.debug("Suffix = {}".format(suffix))
+            #logger.debug("Suffix = {}".format(suffix))
             update_value = extract_object(set_value, path_to_key_sequence(suffix))
-            special_path_redis_key_name = "{}{}".format(self.top_key_name, full_path)
-            logger.debug("SET {} {} Non-serializable update {} = {}".format(
-                self.top_key_name, set_path, special_path_redis_key_name, type(update_value))
-            )
+            special_path_redis_key_name = self.top_key_name+full_path
+            #logger.debug("SET {} {} Non-serializable update {} = {}".format(
+            #    self.top_key_name, set_path, special_path_redis_key_name, type(update_value))
+            #)
             self.interface.label_to_shipper[self.sp_to_label[full_path]].write(
                 key=special_path_redis_key_name,
                 value=update_value,
@@ -143,16 +148,16 @@ class Writer:
 
         """
         if type(set_value) is dict:
-            intrusive_paths, suffixes = filter_paths_by_prefix(self.sp_to_label.keys(), set_path)
+            intrusive_paths, suffixes = filter_paths_by_prefix(iterkeys(self.sp_to_label), set_path)
             excised_copy = copy_dictionary_without_paths(set_value, [path_to_key_sequence(s) for s in suffixes])
             self.pipeline.jsonset(self.top_key_name, set_path, excised_copy)
-            logger.debug("SET {} {} Serializable update {} = {}".format(self.top_key_name, set_path, set_path, excised_copy))
+            #logger.debug("SET {} {} Serializable update {} = {}".format(self.top_key_name, set_path, set_path, excised_copy))
         elif set_path not in self.sp_to_label:
             self.pipeline.jsonset(self.top_key_name, set_path, set_value)
-            logger.debug("SET {} {} Serializable update {} = {}".format(self.top_key_name, set_path, set_path, set_value))
+            #logger.debug("SET {} {} Serializable update {} = {}".format(self.top_key_name, set_path, set_path, set_value))
 
 
-class Reader:
+class Reader(object):
     """Responsible for getting data from Redis
 
     The Reader class is an internal class that is used for all read from Redis (not including pub/sub messages).
@@ -188,17 +193,17 @@ class Reader:
 
         """
 
-        self.interface.INTERFACE_LOCK.acquire(timeout=1)
-        logger.info("GET {} {} pull_metadata = {}".format(self.top_key_name, read_path, self.pull_metadata))
+        self.interface.INTERFACE_LOCK.acquire()
+        #logger.info("GET {} {} pull_metadata = {}".format(self.top_key_name, read_path, self.pull_metadata))
         self.update_metadata()
-        logger.debug("GET {} {} Using Metadata: {}".format(self.top_key_name, read_path, self.metadata))
+        #logger.debug("GET {} {} Using Metadata: {}".format(self.top_key_name, read_path, self.metadata))
         if read_path in self.sp_to_label:
             ret_val = self.pull_special_path(read_path)
         else:
             self.queue_reads(read_path)
-            logger.debug("GET {} {} Reads Queued".format(self.top_key_name, read_path))
+            #logger.debug("GET {} {} Reads Queued".format(self.top_key_name, read_path))
             ret_val = self.build_dictionary(read_path)
-            logger.debug("GET {} {} Dictionary Built".format(self.top_key_name, read_path))
+            #logger.debug("GET {} {} Dictionary Built".format(self.top_key_name, read_path))
         self.interface.INTERFACE_LOCK.release()
         return ret_val
 
@@ -236,10 +241,10 @@ class Reader:
         Returns: None
         """
         self.pipeline.jsonget(self.top_key_name, read_path)
-        special_paths, suffixes = filter_paths_by_prefix(self.sp_to_label.keys(), read_path)
+        special_paths, suffixes = filter_paths_by_prefix(iterkeys(self.sp_to_label), read_path)
         for p in special_paths:
-            special_path_redis_key_name = "{}{}".format(self.top_key_name, p)
-            logger.debug("type(sp to label) = {}, type(p) = {}".format(type(self.sp_to_label), type(p)))
+            special_path_redis_key_name = self.top_key_name + p
+            #logger.debug("type(sp to label) = {}, type(p) = {}".format(type(self.sp_to_label), type(p)))
             ship = self.interface.label_to_shipper[self.sp_to_label[p]]
             ship.read(special_path_redis_key_name, self.pipeline_no_decode)
 
@@ -253,17 +258,17 @@ class Reader:
         """
 
         return_val = self.pipeline.execute()[0]
-        logger.debug("GET {} {} Serializable Pipeline Executed".format(self.top_key_name, read_path))
+        #logger.debug("GET {} {} Serializable Pipeline Executed".format(self.top_key_name, read_path))
         responses = self.pipeline_no_decode.execute()
-        special_paths, suffixes = filter_paths_by_prefix(self.sp_to_label.keys(), read_path)
-        logger.debug("special_path = {}, suffixes = {}".format(special_paths, suffixes))
+        special_paths, suffixes = filter_paths_by_prefix(iterkeys(self.sp_to_label), read_path)
+        #logger.debug("special_path = {}, suffixes = {}".format(special_paths, suffixes))
         for i, (sp, suffix) in enumerate(zip(special_paths, suffixes)):
             value = self.interface.label_to_shipper[self.sp_to_label[sp]].interpret_read(responses[i: i + 1])
             insert_into_dictionary(return_val, path_to_key_sequence(suffix), value)
-            logger.debug("GET {} {} Nonserializable Pipeline Inserted {} = {}"
-                         .format(self.top_key_name, read_path, sp, type(value))
-                         )
-        logger.debug("GET {} {} Dictionary Built".format(self.top_key_name, read_path))
+            #logger.debug("GET {} {} Nonserializable Pipeline Inserted {} = {}"
+            #             .format(self.top_key_name, read_path, sp, type(value))
+            #             )
+        #logger.debug("GET {} {} Dictionary Built".format(self.top_key_name, read_path))
         return return_val
 
     def pull_special_path(self, read_path):
@@ -278,13 +283,13 @@ class Reader:
 
         """
         shipper = self.interface.label_to_shipper[self.sp_to_label[read_path]]
-        special_name = "{}{}".format(self.top_key_name, read_path)
+        special_name = str(self.top_key_name) + str(read_path)
         shipper.read(special_name, self.pipeline_no_decode)
         responses = self.pipeline_no_decode.execute()
         return shipper.interpret_read(responses)
 
 
-class KeyValueStore:
+class KeyValueStore(object):
     """Dictionary Like object used for get/set paradigm
 
     The ``KeyValueStore`` object is one that users will frequently use. It keeps ``Reader`` and ``Writer`` objects
@@ -313,7 +318,7 @@ class KeyValueStore:
 
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if type(value) != dict:
-            value = {"{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE): value}
+            value = {_ROOT_VALUE_READ_NAME: value}
         self.__ensure_key_existence(key)
         writer, reader = self.entries[key]
         writer.send_to_redis(Path.rootPath(), value)
@@ -329,7 +334,7 @@ class KeyValueStore:
         """
 
         assert check_valid_key_name(item), "Invalid Key: {}".format(item)
-        logger.debug("KVS GET {}".format(item))
+        #logger.debug("KVS GET {}".format(item))
         self.__ensure_key_existence(item)
         writer, reader = self.entries[item]
         return ReadablePathHandler(writer=writer, reader=reader, initial_path=Path.rootPath())
@@ -362,7 +367,7 @@ class KeyValueStore:
         """
 
         if keys is None:
-            keys = self.entries.keys()
+            keys = iterkeys(self.entries)
             self.track_schema = set_value
         for k in keys:
             self.entries[k][0].do_metadata_update = set_value
@@ -376,7 +381,7 @@ class Publisher(Writer):
     """
 
     def __init__(self, top_key_name, interface):
-        super().__init__(top_key_name, interface)
+        super(Publisher,self).__init__(top_key_name, interface)
         self.message = "Publish"
 
     def send_to_redis(self, set_path, set_value):
@@ -393,24 +398,24 @@ class Publisher(Writer):
 
         """
 
-        logger.info("PUBLISH {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
-        logger.debug("PUBLISH {} {} Metadata Update?: {}".format(self.top_key_name, set_path, self.do_metadata_update))
+        #logger.info("PUBLISH {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
+        #logger.debug("PUBLISH {} {} Metadata Update?: {}".format(self.top_key_name, set_path, self.do_metadata_update))
         self.__process_metadata(set_path, set_value)
-        logger.debug("PUBLISH {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
+        #logger.debug("PUBLISH {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
         self.__publish_non_serializables(set_path, set_value)
         self.__publish_serializables(set_path, set_value)
 
         # Addition to Writer class
         if set_path == Path.rootPath():
             set_path = ""
-        channel_name = "__pubspace@0__:{}{}".format(self.top_key_name, set_path)
+        channel_name = "__pubspace@0__:" + self.top_key_name + set_path
         self.pipeline.publish(channel_name, self.message)
 
         # Resume Writer Class
         self.pipeline.execute()
-        logger.debug("PUBLISH {} {} pipeline executed, published {} to {}".format(
-            self.top_key_name, set_path, self.message, channel_name)
-        )
+        #logger.debug("PUBLISH {} {} pipeline executed, published {} to {}".format(
+        #    self.top_key_name, set_path, self.message, channel_name)
+        #)
 
 
 class PublishSpace(KeyValueStore):
@@ -452,10 +457,10 @@ class SilentSubscriber(Reader):
     """ Silent Subscriber Implementation"""
 
     def __init__(self, channel, interface):
-        super().__init__(channel, interface)
+        super(SilentSubscriber,self).__init__(channel, interface)
         self.local_copy = {}
         self.passive_subscriber = RawSubscriber(channel + "*", interface, self.update_local_copy, {})
-        self.prefix = "__pubspace@0__:{}".format(self.top_key_name)
+        self.prefix = "__pubspace@0__:" + self.top_key_name
 
     def update_local_copy(self, channel, message):
         """ Update the local copy of the data stored under this channel name in redis.
@@ -468,7 +473,7 @@ class SilentSubscriber(Reader):
 
         """
 
-        logger.info("SILENT_SUBSCRIBER @{} : channel={} message={}".format(self.prefix, channel, message))
+        #logger.info("SILENT_SUBSCRIBER @{} : channel={} message={}".format(self.prefix, channel, message))
         try:
             message = message.decode("utf-8")
         except Exception as e:
@@ -482,9 +487,9 @@ class SilentSubscriber(Reader):
 
         path = channel[len(self.prefix):]
         redis_value = self.read_from_redis(path)
-        logger.debug("SILENT_SUBSCRIBER @{} : Read from Redis: {}".format(self.prefix, redis_value))
+        #logger.debug("SILENT_SUBSCRIBER @{} : Read from Redis: {}".format(self.prefix, redis_value))
         insert_into_dictionary(self.local_copy, path_to_key_sequence(path), redis_value)
-        logger.debug("SILENT_SUBSCRIBER @{} : Local Copy: {}".format(self.prefix, self.local_copy))
+        #logger.debug("SILENT_SUBSCRIBER @{} : Local Copy: {}".format(self.prefix, self.local_copy))
 
     def listen(self):
         """ Makes this subscriber start listening
@@ -504,9 +509,8 @@ class SilentSubscriber(Reader):
         Returns: all data stored underneath a top level Redis key.
 
         """
-        root_name = "{0}ROOT{0}".format(ROOT_VALUE_SEQUENCE)
-        if root_name in self.local_copy:
-            return self.local_copy[root_name]
+        if _ROOT_VALUE_READ_NAME in self.local_copy:
+            return self.local_copy[_ROOT_VALUE_READ_NAME]
         # Copy dictionary - paths to omit is blank, so we copy everything
         return copy_dictionary_without_paths(self.local_copy, [])
 
@@ -521,14 +525,14 @@ class SilentSubscriber(Reader):
 
         """
         assert type(item) == str, "Key name must be string"
-        return ActiveSubscriberPathHandler(None, self, "{}{}".format(Path.rootPath(), item))
+        return ActiveSubscriberPathHandler(None, self, Path.rootPath() + item)
 
 
 class CallbackSubscriber(SilentSubscriber):
     """ Callback Subscriber Implementation"""
 
     def __init__(self, channel, interface, callback_function, kwargs):
-        super().__init__(channel, interface)
+        super(CallbackSubscriber,self).__init__(channel, interface)
         self.queue = queue.Queue()
         self.passive_subscriber = RawSubscriber(channel + "*", interface, self.call_user_function, {})
         self.callback_function = callback_function

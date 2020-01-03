@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from reem.connection import RedisInterface
 from reem.datatypes import KeyValueStore
 import numpy as np

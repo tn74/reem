@@ -88,11 +88,10 @@ build ReJSON from source.
     cd redisjson
     make
     cd ..
+    wget https://raw.githubusercontent.com/tn74/reem/master/examples/redis.conf
 
 The above script produces an compiled library file at ``database-server/redisjson/src/rejson.so``. Redis needs to be
-told to use that library. You can tell Redis that by starting a server with a configuration file. Download this
-`example <https://github.com/tn74/reem/blob/master/examples/redis.conf>`_ configuration file and place it inside
-``database-server``.
+told to use that library file, and so the last line downloads a configuration file that enables ReJSON when Redis uses it.  
 
 Some details about this configuration file:
 

@@ -1,7 +1,10 @@
+from __future__ import print_function
+
 from threading import Thread, Lock
 import rejson
 from .utilities import *
 
+_ROOT_VALUE_READ_NAME = "{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE)
 
 class MetadataListener:
     def __init__(self, interface):
@@ -10,13 +13,9 @@ class MetadataListener:
         self.pubsub.psubscribe(['__keyspace@0__:*'])
         self.listeners = {}
 
-        super().__init__()
-
     def add_listener(self, key_name, reader):
         listen_name = "__keyspace@0__:{}".format(key_name)
-        if listen_name not in self.listeners:
-            self.listeners[listen_name] = []
-        self.listeners[listen_name].append(reader)
+        self.listeners.setdefault(listen_name,[]).append(reader)
 
     def flush(self):
         while True:
@@ -24,9 +23,11 @@ class MetadataListener:
             if item is None:
                 break
             channel = item['channel'].decode("utf_8")
-            if channel in self.listeners:
+            try:
                 for listener in self.listeners[channel]:
                     listener.pull_metadata = True
+            except KeyError:
+                pass
 
 
 class PathHandler:
@@ -49,8 +50,7 @@ class PathHandler:
 class ReadablePathHandler(PathHandler):
     def read(self):
         server_value = self.reader.read_from_redis(self.path)
-        root_value_read_name = "{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE)
-        if type(server_value)==dict and root_value_read_name in server_value:
+        if type(server_value)==dict and _ROOT_VALUE_READ_NAME in server_value:
             return server_value[root_value_read_name]
         return server_value
 
@@ -61,11 +61,9 @@ class ActiveSubscriberPathHandler(PathHandler):
         dissect_path = self.path[1:]
         if len(dissect_path) == 0:
             pass
-        elif "." in dissect_path:
+        else:
             for key in dissect_path.split("."):
                 return_val = return_val[key]
-        else:
-            return_val = return_val[dissect_path]
         if type(return_val) == dict:
             return copy_dictionary_without_paths(return_val, [])
         return return_val
@@ -76,13 +74,13 @@ class ActiveSubscriberPathHandler(PathHandler):
 
 class ChannelListener(Thread):
     def __init__(self, interface, channel_name, callback_function, kwargs):
+        Thread.__init__(self)
         self.client = rejson.Client(host=interface.hostname)
         self.pubsub = self.client.pubsub()
         self.pubsub.psubscribe([channel_name])
         self.callback_function = callback_function
         self.kwargs = kwargs
         self.first_item_seen = False
-        super().__init__()
 
     def run(self):
         for item in self.pubsub.listen():
