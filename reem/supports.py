@@ -51,7 +51,7 @@ class ReadablePathHandler(PathHandler):
     def read(self):
         server_value = self.reader.read_from_redis(self.path)
         if type(server_value)==dict and _ROOT_VALUE_READ_NAME in server_value:
-            return server_value[root_value_read_name]
+            return server_value[_ROOT_VALUE_READ_NAME]
         return server_value
 
 
