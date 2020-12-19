@@ -13,18 +13,6 @@ ROOT_VALUE_SEQUENCE = "%%%%"
 
 ROOT_PATH = Path.rootPath()
 
-def append_to_path(existing, addition):
-    """
-    Append an key to an existing subpath
-    :param existing: a subpath string
-    :param addition: a new key in the subpath
-    :return: a path string
-    :rtype: str
-    """
-    if existing == ROOT_PATH:
-        return ROOT_PATH + addition
-    return "{}.{}".format(existing, addition)
-
 
 def path_to_key_sequence(path):
     """
@@ -83,13 +71,14 @@ def extract_object(dictionary, key_sequence):
 
 def filter_paths_by_prefix(paths, prefix):
     """
-    Given a list of paths and a prefix, return the paths that
+    Given a list of paths and a prefix, return the paths that start with prefix.
     :param paths (Iterable[str]): list of paths
     :param prefix (str): prefix to filter on
     :return: list of paths that begin with the specified prefix and the subsequent paths after the prefix
     :rtype: List[str], List[str]
     """
     if prefix == ROOT_PATH:
+        paths = list(paths)
         return paths, paths
     full_paths, suffixes = [], []
     for p in paths:
@@ -157,7 +146,7 @@ def check_valid_key_name(name):
     :return: boolean indicating legality of name
     :rtype: bool
     """
-    if type(name) not in [str]:
+    if not isinstance(name,str):
         return False
     bad_chars = ["*", ".", "&&&&"]
     if any(k in name for k in bad_chars):

@@ -31,38 +31,44 @@ class MetadataListener:
 
 
 class PathHandler:
-    def __init__(self, writer, reader, initial_path):
+    def __init__(self, writer, reader, initial_path=[]):
         self.writer = writer
         self.reader = reader
         self.path = initial_path
+        self.path_str = None  #caches path string
 
     def __getitem__(self, item):
         assert check_valid_key_name(item)
-        self.path = append_to_path(self.path, item)
-        return self
+        return self.__class__(self.writer,self.reader,self.path+[item])
 
     def __setitem__(self, instance, value):
         assert check_valid_key_name(instance)
-        self.path = append_to_path(self.path, instance)
-        self.writer.send_to_redis(self.path, value)
+        if self.path_str is None:
+            self.path_str = key_sequence_to_path(self.path)
+        path = self.path_str + '.' + instance
+        self.writer.send_to_redis(path, value)
 
 
 class ReadablePathHandler(PathHandler):
     def read(self):
-        server_value = self.reader.read_from_redis(self.path)
-        if type(server_value)==dict and _ROOT_VALUE_READ_NAME in server_value:
-            return server_value[root_value_read_name]
+        if self.path_str is None:
+            self.path_str = key_sequence_to_path(self.path)
+        server_value = self.reader.read_from_redis(self.path_str)
+        try:
+            return server_value[_ROOT_VALUE_READ_NAME]
+        except Exception:
+            pass
         return server_value
 
 
 class ActiveSubscriberPathHandler(PathHandler):
     def read(self):
         return_val = self.reader.local_copy
-        dissect_path = self.path[1:]
+        dissect_path = self.path[1:]  #skip initial .
         if len(dissect_path) == 0:
             pass
         else:
-            for key in dissect_path.split("."):
+            for key in dissect_path:
                 return_val = return_val[key]
         if type(return_val) == dict:
             return copy_dictionary_without_paths(return_val, [])

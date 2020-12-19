@@ -37,6 +37,7 @@ def test_store_under_non_existant_top_key():
     except redis.exceptions.ResponseError as e:
         # Redis spits error: new objects must be created at the root
         return
+    print("Strange... no error in server[%s][%s]",random_key_name,"item")
     assert False
 
 
@@ -48,6 +49,7 @@ def test_store_under_non_existant_sub_key():
     except redis.exceptions.ResponseError as e:
         # Redis spits error: missing key at non-terminal path level
         return
+    print("Strange... no error in server[flat_data][not_real_key][not_real_key]")
     assert False
 
 

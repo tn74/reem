@@ -3,7 +3,7 @@ import numpy as np
 import time
 import logging
 import datetime
-from . import testing
+from tests import testing
 
 # Logging Configuration
 FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"

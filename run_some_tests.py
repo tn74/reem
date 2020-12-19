@@ -1,0 +1,7 @@
+from tests import reem_testing_kvs
+
+reem_testing_kvs.test_store_under_non_existant_top_key()
+reem_testing_kvs.test_store_under_non_existant_sub_key()
+reem_testing_kvs.test_kvs_upload_all()
+reem_testing_kvs.test_store_non_dict()
+reem_testing_kvs.test_new_key_read()

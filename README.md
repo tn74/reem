@@ -1,6 +1,8 @@
 # REEM
 
-REEM (Redis Extendable Efficient Middleware) is a centralized middleware package for robotic communication. It is designed to be a single-package solution for passing information anywhere in the robot while emphasizing ease of use and efficiency.
+Trishul Nagenalli, updates by Kris Hauser
+
+REEM (Redis Extendable Efficient Middleware) is a centralized middleware package for communication across distributed systems (e.g., robots). It is designed to be a single-package solution for passing information anywhere in the system while emphasizing ease of use and efficiency.
 
 To make it easy, we chose to model information as a nested data structure that closely resembles python dictionaries. To the user, working with a database feels like working with a python dictionary. Out of the box, REEM supports communicating all native python types and numpy arrays.
 
@@ -17,3 +19,20 @@ pip install reem
 See the docs on [read the docs](https://reem.readthedocs.io)
 
 
+
+Version history
+
+0.1.0: fork by Kris Hauser
+    - KeyValueStore, PublishSpace, SilentSubscriber, and CallbackSubscriber are now in the global reem namespace.  Also, they can be given a string host rather than separately having to create a RedisInterface object.
+    - KeyValueStore and PublishSpace are now thread safe. (Note: not thoroughly tested yet).
+    - Objects retrieved by ['key'] no longer get clobbered when accessing ['subkey'].  E.g.,
+       ```
+       kvs['topkey'] = {'subkey':{'foo':3}}
+       a = kvs['topkey']
+       b = a['subkey']
+       b['foo'] = 4
+       print(a.read())  #prior version unexpected prints {'subkey':{'foo':3},'foo':4}, new version prints {'subkey'{'foo':4}} as expected.
+       ```
+    - Slight performance improvements for deeply nested accesses
+
+0.0.x: original from Trishul Nagenalli
