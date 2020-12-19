@@ -45,7 +45,10 @@ class PathHandler:
         assert check_valid_key_name(instance)
         if self.path_str is None:
             self.path_str = key_sequence_to_path(self.path)
-        path = self.path_str + '.' + instance
+        if self.path_str.endswith('.'): #root
+            path = self.path_str + instance
+        else:
+            path = self.path_str + '.' + instance
         self.writer.send_to_redis(path, value)
 
 
