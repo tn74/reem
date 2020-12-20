@@ -450,7 +450,7 @@ class Reader(object):
             else:
                 self.queue_reads(read_path)
                 #logger.debug("GET {} {} Reads Queued".format(self.top_key_name, read_path))
-                ret_val = self.build_dictionary(read_path)
+                ret_val = item = json_recode_str(self.build_dictionary(read_path))
                 #logger.debug("GET {} {} Dictionary Built".format(self.top_key_name, read_path))
         return ret_val
 

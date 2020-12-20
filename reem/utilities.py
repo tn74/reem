@@ -5,6 +5,7 @@ from functools import reduce
 import json
 import logging
 from six import itervalues,iteritems
+import sys
 
 logger = logging.getLogger("reem")
 
@@ -152,3 +153,18 @@ def check_valid_key_name(name):
     if any(k in name for k in bad_chars):
         return False
     return True
+
+if sys.version_info[0] < 3:
+    def json_recode_str(input):
+        if isinstance(input, dict):
+            return {json_recode_str(key): json_recode_str(value)
+                    for key, value in input.iteritems()}
+        elif isinstance(input, list):
+            return [json_recode_str(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
+else:
+    def json_recode_str(input):
+        return input

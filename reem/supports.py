@@ -97,8 +97,10 @@ class ChannelListener(Thread):
             if not self.first_item_seen:
                 self.first_item_seen = True
                 continue
-            channel = item['channel'].decode("utf_8")
+            item = json_recode_str(item)
+            channel = item['channel']
             message = item['data']
+
             self.callback_function(channel=channel, message=message, **self.kwargs)
 
 """

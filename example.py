@@ -6,6 +6,12 @@ import numpy as np
 
 server = KeyValueStore("localhost")
 
+try:
+    server['foo']['bar'] = 12345
+    print("ERROR: set subkey without top level key existing")
+except Exception:
+    pass
+
 # Set a key and read it and its subkeys
 server["foo"] = {"number": 100.0, "string": "REEM"}
 print("Reading Root  : {}".format(server["foo"].read()))
