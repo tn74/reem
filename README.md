@@ -34,5 +34,6 @@ Version history
        print(a.read())  #prior version unexpected prints {'subkey':{'foo':3},'foo':4}, new version prints {'subkey'{'foo':4}} as expected.
        ```
     - Slight performance improvements for deeply nested accesses
+    - Python 2 version automatically returns json objects with keys / values as str instead of unicode.
 
 0.0.x: original from Trishul Nagenalli
