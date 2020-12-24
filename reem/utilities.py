@@ -26,7 +26,6 @@ def path_to_key_sequence(path):
         return []
     return path.split(".")[1:]
 
-
 def key_sequence_to_path(sequence):
     """
     Convert a sequence of key accesses into a path string representing a path below the top level key in redis
@@ -34,6 +33,25 @@ def key_sequence_to_path(sequence):
     :return: a subpath string
     """
     return ROOT_PATH + ".".join(sequence)
+
+def key_sequence_to_path_ext(sequence):
+    """
+    Convert a sequence of key accesses or array accesses into a path string representing a path below the top level key in redis
+    :param sequence (List[str or int]): list of strings representing key accesses or indices representing array accesses
+    :return: a subpath string
+    """
+    if len(sequence) == 0:
+        return ROOT_PATH
+    if isinstance(sequence[0],int):
+        raise ValueError("Top-level key cannot be an integer")
+    seps_keys = []
+    for k in sequence:
+        if isinstance(k,int):
+            seps_keys.append('[%d]'%(k,))
+        else:
+            seps_keys.append('.')
+            seps_keys.append(k)
+    return ''.join(seps_keys)
 
 
 def copy_dictionary_without_paths(dictionary, key_sequence):
@@ -147,6 +165,22 @@ def check_valid_key_name(name):
     :return: boolean indicating legality of name
     :rtype: bool
     """
+    if not isinstance(name,str):
+        return False
+    bad_chars = ["*", ".", "&&&&"]
+    if any(k in name for k in bad_chars):
+        return False
+    return True
+
+def check_valid_key_name_ext(name):
+    """
+    Ensure the key / index name provided is legal
+    :param name: a potential key name or index
+    :return: boolean indicating legality of name
+    :rtype: bool
+    """
+    if isinstance(name,int):
+        return True
     if not isinstance(name,str):
         return False
     bad_chars = ["*", ".", "&&&&"]

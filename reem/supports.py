@@ -30,41 +30,80 @@ class MetadataListener:
                 pass
 
 
-class PathHandler:
-    def __init__(self, writer, reader, initial_path=[]):
+class KeyAccessor:
+    def __init__(self, parent, writer, reader, initial_path=[]):
+        self.parent = parent
         self.writer = writer
         self.reader = reader
         self.path = initial_path
         self.path_str = None  #caches path string
 
-    def __getitem__(self, item):
-        assert check_valid_key_name(item)
-        return self.__class__(self.writer,self.reader,self.path+[item])
+    def __getitem__(self, key):
+        assert check_valid_key_name_ext(key),"{} is not a valid key under path {}".format(key,key_sequence_to_path(self.path) if self.path_str is None else self.path_str)
+        return self.__class__(self,self.writer,self.reader,self.path+[key])
 
-    def __setitem__(self, instance, value):
-        assert check_valid_key_name(instance)
+    def __setitem__(self, key, value):
+        assert check_valid_key_name_ext(key),"{} is not a valid key under path {}".format(key,key_sequence_to_path(self.path) if self.path_str is None else self.path_str)
         if self.path_str is None:
-            self.path_str = key_sequence_to_path(self.path)
+            self.path_str = key_sequence_to_path_ext(self.path)
         if self.path_str.endswith('.'): #root
-            path = self.path_str + instance
+            if isinstance(key,int):
+                raise ValueError("Can't treat top-level key as an array access")
+            path = self.path_str + key
         else:
-            path = self.path_str + '.' + instance
+            if isinstance(key,int):
+                path = self.path_str + '[%d]'%(key,)
+            else:
+                path = self.path_str + '.' + key
         self.writer.send_to_redis(path, value)
 
+    def __delitem__(self,key):
+        assert check_valid_key_name_ext(key),"{} is not a valid key under path {}".format(key,key_sequence_to_path(self.path) if self.path_str is None else self.path_str)
+        if self.path_str is None:
+            self.path_str = key_sequence_to_path_ext(self.path)
+        if self.path_str.endswith('.'): #root
+            if isinstance(key,int):
+                raise ValueError("Can't treat top-level key as an array access")
+            path = self.path_str + key
+        else:
+            if isinstance(key,int):
+                path = self.path_str + '[%d]'%(key,)
+            else:
+                path = self.path_str + '.' + key
+        self.writer.delete_from_redis(path)
 
-class ReadablePathHandler(PathHandler):
     def read(self):
         if self.path_str is None:
-            self.path_str = key_sequence_to_path(self.path)
+            self.path_str = key_sequence_to_path_ext(self.path)
         server_value = self.reader.read_from_redis(self.path_str)
+        #if it's special, then its value is under _ROOT_VALUE_READ_NAME
         try:
             return server_value[_ROOT_VALUE_READ_NAME]
-        except Exception:
-            pass
-        return server_value
+        except:
+            return server_value
+
+    # def __delitem__(self, key):
+    #     value = self.read()
+    #     del value[key]
+    #     if len(self.path) == 0:  #top level key
+    #         self.parent.__setitem__(self.reader.top_key_name,value)
+    #     else:
+    #         self.parent.__setitem__(self.path[-1],value)
 
 
-class ActiveSubscriberPathHandler(PathHandler):
+class WriteOnlyKeyAccessor(KeyAccessor):
+    def __init__(self,*args,**kwargs):
+        KeyAccessor.__init__(self,*args,**kwargs)
+        del self.read
+        del self.__delitem__
+
+
+class ActiveSubscriberKeyAccessor(KeyAccessor):
+    def __init__(self,*args,**kwargs):
+        KeyAccessor.__init__(self,*args,**kwargs)
+        del self.__setitem__
+        del self.__delitem__
+
     def read(self):
         return_val = self.reader.local_copy
         dissect_path = self.path[1:]  #skip initial .
@@ -76,9 +115,6 @@ class ActiveSubscriberPathHandler(PathHandler):
         if type(return_val) == dict:
             return copy_dictionary_without_paths(return_val, [])
         return return_val
-
-    def __setitem__(self, instance, value):
-        raise Exception("Cannot set value for a subscriber")
 
 
 class ChannelListener(Thread):

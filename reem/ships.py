@@ -62,6 +62,22 @@ class SpecialDatatypeShip(object):
         pass
 
     @abstractmethod
+    def delete(self, key, client):
+        """Delete information from redis at the specified ``key`` using ``client``.
+
+        Given a Redis client, execute any number of commands to retrieve all the information you need to 
+        delete all of the data stored under ``key``
+
+        Args:
+            key (str): a keyname that contains data stored by ``write``
+            client: A `ReJSON Redis Client <https://github.com/RedisJSON/rejson-py>`_ pipeline
+
+        Returns: None
+
+        """
+        pass
+
+    @abstractmethod
     def interpret_read(self, responses):
         """ Translate Redis data into a local object
 
@@ -95,14 +111,17 @@ class NumpyShip(SpecialDatatypeShip):
     def check_fit(self, value):
         return type(value) in [np.array, np.ndarray]
 
+    def get_label(self):
+        return "default_numpy_handler"
+
     def write(self, key, value, client):
         client.hset(key, "arr", memoryview(value.data).tobytes())
         client.hset(key, "dtype", str(value.dtype))
         client.hset(key, "shape", str(value.shape))
         client.hset(key, "strides", str(value.strides))
 
-    def get_label(self):
-        return "default_numpy_handler"
+    def delete(self, key, client):
+        client.delete(key)
 
     def read(self, key,  client):
         client.hgetall(key)

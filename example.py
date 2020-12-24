@@ -21,3 +21,16 @@ print("Reading Subkey: {}".format(server["foo"]["number"].read()))
 server["foo"]["numpy"] = np.random.rand(3,4)
 print("Reading Root  : {}".format(server["foo"].read()))
 #print("Reading Subkey: {}".format(server["foo"]["numpy"].read()))
+
+del server["foo"]["numpy"]
+print("After delete ['foo']['numpy']:",server["foo"].read())
+
+del server["foo"]["string"]
+print("After delete ['foo']['string']:",server["foo"].read())
+
+del server["foo"]
+try:
+    val = server["foo"].read()
+    print("['foo'] was not deleted successfully! ",val)
+except Exception:
+    print("['foo'] was deleted successfully:")

@@ -3,7 +3,7 @@ from six import iterkeys
 import builtins
 
 from .utilities import *
-from .supports import ReadablePathHandler, PathHandler, ChannelListener, ActiveSubscriberPathHandler
+from .supports import KeyAccessor, WriteOnlyKeyAccessor, ChannelListener, ActiveSubscriberKeyAccessor
 from rejson import Path
 from threading import Lock
 import logging
@@ -20,7 +20,7 @@ class KeyValueStore(object):
     The ``KeyValueStore`` object is one that users will frequently use. It
     keeps ``Reader`` and ``Writer`` objects for each key that the user has read
     or written to. It does not actually handle the getting and setting of data
-    but produces ``ReadablePathHandler`` objects that assist with path
+    but produces ``KeyAccessor`` objects that assist with path
     construction and call the reader and writer's write and read methods.
 
     Attributes:
@@ -62,12 +62,12 @@ class KeyValueStore(object):
         writer.send_to_redis(Path.rootPath(), value)
 
     def __getitem__(self, item):
-        """Used to retrieve ReadablePathHandler object for handling path construction when setting/getting Redis
+        """Used to retrieve KeyAccessor object for handling path construction when setting/getting Redis
 
         Args:
             item (str): "dictionary" key. It must be a top-level Redis key
 
-        Returns:
+        Returns: KeyAccessor
 
         """
 
@@ -76,7 +76,22 @@ class KeyValueStore(object):
         with self.interface.INTERFACE_LOCK:
             self.__ensure_key_existence(item)
             writer, reader = self.entries[item]
-        return ReadablePathHandler(writer=writer, reader=reader)
+        return KeyAccessor(self, writer=writer, reader=reader)
+
+    def __delitem__(self,item):
+        """ Only used for deleting key on first level of KVS. 
+
+        Args:
+            key (str): "dictionary" key. It must be a top-level Redis key
+
+        Returns: None
+
+        """
+        with self.interface.INTERFACE_LOCK:
+            if item not in self.entries:
+                raise KeyError(item)
+            writer, reader = self.entries[item]
+        writer.delete_from_redis(Path.rootPath())
 
     def __ensure_key_existence(self, key):
         """ Ensure that the requested key has a reader and writer associated with it.
@@ -120,14 +135,14 @@ class PublishSpace(KeyValueStore):
 
     """
     def __getitem__(self, item):
-        """ Identical to ``KeyValueStore`` method of same name but provides non-readable ``PathHandler`` objects
+        """ Same function as ``KeyValueStore`` method, but returns a non-readable ``WriteOnlyKeyAccessor`` object
 
         """
         assert isinstance(item,str)
         with self.interface.INTERFACE_LOCK:
             self.__ensure_key_existence(item)
             publisher, _ = self.entries[item]
-        return PathHandler(writer=publisher, reader=_)
+        return WriteOnlyKeyAccessor(self, writer=publisher, reader=_)
 
     def __ensure_key_existence(self, key):
         """ Identical to ``KeyValueStore`` method of same name but does not instantiate a ``Reader`` object
@@ -221,11 +236,11 @@ class SilentSubscriber:
         Args:
             item:
 
-        Returns:
+        Returns: ActiveSubscriberKeyAccessor
 
         """
         assert isinstance(item,str), "Key name must be string"
-        return ActiveSubscriberPathHandler(None, self.reader, [item])
+        return ActiveSubscriberKeyAccessor(self, None, self.reader, [item])
 
 
 class CallbackSubscriber(SilentSubscriber):
@@ -279,6 +294,7 @@ class Writer(object):
         self.__initialize_metadata()
         self.sp_to_label = self.metadata["special_paths"]
         self.pipeline = self.interface.client.pipeline()
+        self.pipeline_no_decode = self.interface.client_no_decode.pipeline()
         self.do_metadata_update = True
 
     def __initialize_metadata(self):
@@ -300,9 +316,9 @@ class Writer(object):
         """ Execute equivalent of ``JSON.SET self.top_key_name <set_path> <set_value>``
 
         From the user's perspective, it executes ``JSON.SET self.top_key_name <set_path> <set_value>``
-        except that ``set_value`` can be json-incompatible. This is the only public
-        method of this class. It determines what non-serializable types are inside set_value, stores the
-        serializable data as a JSON, and stores the non-serializable data using ``self.interface``'s ships
+        except that ``set_value`` can be json-incompatible.  In such a case, it determines what
+        non-serializable types are inside set_value, stores the serializable data as a JSON, and
+        stores the non-serializable data using ``self.interface``'s ships.
 
         Args:
             set_path (str): path underneath JSON key to set
@@ -322,6 +338,48 @@ class Writer(object):
             #logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, set_path))
             self.pipeline.execute()
             #logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, set_path))
+
+    def delete_from_redis(self,del_path):
+        """Execute equivalent of ``JSON.DEL self.top_key_name <set_path>``
+
+
+        Args:
+            del_path (str): path underneath JSON key to delete
+
+        Returns:
+            None
+        """
+        with self.interface.INTERFACE_LOCK:
+            dels = 0
+            if del_path in self.sp_to_label:
+                self.pipeline_no_decode = self.interface.client_no_decode.pipeline()
+                shipper = self.interface.label_to_shipper[self.sp_to_label[del_path]]
+                special_name = str(self.top_key_name) + str(del_path)
+                shipper.delete(special_name, self.pipeline_no_decode)
+                self.pipeline_no_decode.execute()
+                del self.sp_to_label[del_path]
+                dels += 1
+            else:
+                self.pipeline.jsondel(self.top_key_name, del_path)
+
+                #maybe some of the sub-keys of del_path could be special
+                special_paths, suffixes = filter_paths_by_prefix(iterkeys(self.sp_to_label), del_path)
+                for p in special_paths:
+                    special_path_redis_key_name = self.top_key_name + p
+                    ship = self.interface.label_to_shipper[self.sp_to_label[p]]
+                    ship.delete(special_path_redis_key_name, self.pipeline_no_decode)
+                    del self.sp_to_label[p]
+                    dels += 1
+                self.pipeline_no_decode.execute()
+
+            if dels > 0:
+                #must broadcast metadata change
+                self.pipeline.jsonset(self.metadata_key_name, ".", self.metadata)
+                channel, message = "__keyspace@0__:"+ self.metadata_key_name, "set"
+                self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
+
+            self.pipeline.execute()
+
 
     def __process_metadata(self, set_path, set_value):
         """ Handle metadata updates
@@ -537,6 +595,7 @@ class Reader(object):
         responses = self.pipeline_no_decode.execute()
         return shipper.interpret_read(responses)
 
+
 class PublishWriter(Writer):
     """ Defines PublishWriter behavior
 
@@ -582,3 +641,5 @@ class PublishWriter(Writer):
             #    self.top_key_name, set_path, self.message, channel_name)
             #)
 
+    def delete_from_redis(self,del_path):
+        raise RuntimeError("Cannot delete published values")
