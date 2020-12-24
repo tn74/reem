@@ -42,8 +42,8 @@ def key_sequence_to_path_ext(sequence):
     """
     if len(sequence) == 0:
         return ROOT_PATH
-    if isinstance(sequence[0],int):
-        raise ValueError("Top-level key cannot be an integer")
+    #if isinstance(sequence[0],int):
+    #    raise ValueError("Top-level key cannot be an integer")
     seps_keys = []
     for k in sequence:
         if isinstance(k,int):

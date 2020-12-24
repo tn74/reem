@@ -54,7 +54,7 @@ class KeyValueStore(object):
         """
 
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
-        if type(value) != dict:
+        if not isinstance(value,(list,tuple,dict)):
             value = {_ROOT_VALUE_READ_NAME: value}
         with self.interface.INTERFACE_LOCK:
             self.__ensure_key_existence(key)
