@@ -41,7 +41,36 @@ class KeyValueStore(object):
             self.interface = interface
         self.entries = {}
         self.track_schema = True
+    
+    def get(self,path):
+        """Reads a path in the form 'key.element1.element2' from the redis
+        server.  If the path doesn't exist, an error is raised.
 
+        Marginally faster than nested accessors.
+        """
+        res = path.split('.',1)
+        if len(res) == 1:
+            res = [res[0],'']
+        if res[0] not in self.entries:
+            raise ValueError("Invalid top-level key",res[0])
+        writer,reader = self.entries[res[0]]
+        return reader.read_from_redis('.'+res[1])
+
+    def set(self,path,value):
+        """Sets a value in a path in the form 'key.element1.element2' from the
+        redis server.  If any elements along the path, except for the last key,
+        do not exist, an error is raised.
+
+        Marginally faster than nested accessors.
+        """
+        res = path.split('.',1)
+        if len(res) == 1:
+            res = [res[0],'']
+        if res[0] not in self.entries:
+            raise ValueError("Invalid top-level key",res[0])
+        writer,reader = self.entries[res[0]]
+        return writer.send_to_redis('.'+res[1],value)
+        
     def __setitem__(self, key, value):
         """ Only used for setting key on first level of KVS. i.e. KVS["top_key"] = value. Otherwise see __getitem__
 
@@ -562,7 +591,10 @@ class Reader(object):
         Returns: The data stored at ``read_path`` in Redis
         """
 
-        return_val = self.pipeline.execute()[0]
+        try:
+            return_val = self.pipeline.execute()[0]
+        except TypeError as e:
+            raise KeyError("Invalid read from path "+self.top_key_name+read_path)
         #logger.debug("GET {} {} Serializable Pipeline Executed".format(self.top_key_name, read_path))
         responses = self.pipeline_no_decode.execute()
         special_paths, suffixes = filter_paths_by_prefix(iterkeys(self.sp_to_label), read_path)

@@ -22,6 +22,9 @@ See the docs on [read the docs](https://reem.readthedocs.io)
 
 Version history
 
+0.1.1:
+    - added `get()` and `set()` to KeyValueStore for direct access to Rejson's JSON.GET / JSON.SET.
+
 0.1.0: fork by Kris Hauser
     - Can now access items by array index. 
     - Much easier to work with items like normal Python objects.  Can:
