@@ -11,10 +11,10 @@ setup(
     name='reem',
     version='0.1.0',
     packages=['reem'],
-    url='https://www.github.com/tn74/reem',
+    url='https://www.github.com/krishauser/reem',
     license='Apache 2.0',
-    author='Trishul Nagenalli',
-    author_email='trishul.nagenalli@duke.edu',
+    author='Trishul Nagenalli and Kris Hauser',
+    author_email='hauser.kris@gmail.com',
     description='Redis Extendable Efficient Middleware',
     install_requires=[
         'rejson',

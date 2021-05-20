@@ -1,6 +1,8 @@
 # REEM
 
-Trishul Nagenalli, updates by Kris Hauser
+Author: Trishul Nagenalli, updates by Kris Hauser
+
+## About
 
 REEM (Redis Extendable Efficient Middleware) is a centralized middleware package for communication across distributed systems (e.g., robots). It is designed to be a single-package solution for passing information anywhere in the system while emphasizing ease of use and efficiency.
 
@@ -12,15 +14,19 @@ REEM currently offers two communication paradigms:
 - get/set database
 - publish-subscribe
 
+
+## Installation
 To install the python package (and its dependencies), run
 ```
 pip install reem
 ```
-See the docs on [read the docs](https://reem.readthedocs.io)
+
+## Tutorials and API documentation
+See the docs on [read the docs](https://reem.readthedocs.io).
 
 
 
-Version history
+## Version history
 
 0.1.1:
 - added `get()` and `set()` to KeyValueStore for direct access to Rejson's JSON.GET / JSON.SET.
