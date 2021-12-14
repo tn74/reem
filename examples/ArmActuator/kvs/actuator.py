@@ -1,5 +1,4 @@
-from reem.datatypes import KeyValueStore
-from reem.connection import RedisInterface
+from reem import KeyValueStore
 import time
 import logging
 
@@ -16,8 +15,7 @@ start_time = time.time()
 
 # --------------------------- Main -----------------------------------
 
-interface = RedisInterface(host="localhost")
-kvs = KeyValueStore(interface)
+kvs = KeyValueStore('localhost')
 
 polling_frequency = 1000  # Hz
 polling_period = 1.0/polling_frequency

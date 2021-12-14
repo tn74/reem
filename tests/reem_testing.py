@@ -1,4 +1,4 @@
-from reem import datatypes, connection
+from reem import connection
 import numpy as np
 import time
 import logging
@@ -8,7 +8,7 @@ from tests import testing
 # Logging Configuration
 FORMAT = "%(filename)s:%(lineno)s  %(funcName)20s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT)
-logger = logging.getLogger("reem.datatypes")
+logger = logging.getLogger("reem")
 logger.setLevel(logging.DEBUG)
 
 
@@ -36,39 +36,39 @@ def compare_equality(d1, d2):
 
 def test_flat_root_set():
     path = "."
-    writer = datatypes.Writer("test_set", intf)
+    writer = connection.Writer("test_set", intf)
     writer.send_to_redis(path, flat_data)
 
 
 def test_nested_root_set():
     path = "."
-    writer = datatypes.Writer("nested_set", intf)
+    writer = connection.Writer("nested_set", intf)
     writer.send_to_redis(path, nested_data)
 
 
 def test_deeper_set():
-    writer = datatypes.Writer("nested_set", intf)
+    writer = connection.Writer("nested_set", intf)
     nested_data["stats"]["points"] = nested_data["stats"]["points"] + 5
     writer.send_to_redis(".stats", nested_data["stats"])
 
 
 def test_flat_root_read():
     test_flat_root_set()
-    reader = datatypes.Reader("test_set", intf)
+    reader = connection.Reader("test_set", intf)
     ret = reader.read_from_redis(".")
     assert compare_equality(ret, flat_data)
 
 
 def test_nested_root_read():
     test_nested_root_set()
-    reader = datatypes.Reader("nested_set", intf)
+    reader = connection.Reader("nested_set", intf)
     ret = reader.read_from_redis(".")
     assert compare_equality(ret, nested_data)
 
 
 def test_deeper_read():
     test_deeper_set()
-    reader = datatypes.Reader("nested_set", intf)
+    reader = connection.Reader("nested_set", intf)
     ret = reader.read_from_redis(".stats")
     assert compare_equality(ret, nested_data["stats"])  # Pairs with test_deeper_set in which nested_data was set under this key
 
@@ -81,20 +81,20 @@ nparr = np.random.rand(3, 4)
 
 
 def test_nested_np():
-    writer = datatypes.Writer("np_set", intf)
+    writer = connection.Writer("np_set", intf)
     nested_data['nparr'] = nparr
     writer.send_to_redis(".", nested_data)
 
 
 def test_nested_np_read():
-    reader = datatypes.Reader("np_set", intf)
+    reader = connection.Reader("np_set", intf)
     print("Read in: {}".format(reader.read_from_redis(".")))
 
 
 # Write and Read Sequences
 def test_sequence_1():
-    writer = datatypes.Writer("Sequence1", intf)
-    reader = datatypes.Reader("Sequence1", intf)
+    writer = connection.Writer("Sequence1", intf)
+    reader = connection.Reader("Sequence1", intf)
     writer.send_to_redis(".", flat_data)
     print("1. Full Data: {}".format(reader.read_from_redis(".")))
 
@@ -112,7 +112,7 @@ def test_sequence_1():
 
 
 # ------------------------ Key Value Store Testing -------------------------
-server = datatypes.KeyValueStore(intf)
+server = connection.KeyValueStore(intf)
 
 
 def test_kvs_flat():
@@ -193,15 +193,15 @@ def test_skip_metadata():
 
 
 def test_publish():
-    p = datatypes.Publisher("test_publish", intf)
+    p = connection.Publisher("test_publish", intf)
     p.send_to_redis(".", flat_data)
     p.do_metadata_update = True
     p.send_to_redis(".subkey", nparr)
 
 
 def test_pubsub():
-    p = datatypes.Publisher("test_pubsub", intf)
-    active = datatypes.SilentSubscriber("test_pubsub", intf)
+    p = connection.Publisher("test_pubsub", intf)
+    active = connection.SilentSubscriber("test_pubsub", intf)
     active.listen()
     p.send_to_redis(".", flat_data)
     time.sleep(1)

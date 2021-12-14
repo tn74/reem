@@ -1,5 +1,4 @@
-from reem.datatypes import PublishSpace
-from reem.connection import RedisInterface
+from reem.connection import RedisInterface, PublishSpace
 import numpy as np
 import time
 import logging

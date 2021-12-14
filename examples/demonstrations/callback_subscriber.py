@@ -1,5 +1,4 @@
-from reem.datatypes import PublishSpace, CallbackSubscriber
-from reem.connection import RedisInterface
+from reem import RedisInterface, PublishSpace, CallbackSubscriber
 import time
 
 interface = RedisInterface(host="localhost")

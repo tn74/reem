@@ -1,5 +1,4 @@
-from reem.datatypes import SilentSubscriber
-from reem.connection import RedisInterface
+from reem.connection import RedisInterface,SilentSubscriber
 import time
 import logging
 

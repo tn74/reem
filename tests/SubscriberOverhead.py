@@ -1,7 +1,6 @@
 from multiprocessing import Process, Manager
 import time
-from reem.connection import RedisInterface
-from reem.datatypes import CallbackSubscriber, PublishSpace
+from reem.connection import RedisInterface, CallbackSubscriber, PublishSpace
 from tests.testing import plot_performance
 
 interface = RedisInterface()
