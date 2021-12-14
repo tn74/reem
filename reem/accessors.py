@@ -111,6 +111,7 @@ class KeyAccessor:
         self.writer.send_to_redis(self.path_str, value)
 
     def _do_rejson_call(self,fn,*args):
+        assert isinstance(fn,str)
         if self.path_str is None:
             self.path_str = key_sequence_to_path_ext(self.path)
         with self.writer.interface.INTERFACE_LOCK:
@@ -118,7 +119,7 @@ class KeyAccessor:
 
     def type(self):
         """Returns the type of the object"""
-        t = self._do_rejson_call(self,'jsontype')
+        t = self._do_rejson_call('jsontype')
         return _TYPEMAP[t]
 
     def __len__(self):
@@ -239,15 +240,3 @@ class ChannelListener(Thread):
 
             self.callback_function(channel=channel, message=message, **self.kwargs)
 
-"""
-Naming:
-Rapid Extendable Middleware
-Redis Medium Extendable Middleware
-Redis Robotic Communication
-
-Redis Extendable Middleware
-
-Extendable Efficient Redis Middleware
-Redis Extendable Efficient Middleware
-reem
-"""

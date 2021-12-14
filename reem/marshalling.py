@@ -5,23 +5,24 @@ import numpy as np
 import io
 
 
-class SpecialDatatypeShip(object):
+class SpecialDatatypeMarshaller(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        super(SpecialDatatypeShip, self).__init__()
+        super(SpecialDatatypeMarshaller, self).__init__()
 
     @abstractmethod
     def check_fit(self, value):
-        """ Determine if this ship will handle ``value``
+        """ Determine if this marshaller will handle ``value``
 
-        This method returns true if ``value`` is data that this ship is supposed to handle. If this ship handled all
-        numpy arrays, it would check if ``value``'s type is a numpy array.
+        This method returns true if ``value`` is data that this marshaller is
+        supposed to handle. If this marshaller handled all numpy arrays, it
+        would check if ``value``'s type is a numpy array.
 
         Args:
             value: object to check
 
-        Returns: True if ship will handle ``value``
+        Returns: True if marshaller will handle ``value``
 
         """
         pass
@@ -30,12 +31,14 @@ class SpecialDatatypeShip(object):
     def write(self, key, value, client):
         """ Write ``value`` to Redis at the specified ``key`` using ``client``
 
-        Given a Redis client, execute any number of needed commands to store the ``value`` in Redis. You
-        are required to use the key given for REEM to find it. If you must store multiple pieces of information,
-        use a `Redis Hash <https://redis.io/topics/data-types>`_ which acts like a one level dictionary.
+        Given a Redis client, execute any number of needed commands to store
+        the ``value`` in Redis. You are required to use the key given for REEM
+        to find it. If you must store multiple pieces of information, use a
+        `Redis Hash <https://redis.io/topics/data-types>`_ which acts like a
+        one level dictionary.
 
         Args:
-            key (str): The Redis key name this ship must store data under
+            key (str): The Redis key name this marshaller must store data under
             value: The value to write into Redis
             client: A `ReJSON Redis Client <https://github.com/RedisJSON/rejson-py>`_ pipeline
 
@@ -48,9 +51,10 @@ class SpecialDatatypeShip(object):
     def read(self, key, client):
         """ Retrieve necessary information from Redis
 
-        Given a Redis client, execute ONE command to retrieve all the information you need to rebuild the data
-        that was stored in ``write`` from Redis. This method should execute the command that allows you to retrieve
-        all data stored under key
+        Given a Redis client, execute ONE command to retrieve all the
+        information you need to rebuild the data that was stored in ``write``
+        from Redis. This method should execute the command that allows you to
+        retrieve all data stored under key.
 
         Args:
             key (str): a keyname that contains data stored by ``write``
@@ -97,7 +101,7 @@ class SpecialDatatypeShip(object):
     def get_label(self):
         """ Return a unique string identifier
 
-        This method should return a string that uniquely identifies this ship. REEM will use it to determine what ship
+        This method should return a string that uniquely identifies this marshaller. REEM will use it to determine what marshaller
         to use to decode data that is already stored in Redis.
 
         Returns:
@@ -107,7 +111,7 @@ class SpecialDatatypeShip(object):
         pass
 
 
-class NumpyShip(SpecialDatatypeShip):
+class NumpyMarshaller(SpecialDatatypeMarshaller):
     def check_fit(self, value):
         return type(value) in [np.array, np.ndarray]
 
