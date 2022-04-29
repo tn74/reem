@@ -20,9 +20,10 @@ To install the python package (and its dependencies), run
 ```
 pip install reem
 ```
+You will also need to have access to a Redis server with RedisJSON enabled.  See the [setup tutorial](https://reem.readthedocs.io/en/latest/gettingstarted.html) for step-by-step instructions o installing and configuring a compatible local Redis server.
 
 ## Tutorials and API documentation
-See the docs on [read the docs](https://reem.readthedocs.io).
+See [example.py](blob/master/example.py) or the docs on [read the docs](https://reem.readthedocs.io).
 
 
 

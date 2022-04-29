@@ -10,17 +10,6 @@ This page explains how to use database and publish/subscribe paradigms with REEM
 Initialization
 ###############
 
-Before any information can be passed to a Redis server, we need to specify how to contact the server.
-A ``RedisInterface`` object is meant to represent a connection to a specific server. Instantiate it and call initialize
-before attaching any datatypes to it. You must specify the host as the IP address of the server running Redis
-(or localhost). If no host is provided, **the default argument for host is localhost**
-
-.. code-block:: python
-
-   from reem.connection import RedisInterface
-   interface = RedisInterface(host="localhost")
-   interface.initialize()
-
 Key Value Store
 #################
 
@@ -29,13 +18,14 @@ You should treat a ``KeyValueStore`` object as though it were a python dictionar
 contain native python types and numpy arrays. When you set something inside this "dictionary", the corresponding
 entry will be set in Redis. Reading the "dictionary" will read the corresponding entry in Redis.
 
-The ``KeyValueStore`` is instantiated with a ``RedisInterface`` object, identifying what Redis server it is connected
-to.
+The ``KeyValueStore`` is instantiated with an IP address of the Redis server it is connected
+to.  If no host is provided, **the default argument for host is localhost**
+
 
 .. code-block:: python
 
-   from reem.datatypes import KeyValueStore
-   server = KeyValueStore(interface)
+   from reem import KeyValueStore
+   server = KeyValueStore("localhost")
 
 The below code illustrates:
 
@@ -90,13 +80,13 @@ Publishing and subscribing is implemented with a single type of publisher and tw
 Publisher
 ----------
 
-Publishers are implemented with the ``PublisherSpace`` class and are instantiated with a ``RedisInterface``.
+Publishers are implemented with the ``PublisherSpace`` class and are instantiated with the address of the Redis server.
 You may treat a ``PublishSpace`` like an python dictionary that you CANNOT read.
 
 .. code-block:: python
 
-   from reem.datatypes import PublishSpace
-   publisher = PublishSpace(interface)
+   from reem import PublishSpace
+   publisher = PublishSpace("localhost")
 
 
 When you set something inside this "dictionary"  the publisher broadcasts a message indicating what path was updated.
