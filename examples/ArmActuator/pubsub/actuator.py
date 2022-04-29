@@ -1,4 +1,4 @@
-from reem.connection import RedisInterface,SilentSubscriber
+from reem.connection import SilentSubscriber
 import time
 import logging
 
@@ -15,8 +15,7 @@ start_time = time.time()
 
 # --------------------------- Main -----------------------------------
 
-interface = RedisInterface(host="localhost")
-subscriber = SilentSubscriber(channel="command", interface=interface)
+subscriber = SilentSubscriber(channel="command", interface="localhost")
 subscriber.listen()
 
 frequency = 1000  # Hz

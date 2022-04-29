@@ -1,4 +1,4 @@
-from reem.connection import RedisInterface, PublishSpace
+from reem import  PublishSpace
 import numpy as np
 import time
 import logging
@@ -18,8 +18,7 @@ start_time = time.time()
 # --------------------------- Main -----------------------------------
 
 
-interface = RedisInterface(host="localhost")
-pspace = PublishSpace(interface=interface)
+pspace = PublishSpace("localhost")
 
 image_count = 0
 while time.time() < start_time + TIME_TO_RUN:
