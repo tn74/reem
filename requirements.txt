@@ -1,5 +1,4 @@
-pottery>=2.0.1
-redis>=3.0.1
+redis>=3.0.1,<4.0.0
 rejson>=0.3.0
 setuptools
 six
