@@ -15,6 +15,9 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 
+print("Testing redis import")
+import redis
+
 # -- Project information -----------------------------------------------------
 
 project = 'REEM'
