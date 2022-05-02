@@ -22,7 +22,7 @@ copyright = '2022, Trishul Nagenalli, Kris Hauser'
 author = 'Trishul Nagenalli, Kris Hauser'
 
 # The full version, including alpha/beta/rc tags
-release = 'v1.0'
+release = 'v0.1.1'
 
 
 # -- General configuration ---------------------------------------------------
