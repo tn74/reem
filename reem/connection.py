@@ -500,7 +500,7 @@ class Writer(object):
             )
 
     def __publish_serializables(self, set_path, set_value):
-        """ Publish the serializable portion of ``set_value
+        """ Publish the serializable portion of ``set_value``
 
         Take out the non-serializable part of set_value and publish it at set_path
 
