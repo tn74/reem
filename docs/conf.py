@@ -16,9 +16,9 @@ import sys
 
 
 import reem
-import reem.marshalling
 print(reem.__version__)
 print(dir(reem))
+import reem.marshalling
 
 
 # -- Project information -----------------------------------------------------
