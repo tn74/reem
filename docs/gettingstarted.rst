@@ -118,11 +118,11 @@ Installing Redis and ReJSON (Windows)
 
 For Windows, you will use the [Windows builds of Redis](https://github.com/tporadowski/redis) and [ReJSON](https://github.com/tporadowski/rejson).
 
-To install Redis, grab one of the 5.x installs from [this page]( https://github.com/tporadowski/redis/releases) and install it on your machine.  We have tested this to work on version 5.0.14. The files will typically be in "C:\Program Files\Redis", which you may want to add to your PATH for convenience.
+To install Redis, grab one of the 5.x installs from `this page < https://github.com/tporadowski/redis/releases>`_ and install it on your machine.  We have tested this to work on version 5.0.14. The files will typically be in "C:\Program Files\Redis", which you may want to add to your PATH for convenience.
 
-Next, download a release from the [ReJSON releases](https://github.com/tporadowski/rejson/releases). We have tested this to work on version 1.0.6.  Create a folder named rejson-server, and unzip the release into this folder. You should now have a DLL and PDB file here.
+Next, download a release from the `ReJSON releases <https://github.com/tporadowski/rejson/releases>`_. We have tested this to work on version 1.0.6.  Create a folder named rejson-server, and unzip the release into this folder. You should now have a DLL and PDB file here.
 
-Then, download an example redis.conf file, such as [the default here](https://github.com/tporadowski/redis/blob/develop/redis.conf), and put it into rejson-server. Then, in the section labeled "MODULES", add the line "loadmodule ReJSON.dll".  Save and close the file.
+Then, download an example redis.conf file, such as `the default here <https://github.com/tporadowski/redis/blob/develop/redis.conf>`_, and put it into rejson-server. Then, in the section labeled "MODULES", add the line "loadmodule ReJSON.dll".  Save and close the file.
 
 Finally, open a Command Prompt and navigate to the rejson-server folder. Enter
 
