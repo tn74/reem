@@ -12,11 +12,14 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+#sys.path.insert(0, os.path.abspath('..'))
 
 
 print("Testing redis import")
 import redis
+
+print("Testing reem import")
+import reem
 
 # -- Project information -----------------------------------------------------
 
@@ -25,7 +28,7 @@ copyright = '2022, Trishul Nagenalli, Kris Hauser'
 author = 'Trishul Nagenalli, Kris Hauser'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.1.1'
+release = 'v'+(reem.__version__)
 
 
 # -- General configuration ---------------------------------------------------
