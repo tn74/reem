@@ -6,4 +6,4 @@ rejson>=0.3.0
 setuptools
 six
 numpy
-reem==0.1.1
+reem==0.1.1.post1
