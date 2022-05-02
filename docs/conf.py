@@ -18,11 +18,11 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'REEM'
-copyright = '2019, Trishul Nagenalli, Dr. Kris Hauser'
-author = 'Trishul Nagenalli, Dr. Kris Hauser'
+copyright = '2022, Trishul Nagenalli, Kris Hauser'
+author = 'Trishul Nagenalli, Kris Hauser'
 
 # The full version, including alpha/beta/rc tags
-release = 'v1.0'
+release = 'v0.1.1'
 
 
 # -- General configuration ---------------------------------------------------

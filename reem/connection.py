@@ -340,7 +340,7 @@ class Writer(object):
 
     Attributes:
         top_key_name (str): The name of the Redis key under which JSON data will be stored. To Redis,
-            this will become a ReJSON key name. It is also used to generate the Redis key name that ``ship``'s use to
+            this will become a ReJSON key name. It is also used to generate the Redis key name that marshallers use to
             store non JSON data.
         interface (RedisInterface): Defines the connection to Redis this writer will use
     """

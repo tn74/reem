@@ -9,42 +9,42 @@ and client will run on the local machine.
 
 Requirements:
 
- - Python 3
- - Linux/macOS (ReJSON requirement, though you can run ReJSON with Docker on Windows)
+ - Python 3.5+
+ - Linux, macOS, or Windows
 
 
-Server
-#############
+Installing Redis and ReJSON (Linux or MacOS)
+############################################
 
-This section goes through how to set up a server. REEM runs on Redis and requires the ReJSON module. We
-will install both and check that they are working.
-
-Redis
-******
-
-The following script will download and build Redis with supporting packages from source inside
-a folder called ``database-server``.
-REEM has been tested with Redis version 5.0.4. You may want to pull the latest version of Redis in the future. Change the
-versioning in the script appropriately
+This section goes through how to set up a server. REEM runs on Redis and requires the ReJSON module. We will install both and check that they are working.
 
 DO NOT install Redis through ``apt-get install redis-server``
-This will install Redis 3 which does not support modules. You will not be able to run REEM.
+This will install Redis 3 which does not support modules, and you will not be able to run REEM.
+
+
+Redis install
+**************
+
+The following script will download and build Redis with supporting packages from source inside
+a folder we will call ``rejson-server``.
+REEM has been tested with Redis version 5.0.4. You may want to pull the latest version of Redis in the future. Change the
+versioning in the script appropriately.
 
 Once you download and build Redis from source, you will need to access two executables:
 ``redis-server`` and ``redis-cli``. The former is the executable that launches a redis-server. The latter is a
 useful command line interface (cli) that allows for easy testing. The executables are located at
 
-``database-server/redis-5.0.4/src/redis-server``
+``rejson-server/redis-5.0.4/src/redis-server``
 
-``database-server/redis-5.0.4/src/redis-cli``
+``rejson-server/redis-5.0.4/src/redis-cli``
 
 The script below gives them aliases to make things easier. Note that these aliases will disappear
 when the terminal closes.
 
 .. code-block:: bash
 
-    mkdir database-server
-    cd database-server
+    mkdir rejson-server
+    cd rejson-server
     wget http://download.redis.io/releases/redis-5.0.4.tar.gz
     tar xzf redis-5.0.4.tar.gz
     cd redis-5.0.4/deps
@@ -56,8 +56,7 @@ when the terminal closes.
     cd ..
 
 Check that the version of Redis you have is 5.0.x by running ``redis-server --version``
-Now, check that the redis server will boot. Run ``redis-server`` in your terminal. The redis server will take over
-your terminal.
+Now, check that the redis server will boot. Run ``redis-server`` in your terminal. The redis server will take over your terminal and run until it is killed.
 
 Open up another terminal and run ``redis-cli``. The CLI will take over that terminal and your prompt should look like
 ``127.0.0.1:6379>``
@@ -74,12 +73,11 @@ Execute a basic set and get with Redis, ensuring the output looks similar to the
 Congratulations! You have successfully installed and ran Redis. Shutdown the Redis server (issue the ``shutdown`` command
 in the cli) and exit the cli.
 
-ReJSON
-*******
-`ReJSON <https://oss.redislabs.com/redisjson/>`_ is a third party module developed for Redis developed by Redis Labs.
-It introduces a JSON datatype to Redis that is not available in standard Redis. REEM relies on it for serializable data.
+Installing ReJSON
+*****************
+`ReJSON <https://oss.redislabs.com/redisjson/>`_ is a third party module that introduces a JSON datatype to Redis. REEM relies on it extensively
 
-Starting from inside the ``database-server`` folder, continuing from the Redis installation script, the following will
+Starting from inside the ``rejson-server`` folder, continuing from the Redis installation script, the following will
 build ReJSON from source.
 
 .. code-block:: bash
@@ -90,7 +88,7 @@ build ReJSON from source.
     cd ..
     wget https://raw.githubusercontent.com/tn74/reem/master/examples/redis.conf
 
-The above script produces an compiled library file at ``database-server/redisjson/src/rejson.so``. Redis needs to be
+The above script produces an compiled library file at ``rejson-server/redisjson/src/rejson.so``. Redis needs to be
 told to use that library file, and so the last line downloads a configuration file that enables ReJSON when Redis uses it.  
 
 Some details about this configuration file:
@@ -112,31 +110,81 @@ Open another terminal and run ``redis-cli``. Be sure you can execute the followi
     127.0.0.1:6379> JSON.SET foo . 0
     OK
 
+You can then press Ctrl+C or enter "exit" to exit.
 
-Client
-#############
-Before you begin this part of the turtorial, make sure a redis server is available for a client to connect to.
-If a server is not already running, run ``redis-server redis.conf`` in a terminal and leave that terminal be.
 
-Client machines connect to the server purely through Python with the REEM client.
-Install REEM and it's dependencies with the below command
+Installing Redis and ReJSON (Windows)
+############################################
+
+For Windows, you will use the [Windows builds of Redis](https://github.com/tporadowski/redis) and [ReJSON](https://github.com/tporadowski/rejson).
+
+To install Redis, grab one of the 5.x installs from `this page < https://github.com/tporadowski/redis/releases>`_ and install it on your machine.  We have tested this to work on version 5.0.14. The files will typically be in "C:\Program Files\Redis", which you may want to add to your PATH for convenience.
+
+Next, download a release from the `ReJSON releases <https://github.com/tporadowski/rejson/releases>`_. We have tested this to work on version 1.0.6.  Create a folder named rejson-server, and unzip the release into this folder. You should now have a DLL and PDB file here.
+
+Then, download an example redis.conf file, such as `the default here <https://github.com/tporadowski/redis/blob/develop/redis.conf>`_, and put it into rejson-server. Then, in the section labeled "MODULES", add the line "loadmodule ReJSON.dll".  Save and close the file.
+
+Finally, open a Command Prompt and navigate to the rejson-server folder. Enter
 
 .. code-block:: bash
 
-    pip3 install reem
+    > "C:\Program Files\Redis\redis-server.exe" redis.conf
 
-Copy the below into a file and run it:
+which will start a redis server.
+
+To test that everything is working, open another command prompt and enter:
+
+.. code-block:: bash
+
+    > "C:\Program Files\Redis\redis-cli.exe"
+
+And then at the prompt type:
+
+.. code-block:: bash
+
+    127.0.0.1:6379> JSON.SET foo . 0
+    OK
+
+If you get something other than OK, you have misconfigured the server.
+
+That's it! Close out of the second command prompt window and continue on with the rest of the tutorial.
+
+
+
+Setting up REEM
+###############
+
+The REEM client provides a convenient Python frontend to Redis / ReJSON. First, install REEM and its dependencies with the below command
+
+.. code-block:: bash
+
+    python -m pip install reem
+
+Then, make sure a redis server is available for a client to connect to.
+If a server is not already running, run ``redis-server redis.conf`` in a terminal and leave that terminal be.
+
+In another window, verify that the server is running and properly configured using:
+
+.. code-block:: bash
+    > redis-cli
+
+Then, check that you can execute the following:
+
+.. code-block:: bash
+
+    127.0.0.1:6379> JSON.SET foo . 0
+    OK
+    127.0.0.1:6379> exit
+
+Now, let's test REEM. Copy the below into a file and run it:
 
 .. code-block:: python
 
-    from reem.connection import RedisInterface
-    from reem.datatypes import KeyValueStore
+    from reem import KeyValueStore
     import numpy as np
     import time
 
-    interface = RedisInterface(host="localhost")
-    interface.initialize()
-    server = KeyValueStore(interface)
+    server = KeyValueStore("localhost")
 
     # Set a key and read it and its subkeys
     server["foo"] = {"number": 100.0, "string": "REEM"}
@@ -164,7 +212,6 @@ The output should appear something like the below
      [0.24243882 0.86587402 0.19852017 0.21833667]]
 
 The code connects to a Redis server and ``set`` s a dictionary with basic number and string data. It then
-reads and prints that data. Next, it sends a numpy array to Redis and reads that back as well. It uses a KeyValueStore
-object to do all this. Learn more about it in the next section.
+reads and prints that data. Next, it sends a numpy array to Redis and reads that back as well. 
 
-Congratulations! You have got REEM working on your machine! Continue to the next section to see what it can do.
+Congratulations! You have got REEM working on your machine! Continue to the next section to see what else REEM can do.

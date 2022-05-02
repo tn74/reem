@@ -1,11 +1,8 @@
-from reem import RedisInterface, PublishSpace, CallbackSubscriber
+from reem import PublishSpace, CallbackSubscriber
 import time
 
-interface = RedisInterface(host="localhost")
-interface.initialize()
-
 # Initialize a publisher
-publisher = PublishSpace(interface)
+publisher = PublishSpace("localhost")
 
 
 # Callback Function
@@ -17,7 +14,7 @@ def callback(data, updated_path, foo):
 
 # # Initialize a callback subscriber
 subscriber = CallbackSubscriber(channel="callback_channel",
-                                interface=interface,
+                                interface="localhost",
                                 callback_function=callback,
                                 kwargs={"foo": 5})
 subscriber.listen()

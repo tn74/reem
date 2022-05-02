@@ -1,5 +1,4 @@
-from reem.datatypes import PublishSpace
-from reem.connection import RedisInterface
+from reem import PublishSpace
 import time
 import logging
 
@@ -18,8 +17,7 @@ start_time = time.time()
 # --------------------------- Main -----------------------------------
 
 
-interface = RedisInterface(host="localhost")
-pspace = PublishSpace(interface=interface)
+pspace = PublishSpace("localhost")
 
 set_frequency = 100  # Hz
 set_period = 1.0/set_frequency
