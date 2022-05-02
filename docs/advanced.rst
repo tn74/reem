@@ -9,10 +9,10 @@ Custom Datatypes
 REEM is designed to be customizable. Out of the box, it supports transferring native python types and numpy arrays.
 You can, however, define how any type of data is stored in Redis using a ``Marshaller`` object.
 
-Inside the module, ``reem.marshallers`` is the abstract class ``SpecialDatatypeMarshaller``. If you define your own marshaller, you must
+Inside the module ``reem.marshalling`` is the abstract class ``SpecialDatatypeMarshaller``. If you define your own marshaller, you must
 subclass ``SpecialDatatypeMarshaller`` and fill in the methods. The class's documentation is below
 
-.. autoclass:: reem.ships.SpecialDatatypeMarshaller
+.. autoclass:: reem.marshalling.SpecialDatatypeMarshaller
     :members:
 
 To use a marshaller, include it as an argument when creating a ``RedisInterface`` object.
@@ -32,7 +32,7 @@ your custom marshallers, you must include the default numpy marshaller in the in
 
 .. code-block:: python
 
-    interface = RedisInterface(host="localhost", ships=[reem.marshallers.NumpyMarshaller(), CustomMarshaller()])
+    interface = RedisInterface(host="localhost", ships=[reem.marshalling.NumpyMarshaller(), CustomMarshaller()])
 
 
 See the implementation of the Numpy marshaller below

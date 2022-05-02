@@ -6,3 +6,4 @@ redis>=3.0.1
 rejson>=0.3.0
 setuptools
 six
+numpy
