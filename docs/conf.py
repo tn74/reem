@@ -17,6 +17,11 @@ import sys
 
 print("Testing redis import")
 import redis
+print("Redis version:",redis.__version__)
+
+print("Testing rejson import")
+import rejson
+print("Rejson version:",rejson.__version__)
 
 print("Testing reem import")
 import reem
