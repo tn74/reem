@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='reem',
-    version='0.1.1',
+    version='0.1.1.post1',
     packages=['reem'],
     url='https://www.github.com/krishauser/reem',
     license='Apache 2.0',
