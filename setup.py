@@ -9,7 +9,7 @@ with codecs.open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='reem',
-    version='0.1.0',
+    version='0.1.1',
     packages=['reem'],
     url='https://www.github.com/krishauser/reem',
     license='Apache 2.0',
