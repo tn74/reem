@@ -2,7 +2,7 @@ from __future__ import print_function
 from six import iterkeys
 
 import rejson
-from .accessors import  KeyAccessor,ActiveSubscriberKeyAccessor,ChannelListener,MetadataListener
+from .accessors import  KeyAccessor,ActiveSubscriberKeyAccessor,WriteOnlyKeyAccessor,ChannelListener,MetadataListener
 from .marshalling import *
 from .utilities import *
 from threading import Lock
@@ -231,7 +231,7 @@ class SilentSubscriber:
             interface = RedisInterface(host)
             interface.initialize()
         self.passive_subscriber = RawSubscriber(channel + "*", interface, self.update_local_copy, {})
-        self.reader = Reader(channel, self.passive_subscriber.interface)
+        self.reader = Reader(channel, interface)
         self.local_copy = {}
         self.prefix = "__pubspace@0__:" + self.reader.top_key_name
 
