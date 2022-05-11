@@ -10,7 +10,7 @@ logging.basicConfig(
 logger = logging.getLogger("script")
 logger.setLevel(logging.INFO)
 
-TIME_TO_RUN = 5.0  # seconds
+TIME_TO_RUN = 10.0  # seconds
 start_time = time.time()
 
 # --------------------------- Main -----------------------------------
@@ -21,8 +21,11 @@ subscriber.listen()
 frequency = 1000  # Hz
 period = 1.0/frequency
 
+print("Reading from channel 'command' for",TIME_TO_RUN,"seconds...")
+print("(Run controller.py at the same time)")
 while time.time() < start_time + TIME_TO_RUN:
     next_iteration = time.time() + period
     command = subscriber.value()
     logger.info("Read Set Point: {}".format(command))
     time.sleep(max(0.0, next_iteration - time.time()))
+print("Quitting.")
