@@ -24,9 +24,10 @@ subscriber.listen()
 
 t0 = time.time()
 publisher["callback_channel"] = {"number": 5, "string": "REEM"}
-#windows is sometimes ungodly slow at setting up an initial connection
-time.sleep(2.0)
+#windows is sometimes ungodly slow at setting up an initial connection... if you have problems uncomment the following line
+#time.sleep(2.0)
 for i in range(6,20):
     publisher["callback_channel"]["number"] = i
     time.sleep(0.1)
 print("Done.")
+

@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 from threading import Thread, Lock
+import redis
 import rejson
 from .utilities import *
 
@@ -57,6 +58,22 @@ class KeyAccessor:
     def __getitem__(self, key):
         assert check_valid_key_name_ext(key),"{} is not a valid key under path {}".format(key,key_sequence_to_path(self.path) if self.path_str is None else self.path_str)
         return self.__class__(self,self.writer,self.reader,self.path+[key])
+    
+    def get(self, key, default_value = None):
+        """Similar to dict's get() method, returns a default value if the key doesn't exist.
+
+        Essentially equivalent to
+        ```
+        try:
+            value = self[key].read()
+        except:
+            value = default_value
+        ```
+        """
+        try:
+            return self[key].read()
+        except redis.exceptions.ResponseError:
+            return default_value
 
     def __setitem__(self, key, value):
         if isinstance(value,KeyAccessor):
@@ -104,7 +121,7 @@ class KeyAccessor:
         #if it's special, then its value is under _ROOT_VALUE_READ_NAME
         try:
             return server_value[_ROOT_VALUE_READ_NAME]
-        except:
+        except KeyError:
             return server_value
 
     def write(self, value):
@@ -224,12 +241,11 @@ class ActiveSubscriberKeyAccessor(KeyAccessor):
         raise NotImplementedError()
 
     def read(self):
-        return_val = self.reader.local_copy
-        dissect_path = self.path[1:]  #skip initial .
-        if len(dissect_path) == 0:
+        return_val = self.parent.local_copy
+        if len(self.path) == 0:
             pass
         else:
-            for key in dissect_path:
+            for key in self.path:
                 return_val = return_val[key]
         if type(return_val) == dict:
             return copy_dictionary_without_paths(return_val, [])

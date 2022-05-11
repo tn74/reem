@@ -29,6 +29,10 @@ See [example.py](blob/master/example.py) or the docs on [read the docs](https://
 
 ## Version history
 
+0.1.2:
+- bug fixes in pub/sub implementation.
+- Added `get(key,default_value)` to subkey accessor analogous to dict's `get` method.
+
 0.1.1:
 - added `get()` and `set()` to KeyValueStore for direct access to Rejson's JSON.GET / JSON.SET.
 
