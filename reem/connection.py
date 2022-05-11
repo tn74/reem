@@ -2,7 +2,7 @@ from __future__ import print_function
 from six import iterkeys
 
 import rejson
-from .accessors import  KeyAccessor,ActiveSubscriberKeyAccessor,ChannelListener,MetadataListener
+from .accessors import  KeyAccessor,WriteOnlyKeyAccessor,ActiveSubscriberKeyAccessor,ChannelListener,MetadataListener
 from .marshalling import *
 from .utilities import *
 from threading import Lock
@@ -96,7 +96,7 @@ class KeyValueStore(object):
         if len(res) == 1:
             res = [res[0],'']
         if res[0] not in self.entries:
-            self.__ensure_key_existence(res[0])
+            self._ensure_key_existence(res[0])
         writer,reader = self.entries[res[0]]
         return writer.send_to_redis('.'+res[1],value)
         
@@ -115,7 +115,7 @@ class KeyValueStore(object):
         if not isinstance(value,(list,tuple,dict)):
             value = {_ROOT_VALUE_READ_NAME: value}
         with self.interface.INTERFACE_LOCK:
-            self.__ensure_key_existence(key)
+            self._ensure_key_existence(key)
             writer, reader = self.entries[key]
         writer.send_to_redis(Path.rootPath(), value)
 
@@ -132,7 +132,7 @@ class KeyValueStore(object):
         assert check_valid_key_name(item), "Invalid Key: {}".format(item)
         #logger.debug("KVS GET {}".format(item))
         with self.interface.INTERFACE_LOCK:
-            self.__ensure_key_existence(item)
+            self._ensure_key_existence(item)
             writer, reader = self.entries[item]
         return KeyAccessor(self, writer=writer, reader=reader)
 
@@ -151,7 +151,7 @@ class KeyValueStore(object):
             writer, reader = self.entries[item]
         writer.delete_from_redis(Path.rootPath())
 
-    def __ensure_key_existence(self, key):
+    def _ensure_key_existence(self, key):
         """ Ensure that the requested key has a reader and writer associated with it.
 
         Returns: None
@@ -198,14 +198,31 @@ class PublishSpace(KeyValueStore):
         """
         assert isinstance(item,str)
         with self.interface.INTERFACE_LOCK:
-            self.__ensure_key_existence(item)
+            self._ensure_key_existence(item)
             publisher, _ = self.entries[item]
         return WriteOnlyKeyAccessor(self, writer=publisher, reader=_)
+    
+    def __setitem__(self, key, value):
+        """ Only used for setting key on first level of KVS. i.e. KVS["top_key"] = value. Otherwise see __getitem__
 
-    def __ensure_key_existence(self, key):
+        Args:
+            key (str): "dictionary" key. It becomes a top-level Redis key
+            value: value to store
+
+        Returns: None
+
+        """
+        assert check_valid_key_name(key), "Invalid Key: {}".format(key)
+        if not isinstance(value,(list,tuple,dict)):
+            value = {_ROOT_VALUE_READ_NAME: value}
+        with self.interface.INTERFACE_LOCK:
+            self._ensure_key_existence(key)
+            writer, reader = self.entries[key]
+        writer.send_to_redis(Path.rootPath(), value)
+
+    def _ensure_key_existence(self, key):
         """ Identical to ``KeyValueStore`` method of same name but does not instantiate a ``Reader`` object
         """
-
         assert check_valid_key_name(key), "Invalid Key: {}".format(key)
         if key not in self.entries:
             self.entries[key] = (PublishWriter(key, self.interface), None)
@@ -213,6 +230,11 @@ class PublishSpace(KeyValueStore):
 
 
 class RawSubscriber:
+    """A Subscriber that calls a callback function of the
+    form `f(channel,message,**kwargs)` every time it receives a message
+    published on `channel_name*`.
+    """
+    
     def __init__(self, channel_name, interface, callback_function, kwargs):
         self.listening_channel = '__pubspace@0__:{}'.format(channel_name)
         self.listener = ChannelListener(interface, self.listening_channel, callback_function, kwargs)
@@ -223,7 +245,9 @@ class RawSubscriber:
 
 
 class SilentSubscriber:
-    """ Silent Subscriber Implementation"""
+    """A Subscriber that reads updates into a local dict, and users access
+    the most up-to-date values using value() or [key].
+    """
 
     def __init__(self, channel, interface):
         if isinstance(interface,str):
@@ -231,7 +255,7 @@ class SilentSubscriber:
             interface = RedisInterface(host)
             interface.initialize()
         self.passive_subscriber = RawSubscriber(channel + "*", interface, self.update_local_copy, {})
-        self.reader = Reader(channel, self.passive_subscriber.interface)
+        self.reader = Reader(channel, interface)
         self.local_copy = {}
         self.prefix = "__pubspace@0__:" + self.reader.top_key_name
 
@@ -245,17 +269,17 @@ class SilentSubscriber:
         Returns: None
 
         """
-
         #logger.info("SILENT_SUBSCRIBER @{} : channel={} message={}".format(self.prefix, channel, message))
-        try:
-            message = message.decode("utf-8")
-        except Exception as e:
-            return
-        if message != "Publish":
+        if message != b"Publish":
+            logger.debug("SILENT_SUBSCRIBER @{} : Incorrect message type? {}".format(self.prefix,message))
             return
 
+        channel = channel.decode('utf-8')
         if channel == self.prefix:
+            #import time
+            #t0 = time.time()
             self.local_copy = self.reader.read_from_redis(Path.rootPath())
+            #print("Time to read from redis",time.time()-t0)
             return
 
         path = channel[len(self.prefix):]
@@ -302,7 +326,14 @@ class SilentSubscriber:
 
 
 class CallbackSubscriber(SilentSubscriber):
-    """ Callback Subscriber Implementation"""
+    """A Subscriber that calls a user-defined callback every time a
+    publisher sends a message.  You can also access the most up-to-date
+    value using value() or [key].
+    
+    The callback function is of the form `f(channel,message,**kwargs)`
+    and is called  every time it receives a message published on
+    `channel_name*`
+    """
 
     def __init__(self, channel, interface, callback_function, kwargs):
         if isinstance(interface,str):
@@ -310,7 +341,10 @@ class CallbackSubscriber(SilentSubscriber):
             interface = RedisInterface(host)
             interface.initialize()
         super(CallbackSubscriber,self).__init__(channel, interface)
-        self.passive_subscriber = RawSubscriber(channel + "*", interface, self.call_user_function, {})
+        #self.passive_subscriber = RawSubscriber(channel + "*", interface, self.call_user_function, {})
+        if not callable(callback_function):
+            raise ValueError("Need to provide a callback function")
+        self.passive_subscriber.listener.callback_function = self.call_user_function
         self.callback_function = callback_function
         self.kwargs = kwargs
 
@@ -324,7 +358,7 @@ class CallbackSubscriber(SilentSubscriber):
         :rtype: None
         """
         self.update_local_copy(channel, message)
-        channel_name = channel.split("__pubspace@0__:")[1]
+        channel_name = channel.split(b"__pubspace@0__:")[1]
         self.callback_function(data=self.value(), updated_path=channel_name, **self.kwargs)
 
 
@@ -388,11 +422,11 @@ class Writer(object):
         """
         with self.interface.INTERFACE_LOCK:
             #logger.info("SET {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
-            self.__process_metadata(set_path, set_value)
+            self._process_metadata(set_path, set_value)
             #logger.debug("SET {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
-            self.__publish_non_serializables(set_path, set_value)
+            self._publish_non_serializables(set_path, set_value)
             #logger.debug("SET {} {} Non-Serializables Pipelined".format(self.top_key_name, set_path))
-            self.__publish_serializables(set_path, set_value)
+            self._publish_serializables(set_path, set_value)
             #logger.debug("SET {} {} Serializables Pipelined".format(self.top_key_name, set_path))
             self.pipeline.execute()
             #logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, set_path))
@@ -439,7 +473,7 @@ class Writer(object):
             self.pipeline.execute()
 
 
-    def __process_metadata(self, set_path, set_value):
+    def _process_metadata(self, set_path, set_value):
         """ Handle metadata updates
 
         Given the path and value the user would like to set, check if there are non-serializable data types and update
@@ -472,7 +506,7 @@ class Writer(object):
             channel, message = "__keyspace@0__:"+ self.metadata_key_name, "set"
             self.pipeline.publish(channel, message)  # Homemade key-space notification for metadata updates
 
-    def __publish_non_serializables(self, set_path, set_value):
+    def _publish_non_serializables(self, set_path, set_value):
         """Publish JSON incompatible data to Redis
 
         Given a set, publish the non-serializable components to redis, given that metadata has been updated already
@@ -499,7 +533,7 @@ class Writer(object):
                 client=self.pipeline
             )
 
-    def __publish_serializables(self, set_path, set_value):
+    def _publish_serializables(self, set_path, set_value):
         """ Publish the serializable portion of ``set_value``
 
         Take out the non-serializable part of set_value and publish it at set_path
@@ -658,9 +692,7 @@ class Reader(object):
 
 
 class PublishWriter(Writer):
-    """ Defines PublishWriter behavior
-
-    The PublishWriter is identical to the writer but publishes a message when it writes a value.
+    """ Identical to Writer, but publishes a message when it writes a value.
 
     """
 
@@ -681,14 +713,13 @@ class PublishWriter(Writer):
         Returns: None
 
         """
-
         #logger.info("PUBLISH {} {} = {}".format(self.top_key_name, set_path, type(set_value)))
         #logger.debug("PUBLISH {} {} Metadata Update?: {}".format(self.top_key_name, set_path, self.do_metadata_update))
         with self.interface.INTERFACE_LOCK:
-            self.__process_metadata(set_path, set_value)
+            self._process_metadata(set_path, set_value)
             #logger.debug("PUBLISH {} {} Metadata: {}".format(self.top_key_name, set_path, self.metadata))
-            self.__publish_non_serializables(set_path, set_value)
-            self.__publish_serializables(set_path, set_value)
+            self._publish_non_serializables(set_path, set_value)
+            self._publish_serializables(set_path, set_value)
 
             # Addition to Writer class
             if set_path == Path.rootPath():

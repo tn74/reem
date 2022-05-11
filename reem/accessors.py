@@ -17,7 +17,10 @@ class MetadataListener:
     def __init__(self, interface):
         self.client = rejson.Client(host=interface.hostname)
         self.pubsub = self.client.pubsub()
+        #import time
+        #t0 = time.time()
         self.pubsub.psubscribe(['__keyspace@0__:*'])
+        #print("Time to psubscribe on metadata",time.time()-t0)
         self.listeners = {}
 
     def add_listener(self, key_name, reader):
@@ -184,13 +187,13 @@ class KeyAccessor:
 class WriteOnlyKeyAccessor(KeyAccessor):
     def __init__(self,*args,**kwargs):
         KeyAccessor.__init__(self,*args,**kwargs)
-        del self.read
-        del self.__delitem__
-        del self.__iadd__
-        del self.__isub__
-        del self.__imul__
-        del self.__idiv__
-        del self.append
+        #del self.read
+        #del self.__delitem__
+        #del self.__iadd__
+        #del self.__isub__
+        #del self.__imul__
+        #del self.__idiv__
+        #del self.append
 
 
 class ActiveSubscriberKeyAccessor(KeyAccessor):
@@ -222,13 +225,17 @@ class ChannelListener(Thread):
     def __init__(self, interface, channel_name, callback_function, kwargs):
         Thread.__init__(self)
         self.client = rejson.Client(host=interface.hostname)
-        self.pubsub = self.client.pubsub()
-        self.pubsub.psubscribe([channel_name])
+        self.channel_name = channel_name
         self.callback_function = callback_function
         self.kwargs = kwargs
         self.first_item_seen = False
 
     def run(self):
+        #import time
+        #t0 = time.time()
+        self.pubsub = self.client.pubsub()
+        self.pubsub.psubscribe([self.channel_name])
+        #print("Time to establish psubscribe",time.time()-t0)
         for item in self.pubsub.listen():
             # First Item is a generic message that we need to get rid of
             if not self.first_item_seen:
@@ -239,4 +246,4 @@ class ChannelListener(Thread):
             message = item['data']
 
             self.callback_function(channel=channel, message=message, **self.kwargs)
-
+        
