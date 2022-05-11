@@ -187,26 +187,41 @@ class KeyAccessor:
 class WriteOnlyKeyAccessor(KeyAccessor):
     def __init__(self,*args,**kwargs):
         KeyAccessor.__init__(self,*args,**kwargs)
-        #del self.read
-        #del self.__delitem__
-        #del self.__iadd__
-        #del self.__isub__
-        #del self.__imul__
-        #del self.__idiv__
-        #del self.append
+    def read(self):
+        raise NotImplementedError()
+    def __delitem__(self,key):
+        raise NotImplementedError()
+    def __iadd__(self,rhs):
+        raise NotImplementedError()
+    def __isub__(self,rhs):
+        raise NotImplementedError()
+    def __imul__(self,rhs):
+        raise NotImplementedError()
+    def __idiv__(self,rhs):
+        raise NotImplementedError()
+    def append(self,rhs):
+        raise NotImplementedError()
 
 
 class ActiveSubscriberKeyAccessor(KeyAccessor):
     def __init__(self,*args,**kwargs):
         KeyAccessor.__init__(self,*args,**kwargs)
-        del self.write
-        del self.__setitem__
-        del self.__delitem__
-        del self.__iadd__
-        del self.__isub__
-        del self.__imul__
-        del self.__idiv__
-        del self.append
+    def write(self):
+        raise NotImplementedError()
+    def __setitem__(self,key,value):
+        raise NotImplementedError()
+    def __delitem__(self,key):
+        raise NotImplementedError()
+    def __iadd__(self,rhs):
+        raise NotImplementedError()
+    def __isub__(self,rhs):
+        raise NotImplementedError()
+    def __imul__(self,rhs):
+        raise NotImplementedError()
+    def __idiv__(self,rhs):
+        raise NotImplementedError()
+    def append(self,rhs):
+        raise NotImplementedError()
 
     def read(self):
         return_val = self.reader.local_copy
