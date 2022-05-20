@@ -40,7 +40,7 @@ class SpecialDatatypeMarshaller(object):
         Args:
             key (str): The Redis key name this marshaller must store data under
             value: The value to write into Redis
-            client: A `ReJSON Redis Client <https://github.com/RedisJSON/rejson-py>`_ pipeline
+            client: A `Redis Client <https://github.com/redis/redis-py>`_ 
 
         Returns: None
 
@@ -58,7 +58,7 @@ class SpecialDatatypeMarshaller(object):
 
         Args:
             key (str): a keyname that contains data stored by ``write``
-            client: A `ReJSON Redis Client <https://github.com/RedisJSON/rejson-py>`_ pipeline
+            client: A `Redis Client <https://github.com/redis/redis-py>`_ 
 
         Returns: None
 
@@ -74,7 +74,7 @@ class SpecialDatatypeMarshaller(object):
 
         Args:
             key (str): a keyname that contains data stored by ``write``
-            client: A `ReJSON Redis Client <https://github.com/RedisJSON/rejson-py>`_ pipeline
+            client: A `Redis Client <https://github.com/redis/redis-py>`_ 
 
         Returns: None
 

@@ -1,18 +1,16 @@
 from __future__ import print_function
 
-from rejson import Path
 from functools import reduce
 import json
 import logging
 from six import itervalues,iteritems
 import sys
+from .compat import ROOT_PATH
 
 logger = logging.getLogger("reem")
 
 SEPARATOR_CHARACTER = "&&&&"
 ROOT_VALUE_SEQUENCE = "%%%%"
-
-ROOT_PATH = Path.rootPath()
 
 
 def path_to_key_sequence(path):

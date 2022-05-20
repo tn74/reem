@@ -2,7 +2,6 @@ from __future__ import print_function
 
 from threading import Thread, Lock
 import redis
-import rejson
 from .utilities import *
 
 _ROOT_VALUE_READ_NAME = "{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE)
@@ -15,8 +14,8 @@ _TYPEMAP = {
 }
 
 class MetadataListener:
-    def __init__(self, interface):
-        self.client = rejson.Client(host=interface.hostname)
+    def __init__(self, client):
+        self.client = client
         self.pubsub = self.client.pubsub()
         #import time
         #t0 = time.time()
@@ -121,8 +120,8 @@ class KeyAccessor:
         #if it's special, then its value is under _ROOT_VALUE_READ_NAME
         try:
             return server_value[_ROOT_VALUE_READ_NAME]
-        except KeyError:
-            return server_value
+        except Exception:
+            return server_value 
 
     def write(self, value):
         """Writes value to the path referred to by this accessor."""
@@ -198,7 +197,28 @@ class KeyAccessor:
         """
         self._do_rejson_call('jsonarrappend',rhs)    
 
+    def __enter__(self):
+        """Reads the value, returns the json struct which can then be manipulated,
+        and writes back on __exit__.  This is useful when you want to make many
+        small reads/writes which would otherwise bog down Redis.
+        
+        Usage::
 
+            kvs = KeyValueStore()
+            with kvs['foo']['bar'] as val:
+                #all this stuff is done client side with no communication
+                for i in range(len(val['baz'])):
+                    val['baz'][i] += 1
+            #now val will be written back to the KeyValueStore
+        
+        """
+        self._value = self.read()
+        return self._value
+    
+    def __exit__(self,exc_type,exc_val,traceback):
+        if exc_type is not None:
+            self.write(self._value)
+            delattr(self._value)
 
 
 class WriteOnlyKeyAccessor(KeyAccessor):
@@ -253,9 +273,9 @@ class ActiveSubscriberKeyAccessor(KeyAccessor):
 
 
 class ChannelListener(Thread):
-    def __init__(self, interface, channel_name, callback_function, kwargs):
+    def __init__(self, client, channel_name, callback_function, kwargs):
         Thread.__init__(self)
-        self.client = rejson.Client(host=interface.hostname)
+        self.client = client
         self.channel_name = channel_name
         self.callback_function = callback_function
         self.kwargs = kwargs

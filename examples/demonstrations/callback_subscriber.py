@@ -1,5 +1,6 @@
 from reem import PublishSpace, CallbackSubscriber
 import time
+import os
 
 # Initialize a publisher
 publisher = PublishSpace("localhost")
@@ -25,7 +26,9 @@ subscriber.listen()
 t0 = time.time()
 publisher["callback_channel"] = {"number": 5, "string": "REEM"}
 #windows is sometimes ungodly slow at setting up an initial connection... if you have problems uncomment the following line
-#time.sleep(2.0)
+if os.name == 'nt':
+    time.sleep(2.0)
+print("Should print several messages below...")
 for i in range(6,20):
     publisher["callback_channel"]["number"] = i
     time.sleep(0.1)

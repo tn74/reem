@@ -1,4 +1,4 @@
-from reem import connection
+from reem import RedisInterface
 import numpy as np
 import time
 import logging
@@ -13,8 +13,7 @@ logger.setLevel(logging.DEBUG)
 
 
 # Testing Help
-intf = connection.RedisInterface(host='localhost')
-intf.initialize()
+intf = RedisInterface(host='localhost')
 
 flat_data = testing.get_flat_data()
 

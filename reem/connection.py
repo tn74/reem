@@ -1,13 +1,12 @@
 from __future__ import print_function
 from six import iterkeys
-
-import rejson
+from threading import Lock
+import logging
+import redis
+from .compat import ROOT_PATH, make_redis_client
 from .accessors import  KeyAccessor,WriteOnlyKeyAccessor,ActiveSubscriberKeyAccessor,ChannelListener,MetadataListener
 from .marshalling import *
 from .utilities import *
-from threading import Lock
-from rejson import Path
-import logging
 
 
 class RedisInterface:
@@ -17,9 +16,9 @@ class RedisInterface:
     def __init__(self, host='localhost', marshallers=[NumpyMarshaller()]):
         self.hostname = host
         self.marshallers = marshallers
-        self.client = rejson.Client(host=host, decode_responses=True)
-        self.client_no_decode = rejson.Client(host=host)
-        self.metadata_listener = MetadataListener(self)
+        self.client_no_decode,self.client = make_redis_client(host)
+        metadata_client = redis.Redis(host)
+        self.metadata_listener = MetadataListener(metadata_client)
         self.INTERFACE_LOCK = Lock()
 
         self.label_to_marshaller = {}
@@ -28,14 +27,8 @@ class RedisInterface:
 
         self.marshaller_labels = [sh.get_label() for sh in marshallers]
 
-    def initialize(self):
-        """
-        Call before doing anything with this connection
-        :return:
-        """
-        pass
-
-
+    def client_copy(self):
+        return redis.Redis(self.hostname)
 
 
 logger = logging.getLogger("reem")
@@ -53,15 +46,14 @@ class KeyValueStore(object):
     construction and call the reader and writer's write and read methods.
 
     Attributes:
-        interface (str or RedisInterface): Defines the connection to Redis this
-        reader will use. If a str, then a RedisInterface will be created and
-        connected to automatically.
+        interface (str, RedisInterface, or KeyValueStore): Defines the
+        connection to Redis this reader will use. If a str, then a
+        RedisInterface will be created and connected to automatically.
     """
     def __init__(self, interface='localhost'):
         if isinstance(interface,str):
             host = interface
             self.interface = RedisInterface(host)
-            self.interface.initialize()
         elif isinstance(interface,KeyValueStore):
             self.interface = interface.interface
             assert isinstance(self.interface,RedisInterface)
@@ -117,7 +109,7 @@ class KeyValueStore(object):
         with self.interface.INTERFACE_LOCK:
             self._ensure_key_existence(key)
             writer, reader = self.entries[key]
-        writer.send_to_redis(Path.rootPath(), value)
+        writer.send_to_redis(ROOT_PATH, value)
 
     def __getitem__(self, item):
         """Used to retrieve KeyAccessor object for handling path construction when setting/getting Redis
@@ -149,7 +141,7 @@ class KeyValueStore(object):
             if item not in self.entries:
                 raise KeyError(item)
             writer, reader = self.entries[item]
-        writer.delete_from_redis(Path.rootPath())
+        writer.delete_from_redis(ROOT_PATH)
 
     def _ensure_key_existence(self, key):
         """ Ensure that the requested key has a reader and writer associated with it.
@@ -218,7 +210,7 @@ class PublishSpace(KeyValueStore):
         with self.interface.INTERFACE_LOCK:
             self._ensure_key_existence(key)
             writer, reader = self.entries[key]
-        writer.send_to_redis(Path.rootPath(), value)
+        writer.send_to_redis(ROOT_PATH, value)
 
     def _ensure_key_existence(self, key):
         """ Identical to ``KeyValueStore`` method of same name but does not instantiate a ``Reader`` object
@@ -237,7 +229,7 @@ class RawSubscriber:
     
     def __init__(self, channel_name, interface, callback_function, kwargs):
         self.listening_channel = '__pubspace@0__:{}'.format(channel_name)
-        self.listener = ChannelListener(interface, self.listening_channel, callback_function, kwargs)
+        self.listener = ChannelListener(interface.client_copy(), self.listening_channel, callback_function, kwargs)
         self.listener.setDaemon(True)
 
     def listen(self):
@@ -253,7 +245,6 @@ class SilentSubscriber:
         if isinstance(interface,str):
             host = interface
             interface = RedisInterface(host)
-            interface.initialize()
         self.passive_subscriber = RawSubscriber(channel + "*", interface, self.update_local_copy, {})
         self.reader = Reader(channel, interface)
         self.local_copy = {}
@@ -278,7 +269,7 @@ class SilentSubscriber:
         if channel == self.prefix:
             #import time
             #t0 = time.time()
-            self.local_copy = self.reader.read_from_redis(Path.rootPath())
+            self.local_copy = self.reader.read_from_redis(ROOT_PATH)
             #print("Time to read from redis",time.time()-t0)
             return
 
@@ -339,7 +330,6 @@ class CallbackSubscriber(SilentSubscriber):
         if isinstance(interface,str):
             host = interface
             interface = RedisInterface(host)
-            interface.initialize()
         super(CallbackSubscriber,self).__init__(channel, interface)
         #self.passive_subscriber = RawSubscriber(channel + "*", interface, self.call_user_function, {})
         if not callable(callback_function):
@@ -444,7 +434,6 @@ class Writer(object):
         with self.interface.INTERFACE_LOCK:
             dels = 0
             if del_path in self.sp_to_label:
-                self.pipeline_no_decode = self.interface.client_no_decode.pipeline()
                 marshaller = self.interface.label_to_marshaller[self.sp_to_label[del_path]]
                 special_name = str(self.top_key_name) + str(del_path)
                 marshaller.delete(special_name, self.pipeline_no_decode)
@@ -722,7 +711,7 @@ class PublishWriter(Writer):
             self._publish_serializables(set_path, set_value)
 
             # Addition to Writer class
-            if set_path == Path.rootPath():
+            if set_path == ROOT_PATH:
                 set_path = ""
             channel_name = "__pubspace@0__:" + self.top_key_name + set_path
             self.pipeline.publish(channel_name, self.message)

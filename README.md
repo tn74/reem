@@ -20,7 +20,7 @@ To install the python package (and its dependencies), run
 ```
 pip install reem
 ```
-You will also need to have access to a Redis server with RedisJSON enabled.  See the [setup tutorial](https://reem.readthedocs.io/en/latest/gettingstarted.html) for step-by-step instructions o installing and configuring a compatible local Redis server.
+You will also need to have access to a Redis server with RedisJSON enabled.  See the [setup tutorial](https://reem.readthedocs.io/en/latest/gettingstarted.html) for step-by-step instructions on installing and configuring a compatible local Redis server.
 
 ## Tutorials and API documentation
 See [example.py](blob/master/example.py) or the docs on [read the docs](https://reem.readthedocs.io).
@@ -28,6 +28,11 @@ See [example.py](blob/master/example.py) or the docs on [read the docs](https://
 
 
 ## Version history
+
+0.1.3:
+- Updated to require redis-py 4.0.0+.  API is still backwards-compatible with redis-py 3.5+ (which requires rejson).
+- Added `with` syntax on key-value store accessors which allows you to make many updates to an object without bogging down the Redis server. Usage is `with kvs['key'] as val: foo(val)` which is equivalent to `val=kvs['key'].read(); foo(val); kvs['key'] = val` and often much faster than `foo(kvs['key'])` if `foo` performs lots of reads and writes.
+- Useless `RedisInterface.initialize()` method removed.
 
 0.1.2:
 - bug fixes in pub/sub implementation.

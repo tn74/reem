@@ -1,5 +1,5 @@
 from tests.testing import *
-from reem.connection import RedisInterface,KeyValueStore,PublishSpace,CallbackSubscriber
+from reem import RedisInterface,KeyValueStore,PublishSpace,CallbackSubscriber
 import numpy as np
 import logging
 import time
