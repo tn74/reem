@@ -15,6 +15,10 @@ if redis.__version__ >= '4.0.0':
             if attr.startswith('json'):
                 return getattr(self._r.json(),attr[4:])
             return getattr(self._r,attr)
+        def __enter__(self):
+            return self._r.__enter__()
+        def __exit__(self, *args, **kwargs):
+            return self._r.__exit__(*args, **kwargs)
         def pipeline(self):
             return RejsonCompat(self._r.pipeline())
 
