@@ -22,10 +22,10 @@ if redis.__version__ >= '4.0.0':
         def pipeline(self):
             return RejsonCompat(self._r.pipeline())
 
-    def make_redis_client(host='localhost',port=6379,db=0):
+    def make_redis_client(host='localhost',port=6379,db=0,*args,**kwargs):
         """Return plain redis client + rejson client"""
-        r = redis.Redis(host,port=port,db=db)
-        j = RejsonCompat(redis.Redis(host,port=port,db=db))
+        r = redis.Redis(host,port=port,db=db,*args,**kwargs)
+        j = RejsonCompat(redis.Redis(host,port=port,db=db,*args,**kwargs))
         return r,j
 else:
     #versions < 4.0.0 don't have rejson built in
@@ -34,8 +34,8 @@ else:
 
     ROOT_PATH = Path.rootPath()
 
-    def make_redis_client(host='localhost',port=6379,db=0):
+    def make_redis_client(host='localhost',port=6379,db=0,*args,**kwargs):
         """Return plain redis client + rejson client"""
-        r = rejson.Client(host=host, port=port, db=db, decode_responses=False)
-        j = rejson.Client(host=host, port=port, db=db, decode_responses=True)
+        r = rejson.Client(host=host, port=port, db=db, decode_responses=False, *args, **kwargs)
+        j = rejson.Client(host=host, port=port, db=db, decode_responses=True, *args, **kwargs)
         return r,j

@@ -13,10 +13,10 @@ class RedisInterface:
     """
 
     """
-    def __init__(self, host='localhost', marshallers=[NumpyMarshaller()]):
+    def __init__(self, host='localhost', marshallers=[NumpyMarshaller()], *args, **kwargs):
         self.hostname = host
         self.marshallers = marshallers
-        self.client_no_decode,self.client = make_redis_client(host)
+        self.client_no_decode,self.client = make_redis_client(host, *args, **kwargs)
         metadata_client = redis.Redis(host)
         self.metadata_listener = MetadataListener(metadata_client)
         self.INTERFACE_LOCK = Lock()
@@ -50,10 +50,10 @@ class KeyValueStore(object):
         connection to Redis this reader will use. If a str, then a
         RedisInterface will be created and connected to automatically.
     """
-    def __init__(self, interface='localhost'):
+    def __init__(self, interface='localhost', *args, **kwargs):
         if isinstance(interface,str):
             host = interface
-            self.interface = RedisInterface(host)
+            self.interface = RedisInterface(host, *args, **kwargs)
         elif isinstance(interface,KeyValueStore):
             self.interface = interface.interface
             assert isinstance(self.interface,RedisInterface)
