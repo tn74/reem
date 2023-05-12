@@ -12,7 +12,9 @@ if redis.__version__ >= '4.0.0':
         def __init__(self,r):
             self._r = r
         def __getattr__(self,attr):
-            if attr.startswith('json'):
+            if attr == "jsondel":
+                return self._r.delete
+            elif attr.startswith('json'):
                 return getattr(self._r.json(),attr[4:])
             return getattr(self._r,attr)
         def __enter__(self):
