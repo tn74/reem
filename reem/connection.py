@@ -45,6 +45,12 @@ class KeyValueStore(object):
     but produces ``KeyAccessor`` objects that assist with path
     construction and call the reader and writer's write and read methods.
 
+    When constructing this class, users can pass through ``*args`` and
+    ``**kwargs`` that will be forwarded to the ``RedisInterface`` and
+    eventually to the ``Redis`` client. This allows users to set things like
+    socket timeouts. See https://redis.readthedocs.io/en/latest/connections.html
+    for a full list of options.
+
     Attributes:
         interface (str, RedisInterface, or KeyValueStore): Defines the
         connection to Redis this reader will use. If a str, then a
