@@ -13,10 +13,10 @@ class RedisInterface:
     """
 
     """
-    def __init__(self, host='localhost', marshallers=[NumpyMarshaller()]):
+    def __init__(self, host='localhost', marshallers=[NumpyMarshaller()], *args, **kwargs):
         self.hostname = host
         self.marshallers = marshallers
-        self.client_no_decode,self.client = make_redis_client(host)
+        self.client_no_decode,self.client = make_redis_client(host, *args, **kwargs)
         metadata_client = redis.Redis(host)
         self.metadata_listener = MetadataListener(metadata_client)
         self.INTERFACE_LOCK = Lock()
@@ -45,15 +45,21 @@ class KeyValueStore(object):
     but produces ``KeyAccessor`` objects that assist with path
     construction and call the reader and writer's write and read methods.
 
+    When constructing this class, users can pass through ``*args`` and
+    ``**kwargs`` that will be forwarded to the ``RedisInterface`` and
+    eventually to the ``Redis`` client. This allows users to set things like
+    socket timeouts. See https://redis.readthedocs.io/en/latest/connections.html
+    for a full list of options.
+
     Attributes:
         interface (str, RedisInterface, or KeyValueStore): Defines the
         connection to Redis this reader will use. If a str, then a
         RedisInterface will be created and connected to automatically.
     """
-    def __init__(self, interface='localhost'):
+    def __init__(self, interface='localhost', *args, **kwargs):
         if isinstance(interface,str):
             host = interface
-            self.interface = RedisInterface(host)
+            self.interface = RedisInterface(host, *args, **kwargs)
         elif isinstance(interface,KeyValueStore):
             self.interface = interface.interface
             assert isinstance(self.interface,RedisInterface)
