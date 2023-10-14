@@ -1,6 +1,5 @@
 from tests.testing import *
-from reem.datatypes import PublishSpace, SilentSubscriber, CallbackSubscriber
-from reem.connection import RedisInterface
+from reem import RedisInterface, PublishSpace, SilentSubscriber, CallbackSubscriber
 import logging
 import numpy as np
 import time

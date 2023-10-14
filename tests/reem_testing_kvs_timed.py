@@ -1,7 +1,6 @@
 from tests.testing import *
-from reem.datatypes import KeyValueStore
-from reem.connection import RedisInterface
-from reem import ships
+from reem.connection import KeyValueStore,RedisInterface
+from reem import marshalling
 import logging
 import numpy as np
 
@@ -21,7 +20,7 @@ image_dict = {"image": image_array}
 hundred_key_dict = single_level_dictionary()
 layered_dictionary = nested_level_dictionary(levels=20)
 
-interface = RedisInterface(host="localhost", ships=[ships.NumpyShip()])
+interface = RedisInterface(host="localhost",marshallers=[marshalling.NumpyMarshaller()])
 interface.initialize()
 
 server = KeyValueStore(interface)

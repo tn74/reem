@@ -8,19 +8,18 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='reem',
-    version='v0.0.11',
+    version='0.1.3',
     packages=['reem'],
-    url='https://www.github.com/tn74/reem',
+    url='https://www.github.com/krishauser/reem',
     license='Apache 2.0',
-    author='Trishul Nagenalli',
-    author_email='trishul.nagenalli@duke.edu',
+    author='Trishul Nagenalli and Kris Hauser',
+    author_email='hauser.kris@gmail.com',
     description='Redis Extendable Efficient Middleware',
     install_requires=[
-        'rejson',
-        'redis',
+        'redis>=4.0.0',
         'six',
         'numpy',
       ],
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type='text/markdown',
 )

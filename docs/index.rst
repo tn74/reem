@@ -8,6 +8,7 @@ To make it easy, we chose to model information as a nested data structure that c
 To make it fast, we used `Redis <https://redis.io/>`_ (an in-memory key-value database) running `ReJSON <https://oss.redislabs.com/redisjson/>`_ (enabling Redis to store JSON data) as a central information store. To get maximum performance, we give users the power to control exactly how information is passed between the local program and Redis by defining their own encoder/decoder objects.
 
 REEM currently offers two communication paradigms:
+
 - get/set database
 - publish-subscribe
 

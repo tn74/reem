@@ -1,6 +1,5 @@
 from tests.testing import *
-from reem.datatypes import *
-from reem.connection import RedisInterface
+from reem import RedisInterface,KeyValueStore,PublishSpace,CallbackSubscriber
 import numpy as np
 import logging
 import time
@@ -13,7 +12,7 @@ base = os.path.dirname(os.path.abspath(__file__))
 log_file_name = os.path.join(base, "logs/reem_testing_kvs_timed.log")
 FORMAT = "%(asctime)20s %(filename)30s:%(lineno)3s  %(funcName)20s() %(levelname)10s     %(message)s"
 logging.basicConfig(format=FORMAT, filename=log_file_name, filemode='w')
-logger = logging.getLogger("reem.datatypes")
+logger = logging.getLogger("reem")
 logger.setLevel(logging.DEBUG)
 
 

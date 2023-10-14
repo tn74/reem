@@ -1,5 +1,4 @@
-from reem.datatypes import PublishSpace, CallbackSubscriber
-from reem.connection import RedisInterface
+from reem import PublishSpace, CallbackSubscriber
 import time
 import logging
 
@@ -17,8 +16,7 @@ TIME_TO_RUN = 5.0  # seconds
 # --------------------------- Main -----------------------------------
 
 
-interface = RedisInterface(host="localhost")
-pspace = PublishSpace(interface=interface)
+pspace = PublishSpace("localhost")
 
 
 def callback(data, updated_path):
@@ -27,7 +25,7 @@ def callback(data, updated_path):
 
 subscriber = CallbackSubscriber(
     channel="processed_info",
-    interface=interface,
+    interface="localhost",
     callback_function=callback,
     kwargs={}
 )

@@ -1,6 +1,5 @@
 from tests.testing import *
-from reem.datatypes import KeyValueStore
-from reem.connection import RedisInterface
+from reem.connection import KeyValueStore
 import logging
 import numpy as np
 import redis
@@ -21,10 +20,7 @@ image_dict = {"image": image_array}
 hundred_key_dict = single_level_dictionary()
 layered_dictionary = nested_level_dictionary(levels=3)
 
-interface = RedisInterface(host="localhost")
-interface.initialize()
-
-server = KeyValueStore(interface)
+server = KeyValueStore("localhost")
 
 
 # Can't-Do  Behavior Defining Tests
@@ -37,6 +33,7 @@ def test_store_under_non_existant_top_key():
     except redis.exceptions.ResponseError as e:
         # Redis spits error: new objects must be created at the root
         return
+    print("Strange... no error in server[%s][%s]",random_key_name,"item")
     assert False
 
 
@@ -48,6 +45,7 @@ def test_store_under_non_existant_sub_key():
     except redis.exceptions.ResponseError as e:
         # Redis spits error: missing key at non-terminal path level
         return
+    print("Strange... no error in server[flat_data][not_real_key][not_real_key]")
     assert False
 
 
@@ -182,7 +180,7 @@ def test_store_non_dict():
 
 def test_new_key_read():
     server["image_dict"] = image_dict
-    kvs_new = KeyValueStore(interface)
+    kvs_new = KeyValueStore('localhost')
     logger.debug("Set KVS Gets Metadata: {}".format(server.interface.client.jsonget(server.entries["image_dict"][1].metadata_key_name)))
     logger.debug("Get KVS Gets Metadata: {}".format(kvs_new.interface.client.jsonget(server.entries["image_dict"][1].metadata_key_name)))
     assert np.array_equal(kvs_new["image_dict"]["image"].read(), image_array)

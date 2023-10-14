@@ -1,12 +1,9 @@
 import datetime
-import rejson
 import numpy as np
 import random
 import string
 from matplotlib import pyplot as plt
 import multiprocessing
-
-rejson_client = rejson.Client(host='localhost', port=6379, decode_responses=True)
 
 
 def generate_data(format='string', strlen=100, b=0, kb=0, mb=0):
