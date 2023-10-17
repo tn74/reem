@@ -18,12 +18,15 @@ Installing Redis and ReJSON (Linux or MacOS)
 
 This section goes through how to set up a server. REEM runs on Redis and requires the ReJSON module. We will install both and check that they are working.
 
-DO NOT install Redis through ``apt-get install redis-server``
-This will install Redis 3 which does not support modules, and you will not be able to run REEM.
-
 
 Redis install
 **************
+
+In Ubuntu 18.04+, simply install Redis via  ``sudo apt-get install redis-server``.
+
+If you are running Ubuntu 16.04, DO NOT install Redis through ``apt-get install redis-server``
+This will install Redis 3 which does not support modules, and you will not be able to run REEM.
+Instead, follow the instructions below to install Redis from source.
 
 The following script will download and build Redis with supporting packages from source inside
 a folder we will call ``rejson-server``.
@@ -77,7 +80,9 @@ Installing ReJSON
 *****************
 `ReJSON <https://oss.redislabs.com/redisjson/>`_ is a third party module that introduces a JSON datatype to Redis. REEM relies on it extensively
 
-Starting from inside the ``rejson-server`` folder, continuing from the Redis installation script, the following will
+Starting from inside the ``rejson-server`` folder, continuing from the Redis installation script
+
+The following will
 build ReJSON from source.
 
 .. code-block:: bash
@@ -88,22 +93,30 @@ build ReJSON from source.
     cd ..
     wget https://raw.githubusercontent.com/tn74/reem/master/examples/redis.conf
 
-The above script produces an compiled library file at ``rejson-server/redisjson/src/rejson.so``. Redis needs to be
+The above script produces an compiled library file at ``redisjson/src/rejson.so``. Redis needs to be
 told to use that library file, and so the last line downloads a configuration file that enables ReJSON when Redis uses it.  
 
-Some details about this configuration file:
+Specifically, line 46 (in the modules section) says ``loadmodule redisjson/src/rejson.so`` to specify
+the compiled library for rejson.
+If you've installed via ``apt-get``, you should edit the ``redis.conf`` file to change
+line 46 to point to the absolute path to the compiled library file.  Then, copy it to
+the version that the Redis service will use via 
 
-- Line 46 (in the modules section) says ``loadmodule redisjson/src/rejson.so`` specifying the compiled library for rejson
-- Line 71 (in the network section) says ``bind 127.0.0.1`` to bind only to the local host network interface.
+.. code-block:: bash
+    
+    sudo cp redis.conf /etc/redis/redis.conf
+    sudo nano /etc/redis/redis.conf
 
-If you later want to make this redis server accessible on a network,
-you must change line 71 to bind to that interface too.
-For example if the computer hosting the redis server has an ip address ``10.0.0.1``
-on the network, this line should become ``bind 127.0.0.1 10.0.0.1``
-so that it binds to the local interface and the network interface.
+Then, you will want to change the value of the ``supervised`` directive to ``systemd``.  Finally, restart the service via
 
-Let's test the ReJSON installation. Run ``redis-server redis.conf``. This will start the Redis server with ReJSON.
-Open another terminal and run ``redis-cli``. Be sure you can execute the following in that redis-cli prompt
+.. code-block:: bash
+
+    sudo systemctl restart redis.service
+
+If you installed via another method, e.g. source you will need to manually open up a terminal and run
+``redis-server redis.conf``. This will start the Redis server with ReJSON.
+
+Let's test the ReJSON installation.  Open another terminal and run ``redis-cli``. Be sure you can execute the following in that redis-cli prompt
 
 .. code-block:: bash
 
@@ -116,21 +129,29 @@ You can then press Ctrl+C or enter "exit" to exit.
 Installing Redis and ReJSON (Windows)
 ############################################
 
-For Windows, you will use the [Windows builds of Redis](https://github.com/tporadowski/redis) and [ReJSON](https://github.com/tporadowski/rejson).
+For Windows, you will use the `Windows builds of Redis <https://github.com/tporadowski/redis>`_ and `ReJSON <https://github.com/tporadowski/rejson>`_
 
-To install Redis, grab one of the 5.x installs from `this page <https://github.com/tporadowski/redis/releases>`_ and install it on your machine.  We have tested this to work on version 5.0.14. The files will typically be in "C:\Program Files\Redis", which you may want to add to your PATH for convenience.
+To install Redis, grab one of the 5.x installs from `this page <https://github.com/tporadowski/redis/releases>`_ and install it on your machine.  We have tested this to work on version 5.0.14. The files will typically be in "C:\\Program Files\\Redis", which you may want to add to your PATH for convenience.
+If you have installed using the MSI installer, this will install a "Redis Windows Service" for you that will run on startup.  If you used the Zip file, you will need to start the server manually. 
 
 Next, download a release from the `ReJSON releases <https://github.com/tporadowski/rejson/releases>`_. We have tested this to work on version 1.0.6.  Create a folder named rejson-server, and unzip the release into this folder. You should now have a DLL and PDB file here.
 
 Then, download an example redis.conf file, such as `the default here <https://github.com/tporadowski/redis/blob/develop/redis.conf>`_, and put it into rejson-server. Then, in the section labeled "MODULES", add the line "loadmodule ReJSON.dll".  Save and close the file.
 
-Finally, open a Command Prompt and navigate to the rejson-server folder. Enter
+Finally you will need to obtain a running Redis server configured with ReJSON. 
+If you want to use Redis Windows Service, replace C:\\Program Files\\Redis\\redis-windows-service.conf
+with the redis.conf that you just edited, and also copy the ReJSON.dll and pdb files to C:\\Program Files\\Redis.
+To make sure the changes have an effect,
+restart the service by going into Services (e.g., press the Windows key and search for "services"), find Redis, and then stop and restart it.
+
+If you need to start the Redis server manually, open a Command Prompt and
+navigate to the rejson-server folder. Enter
 
 .. code-block:: bash
 
     > "C:\Program Files\Redis\redis-server.exe" redis.conf
 
-which will start a redis server.
+which will start the server.  It should say "Ready to accept connections". 
 
 To test that everything is working, open another command prompt and enter:
 
@@ -149,6 +170,19 @@ If you get something other than OK, you have misconfigured the server.
 
 That's it! Close out of the second command prompt window and continue on with the rest of the tutorial.
 
+
+Common Redis Configuration Options
+##################################
+
+``redis.json`` configures a lot of functionality about the Redis server. As an example,
+line 71 (in the network section) says ``bind 127.0.0.1`` to bind only to the local host network interface.
+If you later want to make this redis server accessible on a network,
+you must change line 71 to bind to that interface too.
+For example if the computer hosting the redis server has an IP address ``10.0.0.1``
+on the network, this line should become ``bind 127.0.0.1 10.0.0.1``
+so that it binds to the local interface and the network interface.
+
+There are plenty of other resources on Redis on the web, so we will not go into more detail here.
 
 
 Setting up REEM
@@ -216,3 +250,4 @@ The code connects to a Redis server and ``set`` s a dictionary with basic number
 reads and prints that data. Next, it sends a numpy array to Redis and reads that back as well. 
 
 Congratulations! You have got REEM working on your machine! Continue to the next section to see what else REEM can do.
+

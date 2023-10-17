@@ -1,5 +1,5 @@
 from tests.testing import *
-from reem.connection import KeyValueStore
+from reem import KeyValueStore
 import logging
 import numpy as np
 import redis

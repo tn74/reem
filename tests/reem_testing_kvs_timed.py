@@ -1,5 +1,5 @@
 from tests.testing import *
-from reem.connection import KeyValueStore,RedisInterface
+from reem import KeyValueStore,RedisInterface
 from reem import marshalling
 import logging
 import numpy as np

@@ -1,4 +1,4 @@
-from reem import RedisInterface
+from reem import RedisInterface,connection
 import numpy as np
 import time
 import logging
