@@ -2,7 +2,9 @@ from __future__ import print_function
 
 from threading import Thread, Lock
 import redis
+import rejson
 from .utilities import *
+from typing import Any,Union
 
 _ROOT_VALUE_READ_NAME = "{}ROOT{}".format(ROOT_VALUE_SEQUENCE, ROOT_VALUE_SEQUENCE)
 _TYPEMAP = {
@@ -49,16 +51,16 @@ class KeyAccessor:
         self.path = initial_path
         self.path_str = None  #caches path string
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.path_str is None:
             self.path_str = key_sequence_to_path_ext(self.path)
         return "reem.KeyAccessor({} {})".format(self.writer.top_key_name,self.path_str)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key : str) -> 'KeyAccessor':
         assert check_valid_key_name_ext(key),"{} is not a valid key under path {}".format(key,key_sequence_to_path(self.path) if self.path_str is None else self.path_str)
         return self.__class__(self,self.writer,self.reader,self.path+[key])
     
-    def get(self, key, default_value = None):
+    def get(self, key : str, default_value : Any = None) -> Any:
         """Similar to dict's get() method, returns a default value if the key doesn't exist.
 
         Essentially equivalent to
@@ -74,7 +76,7 @@ class KeyAccessor:
         except redis.exceptions.ResponseError:
             return default_value
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key : str, value : Any) -> None:
         if isinstance(value,KeyAccessor):
             #sometimes this happens on += / *= on subkeys
             if value.parent is self:
@@ -96,7 +98,7 @@ class KeyAccessor:
                 path = self.path_str + '.' + key
         self.writer.send_to_redis(path, value)
 
-    def __delitem__(self,key):
+    def __delitem__(self, key : str) -> None:
         assert check_valid_key_name_ext(key),"{} is not a valid key under path {}".format(key,key_sequence_to_path(self.path) if self.path_str is None else self.path_str)
         if self.path_str is None:
             self.path_str = key_sequence_to_path_ext(self.path)
@@ -112,7 +114,7 @@ class KeyAccessor:
                 path = self.path_str + '.' + key
         self.writer.delete_from_redis(path)
 
-    def read(self):
+    def read(self) -> Any:
         """Actually read the value referred to by this accessor."""
         if self.path_str is None:
             self.path_str = key_sequence_to_path_ext(self.path)
@@ -123,7 +125,7 @@ class KeyAccessor:
         except Exception:
             return server_value 
 
-    def write(self, value):
+    def write(self, value : Any) -> None:
         """Writes value to the path referred to by this accessor."""
         if self.path_str is None:
             self.path_str = key_sequence_to_path_ext(self.path)
@@ -136,19 +138,19 @@ class KeyAccessor:
         with self.writer.interface.INTERFACE_LOCK:
             return getattr(self.writer.interface.client,fn)(self.writer.top_key_name,self.path_str,*args)
 
-    def type(self):
+    def type(self) -> str:
         """Returns the type of the object"""
         t = self._do_rejson_call('jsontype')
         return _TYPEMAP[t]
 
-    def __len__(self):
+    def __len__(self) -> str:
         """Returns the length of an array / number of keys in dict"""
         try:
             return self._do_rejson_call('jsonobjlen')
         except:
             return self._do_rejson_call('jsonarrlen')
 
-    def __iadd__(self,rhs):
+    def __iadd__(self, rhs : Union[int,float,list]) -> 'KeyAccessor':
         """Adds a value to an integer / float value, or concatenates a list
         to an array.
 
@@ -163,7 +165,7 @@ class KeyAccessor:
             self._do_rejson_call('jsonarrappend',*rhs)
         return self
 
-    def __isub__(self,rhs):
+    def __isub__(self, rhs : Union[int,float]) -> 'KeyAccessor':
         """Subtracts a value from an integer / float value
 
         Type checking is not performed, so the user should know what they're doing.
@@ -171,7 +173,7 @@ class KeyAccessor:
         self += -rhs
         return self
 
-    def __imul__(self,rhs):
+    def __imul__(self, rhs : Union[int,float]) -> 'KeyAccessor':
         """Multiplies a value by an integer / float value.
 
         Type checking is not performed, so the user should know what they're doing.
@@ -182,7 +184,7 @@ class KeyAccessor:
         self._do_rejson_call('jsonnummultby',rhs)
         return self
 
-    def __idiv__(self,rhs):
+    def __idiv__(self, rhs : Union[int,float])  -> 'KeyAccessor':
         """Divides a value by an integer / float value
 
         Type checking is not performed, so the user should know what they're doing.
@@ -190,7 +192,7 @@ class KeyAccessor:
         self *= 1.0/rhs
         return self
 
-    def append(self,rhs):
+    def append(self, rhs : Any) -> None:
         """Appends a value to an array
 
         Type checking is not performed, so the user should know what they're doing.
@@ -203,7 +205,6 @@ class KeyAccessor:
         small reads/writes which would otherwise bog down Redis.
         
         Usage::
-
             kvs = KeyValueStore()
             with kvs['foo']['bar'] as val:
                 #all this stuff is done client side with no communication
@@ -219,6 +220,7 @@ class KeyAccessor:
         if exc_type is not None:
             self.write(self._value)
             delattr(self._value)
+
 
 
 class WriteOnlyKeyAccessor(KeyAccessor):
@@ -260,7 +262,7 @@ class ActiveSubscriberKeyAccessor(KeyAccessor):
     def append(self,rhs):
         raise NotImplementedError()
 
-    def read(self):
+    def read(self) -> Any:
         return_val = self.parent.local_copy
         if len(self.path) == 0:
             pass

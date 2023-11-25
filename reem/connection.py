@@ -8,12 +8,13 @@ from .accessors import  KeyAccessor,WriteOnlyKeyAccessor,ActiveSubscriberKeyAcce
 from .marshalling import *
 from .utilities import *
 
+from typing import Union,Any,Optional,Callable
 
 class RedisInterface:
     """
 
     """
-    def __init__(self, host='localhost', marshallers=[NumpyMarshaller()], *args, **kwargs):
+    def __init__(self, host : str = 'localhost', marshallers = [NumpyMarshaller()], *args, **kwargs):
         self.hostname = host
         self.marshallers = marshallers
         self.client_no_decode,self.client = make_redis_client(host, *args, **kwargs)
@@ -50,13 +51,13 @@ class KeyValueStore(object):
     eventually to the ``Redis`` client. This allows users to set things like
     socket timeouts. See https://redis.readthedocs.io/en/latest/connections.html
     for a full list of options.
-
+    
     Attributes:
         interface (str, RedisInterface, or KeyValueStore): Defines the
         connection to Redis this reader will use. If a str, then a
         RedisInterface will be created and connected to automatically.
     """
-    def __init__(self, interface='localhost', *args, **kwargs):
+    def __init__(self, interface : Union[str,RedisInterface,'KeyValueStore']='localhost', *args, **kwargs):
         if isinstance(interface,str):
             host = interface
             self.interface = RedisInterface(host, *args, **kwargs)
@@ -69,7 +70,7 @@ class KeyValueStore(object):
         self.entries = {}
         self.track_schema = True
     
-    def get(self,path):
+    def get(self, path : str) -> Any:
         """Reads a path in the form 'key.element1.element2' from the redis
         server.  If the path doesn't exist, an error is raised.
 
@@ -83,10 +84,12 @@ class KeyValueStore(object):
         writer,reader = self.entries[res[0]]
         return reader.read_from_redis('.'+res[1])
 
-    def set(self,path,value):
+    def set(self, path : str, value : Any) -> None:
         """Sets a value in a path in the form 'key.element1.element2' from the
         redis server.  If any elements along the path, except for the last key,
         do not exist, an error is raised.
+
+        ``value`` must be a JSON-serializable object.
 
         Marginally faster than nested accessors.
         """
@@ -98,7 +101,7 @@ class KeyValueStore(object):
         writer,reader = self.entries[res[0]]
         return writer.send_to_redis('.'+res[1],value)
         
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value : Any) -> None:
         """ Only used for setting key on first level of KVS. i.e. KVS["top_key"] = value. Otherwise see __getitem__
 
         Args:
@@ -117,7 +120,7 @@ class KeyValueStore(object):
             writer, reader = self.entries[key]
         writer.send_to_redis(ROOT_PATH, value)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item : str) -> KeyAccessor:
         """Used to retrieve KeyAccessor object for handling path construction when setting/getting Redis
 
         Args:
@@ -134,7 +137,7 @@ class KeyValueStore(object):
             writer, reader = self.entries[item]
         return KeyAccessor(self, writer=writer, reader=reader)
 
-    def __delitem__(self,item):
+    def __delitem__(self, item : str) -> None:
         """ Only used for deleting key on first level of KVS. 
 
         Args:
@@ -190,7 +193,7 @@ class PublishSpace(KeyValueStore):
     This class keeps track of ``PublishWriter`` objects for each key the user has published on.
 
     """
-    def __getitem__(self, item):
+    def __getitem__(self, item : str) -> WriteOnlyKeyAccessor:
         """ Same function as ``KeyValueStore`` method, but returns a non-readable ``WriteOnlyKeyAccessor`` object
 
         """
@@ -200,7 +203,7 @@ class PublishSpace(KeyValueStore):
             publisher, _ = self.entries[item]
         return WriteOnlyKeyAccessor(self, writer=publisher, reader=_)
     
-    def __setitem__(self, key, value):
+    def __setitem__(self, key : str, value : Any) -> None:
         """ Only used for setting key on first level of KVS. i.e. KVS["top_key"] = value. Otherwise see __getitem__
 
         Args:
@@ -247,7 +250,7 @@ class SilentSubscriber:
     the most up-to-date values using value() or [key].
     """
 
-    def __init__(self, channel, interface):
+    def __init__(self, channel : str, interface : Union[str,RedisInterface]):
         if isinstance(interface,str):
             host = interface
             interface = RedisInterface(host)
@@ -332,7 +335,7 @@ class CallbackSubscriber(SilentSubscriber):
     `channel_name*`
     """
 
-    def __init__(self, channel, interface, callback_function, kwargs):
+    def __init__(self, channel : str, interface : Union[str,RedisInterface], callback_function : Callable, kwargs):
         if isinstance(interface,str):
             host = interface
             interface = RedisInterface(host)
