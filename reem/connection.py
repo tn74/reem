@@ -80,7 +80,7 @@ class KeyValueStore(object):
         if len(res) == 1:
             res = [res[0],'']
         if res[0] not in self.entries:
-            raise ValueError("Invalid top-level key",res[0])
+            raise ValueError("Invalid top-level key %s"%res[0])
         writer,reader = self.entries[res[0]]
         return reader.read_from_redis('.'+res[1])
 
