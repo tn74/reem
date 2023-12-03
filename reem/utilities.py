@@ -156,7 +156,7 @@ def get_special_paths(set_path, set_value, sp_to_label, label_to_ship):
     return additions
 
 
-def check_valid_key_name(name):
+def check_valid_key_name(name : str):
     """
     Ensure the key name provided is legal
     :param name: a potential key name
@@ -170,7 +170,7 @@ def check_valid_key_name(name):
         return False
     return True
 
-def check_valid_key_name_ext(name):
+def check_valid_key_name_ext(name : str):
     """
     Ensure the key / index name provided is legal
     :param name: a potential key name or index
