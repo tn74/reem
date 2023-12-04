@@ -17,7 +17,7 @@ REEM currently offers two communication paradigms:
 
 ## Installation
 
-REEM is highly portable and runs on Python 2.7+ or Python 3.3+.
+REEM is highly portable and runs on Python 3.3+.
 
 To install the python package (and its dependencies), run
 ```
@@ -37,6 +37,7 @@ See [example.py](https://www.github.com/krishauser/reem/blob/master/example.py) 
 - Added `with` syntax on key-value store accessors which allows you to make many updates to an object without bogging down the Redis server. Usage is `with kvs['key'] as val: foo(val)` which is equivalent to `val=kvs['key'].read(); foo(val); kvs['key'] = val` and often much faster than `foo(kvs['key'])` if `foo` performs lots of reads and writes.
 - Useless `RedisInterface.initialize()` method removed.
 - Accessor `KeyValueStore.get(key)` will not fail if the top-level key exists on the Redis server but hasn't been pulled in this client.
+- Added new convenience structure `TolerantKeyValueStore` which will automatically create uninitialized subkeys, throttle frequent reads, and accept both `.`-separated strings and lists of indexes as keys.
 
 0.1.2:
 - bug fixes in pub/sub implementation.

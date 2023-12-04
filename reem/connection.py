@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function,annotations
 from six import iterkeys
 from threading import Lock
 import logging
@@ -11,8 +11,8 @@ from .utilities import *
 from typing import Union,Any,Optional,Callable
 
 class RedisInterface:
-    """
-
+    """Low level class for interfacing with Redis.  Notably, stores the set
+    of marshallers used for accessing Numpy and other user data.
     """
     def __init__(self, host : str = 'localhost', marshallers = [NumpyMarshaller()], *args, **kwargs):
         self.hostname = host
@@ -30,6 +30,25 @@ class RedisInterface:
 
     def client_copy(self):
         return redis.Redis(self.hostname)
+
+    def __getstate__(self):
+        return {'host':self.hostname, 'marshallers':[m.__class__.__name__ for m in self.marshallers]}
+
+    def __setstate__(self,state):
+        self.hostname = state['host']
+        self.marshallers = []
+        for m in state['marshallers']:
+            try:
+                self.marshallers.append(globals()[m]())
+            except Exception:
+                raise RuntimeError("Cannot find marshaller "+m)
+        self.client_no_decode,self.client = make_redis_client(self.hostname)
+
+        self.label_to_marshaller = {}
+        for sh in self.marshallers:
+            self.label_to_marshaller[sh.get_label()] = sh
+
+        self.marshaller_labels = [sh.get_label() for sh in self.marshallers]
 
 
 logger = logging.getLogger("reem")
@@ -57,7 +76,7 @@ class KeyValueStore(object):
         connection to Redis this reader will use. If a str, then a
         RedisInterface will be created and connected to automatically.
     """
-    def __init__(self, interface : Union[str,RedisInterface,'KeyValueStore']='localhost', *args, **kwargs):
+    def __init__(self, interface : Union[str,RedisInterface,KeyValueStore]='localhost', *args, **kwargs):
         if isinstance(interface,str):
             host = interface
             self.interface = RedisInterface(host, *args, **kwargs)
@@ -197,6 +216,13 @@ class KeyValueStore(object):
             for k in keys:
                 self.entries[k][0].do_metadata_update = set_value
 
+    def __getstate__(self):
+        return {'interface':self.interface.__getstate__(),'track_schema':self.track_schema}
+    
+    def __setstate__(self,state):
+        self.interface.__setstate__(state['interface'])
+        self.entries = {}
+        self.track_schema = state['track_schema']
 
 
 class PublishSpace(KeyValueStore):
