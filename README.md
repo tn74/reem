@@ -1,6 +1,6 @@
 # REEM
 
-Author: Trishul Nagenalli, updates by Kris Hauser
+Author: Trishul Nagenalli, updates and current maintenance by Kris Hauser
 
 ## About
 
@@ -8,7 +8,7 @@ REEM (Redis Extendable Efficient Middleware) is a centralized middleware package
 
 To make it easy, we chose to model information as a nested data structure that closely resembles python dictionaries. To the user, working with a database feels like working with a python dictionary. Out of the box, REEM supports communicating all native python types and numpy arrays.
 
-To make it fast, we used [Redis](https://redis.io/) (an in-memory key-value database) running [ReJSON](https://oss.redislabs.com/redisjson/) (enabling Redis to store JSON data) as a central information store. To get maximum performance, we give users the power to control exactly how information is passed between the local program and Redis by defining their own encoder/decoder objects.
+To make it fast, we used [Redis](https://redis.io/) (an in-memory key-value database) running [ReJSON](https://oss.redislabs.com/redisjson/) (enabling Redis to store JSON data) as a central information store. To get maximum performance, we give users the power to control exactly how information is passed between the local program and Redis by defining their own marshallers.  REEM comes with builtin marshallers for Numpy arrays.
 
 REEM currently offers two communication paradigms:
 - get/set database
@@ -16,6 +16,9 @@ REEM currently offers two communication paradigms:
 
 
 ## Installation
+
+REEM is highly portable and runs on Python 2.7+ or Python 3.3+.
+
 To install the python package (and its dependencies), run
 ```
 pip install reem
@@ -23,7 +26,7 @@ pip install reem
 You will also need to have access to a Redis server with RedisJSON enabled.  See the [setup tutorial](https://reem.readthedocs.io/en/latest/gettingstarted.html) for step-by-step instructions on installing and configuring a compatible local Redis server.
 
 ## Tutorials and API documentation
-See [example.py](blob/master/example.py) or the docs on [read the docs](https://reem.readthedocs.io).
+See [example.py](https://www.github.com/krishauser/reem/blob/master/example.py) or the docs on [read the docs](https://reem.readthedocs.io).
 
 
 
@@ -33,6 +36,7 @@ See [example.py](blob/master/example.py) or the docs on [read the docs](https://
 - Updated to require redis-py 4.0.0+.  API is still backwards-compatible with redis-py 3.5+ (which requires rejson).
 - Added `with` syntax on key-value store accessors which allows you to make many updates to an object without bogging down the Redis server. Usage is `with kvs['key'] as val: foo(val)` which is equivalent to `val=kvs['key'].read(); foo(val); kvs['key'] = val` and often much faster than `foo(kvs['key'])` if `foo` performs lots of reads and writes.
 - Useless `RedisInterface.initialize()` method removed.
+- Accessor `KeyValueStore.get(key)` will not fail if the top-level key exists on the Redis server but hasn't been pulled in this client.
 
 0.1.2:
 - bug fixes in pub/sub implementation.

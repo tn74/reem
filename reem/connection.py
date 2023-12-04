@@ -76,13 +76,21 @@ class KeyValueStore(object):
 
         Marginally faster than nested accessors.
         """
-        res = path.split('.',1)
-        if len(res) == 1:
-            res = [res[0],'']
-        if res[0] not in self.entries:
-            raise ValueError("Invalid top-level key %s"%res[0])
-        writer,reader = self.entries[res[0]]
-        return reader.read_from_redis('.'+res[1])
+        dotpos = path.find('.')
+        if dotpos < 0:
+            key = path
+            subkey = '.'  #includes dot
+        else:
+            key = path[:dotpos]
+            subkey = path[dotpos:]  #includes dot
+        if key not in self.entries:
+            pulled = self.interface.client.jsonget(key, ".")
+            if pulled is None:
+                raise ValueError("Invalid top-level key %s"%key)
+            else:
+                self._ensure_key_existence(key)
+        writer,reader = self.entries[key]
+        return reader.read_from_redis(subkey)
 
     def set(self, path : str, value : Any) -> None:
         """Sets a value in a path in the form 'key.element1.element2' from the
@@ -93,13 +101,17 @@ class KeyValueStore(object):
 
         Marginally faster than nested accessors.
         """
-        res = path.split('.',1)
-        if len(res) == 1:
-            res = [res[0],'']
-        if res[0] not in self.entries:
-            self._ensure_key_existence(res[0])
-        writer,reader = self.entries[res[0]]
-        return writer.send_to_redis('.'+res[1],value)
+        dotpos = path.find('.')
+        if dotpos < 0:
+            key = path
+            subkey = '.'  #includes dot
+        else:
+            key = path[:dotpos]
+            subkey = path[dotpos:]  #includes dot
+        if key not in self.entries:
+            self._ensure_key_existence(key)
+        writer,reader = self.entries[key]
+        return writer.send_to_redis(subkey,value)
         
     def __setitem__(self, key: str, value : Any) -> None:
         """ Only used for setting key on first level of KVS. i.e. KVS["top_key"] = value. Otherwise see __getitem__
@@ -377,7 +389,7 @@ class Writer(object):
             store non JSON data.
         interface (RedisInterface): Defines the connection to Redis this writer will use
     """
-    def __init__(self, top_key_name, interface):
+    def __init__(self, top_key_name : str, interface : RedisInterface):
         self.interface = interface
         self.top_key_name = top_key_name
         self.metadata_key_name = self.top_key_name + SEPARATOR_CHARACTER + "metadata"
@@ -430,7 +442,7 @@ class Writer(object):
             self.pipeline.execute()
             #logger.debug("SET {} {} Pipeline Executed".format(self.top_key_name, set_path))
 
-    def delete_from_redis(self,del_path):
+    def delete_from_redis(self, del_path : str):
         """Execute equivalent of ``JSON.DEL self.top_key_name <set_path>``
 
 
@@ -471,7 +483,7 @@ class Writer(object):
             self.pipeline.execute()
 
 
-    def _process_metadata(self, set_path, set_value):
+    def _process_metadata(self, set_path : str, set_value):
         """ Handle metadata updates
 
         Given the path and value the user would like to set, check if there are non-serializable data types and update
