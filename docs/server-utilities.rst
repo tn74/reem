@@ -6,7 +6,7 @@ Server Utilities
    :caption: Contents:
 
 REEM comes with some server-side utilities to help make debugging a little bit easier. They are located together
-inside a `GitHub repository <https://github.com/tn74/reem-servery>`_. It is not a PyPi package.
+inside a `GitHub repository <https://github.com/tn74/reem-server>`_. It is not a PyPi package.
 Download the repository and install dependencies with the below script
 
 .. code-block:: bash

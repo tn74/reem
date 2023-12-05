@@ -13,6 +13,17 @@ from typing import Union,Any,Optional,Callable
 class RedisInterface:
     """Low level class for interfacing with Redis.  Notably, stores the set
     of marshallers used for accessing Numpy and other user data.
+
+    Variable args and keyword arguments are passed to a ``redis.Redis()``
+    constructor.
+
+    Attributes:
+        hostname (str): the hostname of the Redis server (default localhost)
+        marshallers (List[Marshaller]): the list of marshallers used for
+            decoding Python objects like Numpy arrays.
+        client (redis.Redis): the ReJSON client
+        client_no_decode (redis.Redis): the ReJSON client used for communicating
+            with Redis without decoding JSON results.
     """
     def __init__(self, host : str = 'localhost', marshallers = [NumpyMarshaller()], *args, **kwargs):
         self.hostname = host
@@ -73,8 +84,8 @@ class KeyValueStore(object):
     
     Attributes:
         interface (str, RedisInterface, or KeyValueStore): Defines the
-        connection to Redis this reader will use. If a str, then a
-        RedisInterface will be created and connected to automatically.
+            connection to Redis this reader will use. If a str, then a
+            RedisInterface will be created and connected to automatically.
     """
     def __init__(self, interface : Union[str,RedisInterface,KeyValueStore]='localhost', *args, **kwargs):
         if isinstance(interface,str):
@@ -183,7 +194,7 @@ class KeyValueStore(object):
             writer, reader = self.entries[item]
         writer.delete_from_redis(ROOT_PATH)
 
-    def _ensure_key_existence(self, key):
+    def _ensure_key_existence(self, key) -> None:
         """ Ensure that the requested key has a reader and writer associated with it.
 
         Returns: None
@@ -195,16 +206,17 @@ class KeyValueStore(object):
             self.entries[key] = (Writer(key, self.interface), Reader(key, self.interface))
             self.entries[key][0].do_metadata_update = self.track_schema
 
-    def track_schema_changes(self, set_value, keys=None):
+    def track_schema_changes(self, track : bool, keys=None) -> None:
         """ Performance optimization for skipping schema update checks
 
-        Stop checking for schema updates when setting data. Use ONLY if your data's schema is static
-        and you are really trying to eek out every bit of optimization.
+        Stop checking for schema updates when setting data. Use ONLY if
+        your data's schema is static and you are really trying to eke out
+        every bit of optimization.
 
         Args:
-            set_value (bool): True/False indicating if the keys' schema should be tracked
-            keys (List[str]): List of keys to track. If None, all present and future keys are tracked
-            according to ``set_value``
+            track (bool): True/False indicating if the keys' schema should be tracked
+            keys (List[str]): List of keys to track. If None, all present and future
+                keys are tracked according to ``track``
 
         Returns: None
 
@@ -212,9 +224,9 @@ class KeyValueStore(object):
         with self.interface.INTERFACE_LOCK:
             if keys is None:
                 keys = iterkeys(self.entries)
-                self.track_schema = set_value
+                self.track_schema = track
             for k in keys:
-                self.entries[k][0].do_metadata_update = set_value
+                self.entries[k][0].do_metadata_update = track
 
     def __getstate__(self):
         return {'interface':self.interface.__getstate__(),'track_schema':self.track_schema}
@@ -326,7 +338,7 @@ class SilentSubscriber:
         insert_into_dictionary(self.local_copy, path_to_key_sequence(path), redis_value)
         #logger.debug("SILENT_SUBSCRIBER @{} : Local Copy: {}".format(self.prefix, self.local_copy))
 
-    def listen(self):
+    def listen(self) -> None:
         """ Makes this subscriber start listening
 
         Returns: None
@@ -349,12 +361,12 @@ class SilentSubscriber:
         # Copy dictionary - paths to omit is blank, so we copy everything
         return copy_dictionary_without_paths(self.local_copy, [])
 
-    def __getitem__(self, item):
+    def __getitem__(self, item : str) -> ActiveSubscriberKeyAccessor:
         """ Implement dictionary API for local copy
 
         We do not give the user direct access to the dictionary representing the lcoal
         Args:
-            item:
+            item (str):
 
         Returns: ActiveSubscriberKeyAccessor
 

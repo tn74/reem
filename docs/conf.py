@@ -24,7 +24,7 @@ import reem.marshalling
 # -- Project information -----------------------------------------------------
 
 project = 'REEM'
-copyright = '2022, Trishul Nagenalli, Kris Hauser'
+copyright = '2023, Trishul Nagenalli, Kris Hauser'
 author = 'Trishul Nagenalli, Kris Hauser'
 
 # The full version, including alpha/beta/rc tags
