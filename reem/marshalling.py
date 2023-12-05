@@ -6,6 +6,8 @@ import io
 
 
 class SpecialDatatypeMarshaller(object):
+    """Abstract base class for marshallers that convert Python objects to/from
+    ReJSON commands."""
     __metaclass__ = ABCMeta
 
     def __init__(self):
@@ -28,7 +30,7 @@ class SpecialDatatypeMarshaller(object):
         pass
 
     @abstractmethod
-    def write(self, key, value, client):
+    def write(self, key, value, client) -> None:
         """ Write ``value`` to Redis at the specified ``key`` using ``client``
 
         Given a Redis client, execute any number of needed commands to store
@@ -112,6 +114,7 @@ class SpecialDatatypeMarshaller(object):
 
 
 class NumpyMarshaller(SpecialDatatypeMarshaller):
+    """A marshaller for Numpy arrays."""
     def check_fit(self, value):
         return type(value) in [np.array, np.ndarray]
 

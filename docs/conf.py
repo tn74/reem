@@ -48,6 +48,12 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# Autodoc: hide private members
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": False
+}
 
 # -- Options for HTML output -------------------------------------------------
 
