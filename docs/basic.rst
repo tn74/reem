@@ -7,8 +7,6 @@ Basic Usage
 
 This page explains how to use database and publish/subscribe paradigms with REEM.
 
-Initialization
-###############
 
 Key Value Store
 #################
@@ -131,7 +129,7 @@ the RedisServer this subscriber should listen to. Initialization is as below
 .. code-block:: python
 
    from reem.datatypes import SilentSubscriber
-   subscriber = SilentSubscriber(channel="silent_channel", interface=interface)
+   subscriber = SilentSubscriber(channel="silent_channel", interface="localhost")
    subscriber.listen()
 
 
@@ -177,7 +175,7 @@ Instantiation is as below
 
    # Initialize a callback subscriber
    subscriber = CallbackSubscriber(channel="callback_channel",
-                                   interface=interface,
+                                   interface="localhost",
                                    callback_function=callback,
                                    kwargs={"foo":5})
    subscriber.listen()

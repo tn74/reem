@@ -12,7 +12,7 @@ robot's computation flow is as below
 2. A computer processes that image and posts the result to Redis. Here, the process is just to compute the mean value of the image.
 3. An actuator reads the result of the computation and does something with it.  Here, it just logs it.
 
-All the code and each component's logs can be found in the `repository <https://github.com/tn74/reem/tree/master/examples/ImageProcessing>`_
+All the code and each component's logs can be found in the `repository <https://github.com/krishauser/reem/tree/master/examples/ImageProcessing>`_
 
 Camera
 ^^^^^^^^^^^^^^^^^^
@@ -36,7 +36,7 @@ while the set point is controlled by another computer at a different frequency.
 
 We have implemented in two ways - using a database paradigm and a publish/subscribe paradigm.
 
-All the code and each component's logs can be found in the `repository <https://github.com/tn74/reem/tree/master/examples/ArmActuator>`_
+All the code and each component's logs can be found in the `repository <https://github.com/krishauser/reem/tree/master/examples/ArmActuator>`_
 
 
 

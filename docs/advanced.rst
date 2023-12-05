@@ -20,7 +20,7 @@ To use a marshaller, include it as an argument when creating a ``RedisInterface`
 .. code-block:: python
 
     from reem import RedisInterface
-    interface = RedisInterface(host="localhost", ships=[CustomMarshaller()])
+    interface = RedisInterface(host="localhost", marshallers=[CustomMarshaller()])
 
 This interface object can be passed to ``KeyValueStore``, ``PublishSpace``, or the ``XSubscriber`` classes instead of an IP address.
 
@@ -32,10 +32,10 @@ your custom marshallers, you must include the default numpy marshaller in the in
 
 .. code-block:: python
 
-    interface = RedisInterface(host="localhost", ships=[reem.marshalling.NumpyMarshaller(), CustomMarshaller()])
+    interface = RedisInterface(host="localhost", marshallers=[reem.marshalling.NumpyMarshaller(), CustomMarshaller()])
 
 
 See the implementation of the Numpy marshaller below
 
 .. literalinclude:: ../reem/marshalling.py
-   :lines: 114-
+   :lines: 116-
