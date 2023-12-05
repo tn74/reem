@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools >= 42.0","wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = 'reem'
+version = '0.1.3'
+description='Redis Extendable Efficient Middleware'
+authors = [
+    {name='Trishul Nagenalli'},
+    {name='Kris Hauser', email='hauser.kris@gmail.com' }
+]
+readme = 'README.md'
+license = {file='LICENSE.txt'}
+dependencies=[
+    'redis>=4.0.0',
+    'six',
+    'numpy',
+]
+
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'Programming Language :: Python',
+    'License :: OSI Approved :: Apache Software License',
+    'Topic :: Communications',
+]
+
+[project.urls]
+Homepage = "https://example.com"
+Documentation = "https://reem.readthedocs.io"
+Repository = "https://www.github.com/krishauser/reem"
