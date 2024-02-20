@@ -76,7 +76,7 @@ def make_complex_dictionary(data=sample_data()):
     :return: dict
     """
     test = {}
-    test["hundred_key"] = single_level_dictionary(keys=50, data=data)
+    test["hundred_key"] = single_level_dictionary(copies=100, data=data)
     test["ten_level_dictionary"] = nested_level_dictionary(levels=10, data=data)
     return test
 
